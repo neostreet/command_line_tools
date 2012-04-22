@@ -8,8 +8,10 @@
 #define FALSE 0
 #define TRUE  1
 
-static char usage[] = "usage: skeleton4 (-sort) filename\n";
+static char usage[] = "usage: skeleton4 (-sort) (-reverse) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
+
+static int bReverse;
 
 static char **cppt;
 static int *per_line_int_data;
@@ -35,16 +37,19 @@ int main(int argc,char **argv)
   int cppt_ix;
   int chara;
 
-  if ((argc < 2) || (argc > 3)) {
+  if ((argc < 2) || (argc > 4)) {
     printf(usage);
     return 1;
   }
 
   bSort = FALSE;
+  bReverse = FALSE;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-sort"))
       bSort = TRUE;
+    else if (!strcmp(argv[curr_arg],"-reverse"))
+      bReverse = TRUE;
     else
       break;
   }
@@ -151,5 +156,8 @@ int compare(const void *elem1,const void *elem2)
   if (per_line_int_data[int1] == per_line_int_data[int2])
     return strcmp(cppt[int1],cppt[int2]);
 
-  return per_line_int_data[int2] - per_line_int_data[int1];
+  if (!bReverse)
+    return per_line_int_data[int1] - per_line_int_data[int2];
+  else
+    return per_line_int_data[int2] - per_line_int_data[int1];
 }
