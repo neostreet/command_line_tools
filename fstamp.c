@@ -9,7 +9,7 @@
 #define FALSE 0
 #define TRUE  1
 
-static char usage[] = "usage: fstamp (-no_sort) filename\n";
+static char usage[] = "usage: fstamp (-no_sort) (-terse) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char couldnt_get_status[] = "couldn't get status of %s\n";
 
@@ -33,6 +33,7 @@ int main(int argc,char **argv)
   int n;
   int curr_arg;
   int bNoSort;
+  int bTerse;
   struct stat statbuf;
   int mem_amount;
   char *mempt;
@@ -50,10 +51,13 @@ int main(int argc,char **argv)
   }
 
   bNoSort = FALSE;
+  bTerse = FALSE;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-no_sort"))
       bNoSort = TRUE;
+    else if (!strcmp(argv[curr_arg],"-terse"))
+      bTerse = TRUE;
     else
       break;
   }
@@ -151,11 +155,14 @@ int main(int argc,char **argv)
     qsort(ixs,num_lines,sizeof (int),compare);
 
   for (n = 0; n < num_lines; n++) {
-    cpt = ctime(&finfo[ixs[n]].st_mtime);
-    cpt[strlen(cpt) - 1] = 0;
+    if (bTerse)
+      printf("%s\n",cppt[ixs[n]]);
+    else {
+      cpt = ctime(&finfo[ixs[n]].st_mtime);
+      cpt[strlen(cpt) - 1] = 0;
 
-    printf("%s %10d %s\n",cpt,finfo[ixs[n]].st_size,
-      cppt[ixs[n]]);
+      printf("%s %10d %s\n",cpt,finfo[ixs[n]].st_size,cppt[ixs[n]]);
+    }
   }
 
   free(ixs);
