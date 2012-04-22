@@ -10,6 +10,7 @@
 
 static char usage[] = "usage: skeleton4 (-sort) (-reverse) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
+static char couldnt_get_status[] = "couldn't get status of %s\n";
 
 static int bReverse;
 
@@ -31,11 +32,11 @@ int main(int argc,char **argv)
   int mem_amount;
   char *mempt;
   FILE *fptr;
+  int chara;
   int num_lines;
   int file_ix;
   int *ixs;
   int cppt_ix;
-  int chara;
 
   if ((argc < 2) || (argc > 4)) {
     printf(usage);
@@ -60,7 +61,7 @@ int main(int argc,char **argv)
   }
 
   if (stat(argv[curr_arg],&statbuf) == -1) {
-    printf("couldn't get status of %s\n",argv[curr_arg]);
+    printf(couldnt_get_status,argv[curr_arg]);
     return 3;
   }
   else
