@@ -79,13 +79,13 @@ int main(int argc,char **argv)
       printf("debug: %10d\n",work);
 
     if (line_no == 1) {
-      if (work < 0)
+      if (work <= 0)
         minus_streak = 1;
       else
         plus_streak = 1;
     }
     else {
-      if (work < 0) {
+      if (work <= 0) {
         if (minus_streak)
           minus_streak++;
         else {
