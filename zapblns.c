@@ -5,21 +5,24 @@ char line[MAX_LINE_LEN];
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
-void main(int argc,char **argv)
+int main(int argc,char **argv)
 {
   int n;
+  int num_blns;
   FILE *fptr;
   int linel;
   int consecutive_blank_lines;
 
-  if (argc != 2) {
-    printf("usage: zapblns filename\n");
-    return;
+  if (argc != 3) {
+    printf("usage: zapblns num_blns filename\n");
+    return 1;
   }
 
-  if ((fptr = fopen(argv[1],"r")) == NULL) {
-    printf("couldn't open %s\n",argv[1]);
-    return;
+  sscanf(argv[1],"%d",&num_blns);
+
+  if ((fptr = fopen(argv[2],"r")) == NULL) {
+    printf("couldn't open %s\n",argv[2]);
+    return 2;
   }
 
   consecutive_blank_lines = 0;
@@ -35,11 +38,13 @@ void main(int argc,char **argv)
     else
       consecutive_blank_lines = 0;
 
-    if (consecutive_blank_lines < 2)
+    if (consecutive_blank_lines < num_blns)
       printf("%s\n",line);
   }
 
   fclose(fptr);
+
+  return 0;
 }
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
