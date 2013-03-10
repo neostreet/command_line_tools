@@ -4,7 +4,7 @@
 #include <malloc.h>
 #include <string.h>
 
-void main(int argc,char **argv)
+int main(int argc,char **argv)
 {
   int n;
   struct stat statbuf;
@@ -15,25 +15,25 @@ void main(int argc,char **argv)
 
   if (argc != 2) {
     printf("usage: reverse filename\n");
-    return;
+    return 1;
   }
 
   if (stat(argv[1],&statbuf) == -1) {
     printf("couldn't get status of %s\n",argv[1]);
-    return;
+    return 2;
   }
   else
     mem_amount = (size_t)statbuf.st_size;
 
-  if ((mempt = malloc(mem_amount)) == NULL) {
+  if ((mempt = (char *)malloc(mem_amount)) == NULL) {
     printf("malloc call failed\n");
-    return;
+    return 3;
   }
 
   if ((fptr = fopen(argv[1],"r")) == NULL) {
     printf("couldn't open %s\n",argv[1]);
     free(mempt);
-    return;
+    return 4;
   }
 
   for (n = 0; ; n++) {
@@ -51,7 +51,7 @@ void main(int argc,char **argv)
     ;
 
   if (n < 0)
-    return;
+    return 5;
 
   mempt[n] = 0;
   n--;
@@ -72,4 +72,6 @@ void main(int argc,char **argv)
   }
 
   free(mempt);
+
+  return 0;
 }
