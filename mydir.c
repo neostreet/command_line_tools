@@ -2,15 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #ifdef WIN32
 #include <sys/types.h>
 #include <sys/stat.h>
 #else
 #include <sys/stat.h>
-#define strcmpi strcmp
 #endif
 #include <time.h>
 #include <malloc.h>
@@ -55,11 +51,11 @@ int main(int argc,char **argv)
 {
   int n;
   int curr_arg;
-  int bTerse;
-  int bNameLast;
-  int bSince;
+  bool bTerse;
+  bool bNameLast;
+  bool bSince;
   time_t since_date;
-  int bSkip;
+  bool bSkip;
   int num_files;
   int num_files_found;
   struct stat statbuf;
@@ -74,29 +70,29 @@ int main(int argc,char **argv)
   }
 
   which_compare = NAME_ASCENDING;
-  bTerse = FALSE;
-  bNameLast = FALSE;
-  bSince = FALSE;
+  bTerse = false;
+  bNameLast = false;
+  bSince = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmpi(argv[curr_arg],"/on"))
+    if (!strcmp(argv[curr_arg],"/on"))
       which_compare = NAME_ASCENDING;
-    else if (!strcmpi(argv[curr_arg],"/o-n"))
+    else if (!strcmp(argv[curr_arg],"/o-n"))
       which_compare = NAME_DESCENDING;
-    else if (!strcmpi(argv[curr_arg],"/od"))
+    else if (!strcmp(argv[curr_arg],"/od"))
       which_compare = DATE_ASCENDING;
-    else if (!strcmpi(argv[curr_arg],"/o-d"))
+    else if (!strcmp(argv[curr_arg],"/o-d"))
       which_compare = DATE_DESCENDING;
-    else if (!strcmpi(argv[curr_arg],"/os"))
+    else if (!strcmp(argv[curr_arg],"/os"))
       which_compare = SIZE_ASCENDING;
-    else if (!strcmpi(argv[curr_arg],"/o-s"))
+    else if (!strcmp(argv[curr_arg],"/o-s"))
       which_compare = SIZE_DESCENDING;
-    else if (!strcmpi(argv[curr_arg],"-terse"))
-      bTerse = TRUE;
-    else if (!strcmpi(argv[curr_arg],"-name_last"))
-      bNameLast = TRUE;
+    else if (!strcmp(argv[curr_arg],"-terse"))
+      bTerse = true;
+    else if (!strcmp(argv[curr_arg],"-name_last"))
+      bNameLast = true;
     else if (!strncmp(argv[curr_arg],"-since",6)) {
-      bSince = TRUE;
+      bSince = true;
 
       since_date = cvt_date(&argv[curr_arg][6]);
 
@@ -158,7 +154,7 @@ int main(int argc,char **argv)
 
       for (n = 0; n < num_files_found; n++) {
         if (!bSince)
-          bSkip = FALSE;
+          bSkip = false;
         else
           bSkip = fi[file_ixs[n]].filetime < since_date;
 
@@ -175,7 +171,7 @@ int main(int argc,char **argv)
 
     for (n = 0; n < num_files_found; n++) {
       if (!bSince)
-        bSkip = FALSE;
+        bSkip = false;
       else
         bSkip = fi[file_ixs[n]].filetime < since_date;
 
@@ -202,7 +198,7 @@ int main(int argc,char **argv)
   else {
     for (n = 0; n < num_files_found; n++) {
       if (!bSince)
-        bSkip = FALSE;
+        bSkip = false;
       else
         bSkip = fi[file_ixs[n]].filetime < since_date;
 

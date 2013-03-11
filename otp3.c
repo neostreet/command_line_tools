@@ -8,11 +8,7 @@
 #include <io.h>
 #else
 #include <unistd.h>
-#define O_BINARY 0
 #endif
-
-#define FALSE 0
-#define TRUE  1
 
 #define MAX_FILE_NAME_LEN 1024
 
@@ -35,7 +31,7 @@ int main(int argc,char **argv)
   int m;
   int n;
   int curr_arg;
-  int bDebug;
+  bool bDebug;
   struct stat statbuf;
   off_t padfile_bytes;
   off_t infile_bytes;
@@ -54,11 +50,11 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  bDebug = FALSE;
+  bDebug = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
-      bDebug = TRUE;
+      bDebug = true;
     else
       break;
   }

@@ -3,26 +3,23 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #define MAX_FILENAME_LEN 1024
 static char filename[MAX_FILENAME_LEN];
 
 int main(int argc,char **argv)
 {
   int n;
-  int bStdin;
+  bool bStdin;
   char *filenam;
   struct stat statbuf;
   mode_t mode;
 
   if (argc == 1) {
-    bStdin = TRUE;
+    bStdin = true;
     filenam = filename;
   }
   else {
-    bStdin = FALSE;
+    bStdin = false;
     n = 1;
   }
 

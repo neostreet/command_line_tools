@@ -8,11 +8,7 @@
 #include <io.h>
 #else
 #include <unistd.h>
-#define O_BINARY 0
 #endif
-
-#define FALSE 0
-#define TRUE  1
 
 static char usage[] = "usage: mycmp (-verbose) file1 file2\n";
 static char couldnt_open[] = "couldn't open %s\n";
@@ -25,7 +21,7 @@ static int comp_files(char *file1,char *file2);
 int main(int argc,char **argv)
 {
   int curr_arg;
-  int bVerbose;
+  bool bVerbose;
   int retval;
 
   if ((argc != 3) && (argc != 4)) {
@@ -33,11 +29,11 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  bVerbose = FALSE;
+  bVerbose = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
-      bVerbose = TRUE;
+      bVerbose = true;
     else
       break;
   }

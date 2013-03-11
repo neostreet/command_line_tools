@@ -6,9 +6,6 @@
 #include <time.h>
 #include <ctype.h>
 
-#define FALSE 0
-#define TRUE  1
-
 static char usage[] = "usage: datediff (-years) date date\n";
 
 static char *months[] = {
@@ -42,7 +39,7 @@ static time_t cvt_date(char *date_str);
 int main(int argc,char **argv)
 {
   int curr_arg;
-  int bYears;
+  bool bYears;
   int retval;
   time_t today;
   time_t date1;
@@ -55,11 +52,11 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  bYears = FALSE;
+  bYears = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-years"))
-      bYears = TRUE;
+      bYears = true;
     else
       break;
   }

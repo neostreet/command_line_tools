@@ -1,13 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <string.h>
 #include <time.h>
-#include <ctype.h>
-
-#define FALSE 0
-#define TRUE  1
 
 static char usage[] = "usage: dateadd date days\n";
 

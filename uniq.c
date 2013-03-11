@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include "str_list.h"
 
-#define FALSE 0
-#define TRUE  1
-
 #define MAX_LINE_LEN 1024
 char line[MAX_LINE_LEN];
 
@@ -44,7 +41,7 @@ int main(int argc,char **argv)
         work_elem->int1++;
     }
     else
-      add_info_list_elem(&unique_lines,line,1,0,TRUE);
+      add_info_list_elem(&unique_lines,line,1,0,true);
   }
 
   fclose(fptr);

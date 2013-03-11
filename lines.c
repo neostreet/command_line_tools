@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #define NEWLINE 0x0a
 
 #define MAX_LINE_LEN 1024
@@ -22,10 +19,6 @@ static struct file_info *finfo;
 
 int compare(const void *elem1,const void *elem2);
 
-#ifndef WIN32
-#define strcmpi strcmp
-#endif
-
 static char fmt_str[] = "%6d %s\n";
 static char total_str[] = "TOTAL";
 
@@ -41,22 +34,22 @@ int main(int argc,char **argv)
   int chara;
   int svchara;
   int curr_arg;
-  int bTotalOnly;
-  int bStdinIsList;
-  int bStdin;
-  int bNoSort;
+  bool bTotalOnly;
+  bool bStdinIsList;
+  bool bStdin;
+  bool bNoSort;
 
-  bTotalOnly = FALSE;
-  bStdinIsList = FALSE;
-  bNoSort = FALSE;
+  bTotalOnly = false;
+  bStdinIsList = false;
+  bNoSort = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmpi(argv[curr_arg],"-totalonly"))
-      bTotalOnly = TRUE;
-    else if (!strcmpi(argv[curr_arg],"-stdinislist"))
-      bStdinIsList = TRUE;
-    else if (!strcmpi(argv[curr_arg],"-no_sort"))
-      bNoSort = TRUE;
+    if (!strcmp(argv[curr_arg],"-totalonly"))
+      bTotalOnly = true;
+    else if (!strcmp(argv[curr_arg],"-stdinislist"))
+      bStdinIsList = true;
+    else if (!strcmp(argv[curr_arg],"-no_sort"))
+      bNoSort = true;
     else
       break;
   }

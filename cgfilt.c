@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #define DOT '.'
 #define SPACE ' '
 #define CAPTURE 'x'
@@ -34,7 +31,7 @@ int main(int argc,char **argv)
   int curr_arg;
   int quiz_number;
   int initial_move;
-  int bBlack;
+  bool bBlack;
   FILE *fptr[2];
   int linelen;
   int retval;
@@ -60,9 +57,9 @@ int main(int argc,char **argv)
   }
 
   if (!strcmp(argv[curr_arg],"white"))
-    bBlack = FALSE;
+    bBlack = false;
   else if (!strcmp(argv[curr_arg],"black"))
-    bBlack = TRUE;
+    bBlack = true;
   else {
     printf(usage);
     return 3;

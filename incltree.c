@@ -6,9 +6,6 @@
 #include "str_misc.h"
 #include "str_list.h"
 
-#define FALSE 0
-#define TRUE  1
-
 #define TAB 0x09
 
 #define INCPATH_INCLUDE 0
@@ -17,7 +14,7 @@
 static char usage[] = "\
 usage: incltree (-fullpath -Iinclude_dir -Iinclude_dir ...) filename\n";
 
-static int bFullPath;
+static bool bFullPath;
 static char **global_argv;
 
 int num_include_dirs;
@@ -42,12 +39,12 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  bFullPath = FALSE;
+  bFullPath = false;
   num_include_dirs = 0;
 
   for (n = 1; n < argc; n++) {
     if (!strcmp(argv[n],"-fullpath"))
-      bFullPath = TRUE;
+      bFullPath = true;
     else if ((strlen(argv[n]) < 3) || (argv[n][0] != '-') || (argv[n][1] != 'I'))
       break;
     else
@@ -103,7 +100,7 @@ void incltree(char *filename,int depth)
 
           if (!stat(full_filename,&statbuf)) {
             if (!member_of_str_list(&include_file_list,inclpt,&ix)) {
-              add_str_list_elem(&include_file_list,inclpt,FALSE);
+              add_str_list_elem(&include_file_list,inclpt,false);
 
               for (m = 0; m < depth; m++)
                 printf("  ");

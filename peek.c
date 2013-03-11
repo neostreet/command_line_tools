@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define FALSE 0
-#define TRUE  1
-
 static char usage[] = "\
 usage: peek (-title) filename (filename ...) start_line num_lines\n";
 static char couldnt_open[] = "couldn't open %s\n";
@@ -17,8 +14,8 @@ int main(int argc,char **argv)
 {
   int n;
   FILE *fptr;
-  int bTitle;
-  int bStdin;
+  bool bTitle;
+  bool bStdin;
   int curr_arg;
   int startl;
   int num_lines;
@@ -32,11 +29,11 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  bTitle = FALSE;
+  bTitle = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-title"))
-      bTitle = TRUE;
+      bTitle = true;
     else
       break;
   }
@@ -47,15 +44,15 @@ int main(int argc,char **argv)
   }
 
   if (argc - curr_arg == 2) {
-    bStdin = TRUE;
+    bStdin = true;
     fptr = stdin;
-    bTitle = FALSE;
+    bTitle = false;
   }
   else {
-    bStdin = FALSE;
+    bStdin = false;
 
     if (argc - curr_arg > 3)
-      bTitle = TRUE;
+      bTitle = true;
   }
 
   sscanf(argv[argc - 2],"%d",&startl);

@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include "str_list.h"
 
-#define FALSE 0
-#define TRUE  1
-
 static char usage[] = "usage: test_info_list str int int (str int int ...)\n";
 
 int main(int argc,char **argv)
@@ -29,7 +26,7 @@ int main(int argc,char **argv)
   for (n = 1; n < argc; n += 3) {
     sscanf(argv[n+1],"%d",&work1);
     sscanf(argv[n+2],"%d",&work2);
-    add_info_list_elem(&list,argv[n],work1,work2,TRUE);
+    add_info_list_elem(&list,argv[n],work1,work2,true);
   }
 
   print_info_list(&list);

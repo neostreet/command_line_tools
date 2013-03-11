@@ -2,13 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef WNT
-#define strcmpi strcmp
-#endif
-
-#define FALSE 0
-#define TRUE  1
-
 #define TAB 0x09
 #define BACKSLASH 0x5c
 
@@ -23,13 +16,13 @@ static char couldnt_open[] = "couldn't open %s\n";
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
 void trim_line(char *line,int *linelen,char delimiter);
-void chop(char *cpt,char delimiter,int bDropDelim);
+void chop(char *cpt,char delimiter,bool bDropDelim);
 
 int main(int argc,char **argv)
 {
   int curr_arg;
-  int bDropDelim;
-  int bNoTrim;
+  bool bDropDelim;
+  bool bNoTrim;
   char delimiter;
   FILE *fptr;
   int linelen;
@@ -50,14 +43,14 @@ int main(int argc,char **argv)
     return 3;
   }
 
-  bDropDelim = FALSE;
-  bNoTrim = FALSE;
+  bDropDelim = false;
+  bNoTrim = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmpi(argv[curr_arg],"-drop_delim"))
-      bDropDelim = TRUE;
-    else if (!strcmpi(argv[curr_arg],"-no_trim"))
-      bNoTrim = TRUE;
+    if (!strcmp(argv[curr_arg],"-drop_delim"))
+      bDropDelim = true;
+    else if (!strcmp(argv[curr_arg],"-no_trim"))
+      bNoTrim = true;
     else
       break;
   }
@@ -69,9 +62,9 @@ int main(int argc,char **argv)
     return 4;
   }
 
-  if (!strcmpi(argv[curr_arg],"TAB"))
+  if (!strcmp(argv[curr_arg],"TAB"))
     delimiter = TAB;
-  else if (!strcmpi(argv[curr_arg],"BACKSLASH"))
+  else if (!strcmp(argv[curr_arg],"BACKSLASH"))
     delimiter = BACKSLASH;
   else
     delimiter = argv[curr_arg][0];
@@ -103,7 +96,7 @@ int main(int argc,char **argv)
   return 0;
 }
 
-void chop(char *cpt,char delimiter,int bDropDelim)
+void chop(char *cpt,char delimiter,bool bDropDelim)
 {
   int m;
   int n;

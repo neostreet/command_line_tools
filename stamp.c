@@ -5,9 +5,6 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#define FALSE 0
-#define TRUE  1
-
 static char couldnt_get_status[] = "couldn't get status of %s\n";
 
 #define MAX_FILES 30000
@@ -17,8 +14,8 @@ static char line[MAX_LINE_LEN];
 
 struct file_info {
   char name[MAX_LINE_LEN];
-  time_t st_mtime;
-  off_t st_size;
+  time_t stmtime;
+  off_t stsize;
   int cksum;
 };
 
@@ -31,7 +28,7 @@ int get_cksum(char *filename);
 int main(int argc,char **argv)
 {
   int n;
-  int bStdin;
+  bool bStdin;
   int linelen;
   struct stat statbuf;
   char *cpt1;
@@ -39,9 +36,9 @@ int main(int argc,char **argv)
   int curr_file;
   int num_files;
   int *ixs;
-  int bNoSort;
-  int bNoDate;
-  int bCksum;
+  bool bNoSort;
+  bool bNoDate;
+  bool bCksum;
 
   finfo = (struct file_info *)malloc(MAX_FILES * sizeof (struct file_info));
 
@@ -57,27 +54,27 @@ int main(int argc,char **argv)
     return 2;
   }
 
-  bNoSort = FALSE;
-  bNoDate = FALSE;
-  bCksum = FALSE;
+  bNoSort = false;
+  bNoDate = false;
+  bCksum = false;
 
   for (n = 1; n < argc; n++) {
     if (!strcmp(argv[n],"-no_sort"))
-      bNoSort = TRUE;
+      bNoSort = true;
     else if (!strcmp(argv[n],"-no_date"))
-      bNoDate = TRUE;
+      bNoDate = true;
     else if (!strcmp(argv[n],"-cksum"))
-      bCksum = TRUE;
+      bCksum = true;
     else
       break;
   }
 
   if (argc - (bNoSort + bNoDate + bCksum) == 1) {
-    bStdin = TRUE;
+    bStdin = true;
     cpt1 = line;
   }
   else {
-    bStdin = FALSE;
+    bStdin = false;
     n = bNoSort + bNoDate + 1;
   }
 
@@ -112,8 +109,8 @@ int main(int argc,char **argv)
     }
 
     strcpy(finfo[curr_file].name,cpt1);
-    finfo[curr_file].st_mtime = statbuf.st_mtime;
-    finfo[curr_file].st_size = statbuf.st_size;
+    finfo[curr_file].stmtime = statbuf.st_mtime;
+    finfo[curr_file].stsize = statbuf.st_size;
 
     if (bCksum)
       finfo[curr_file].cksum = get_cksum(cpt1);
@@ -138,14 +135,14 @@ int main(int argc,char **argv)
 
   for (n = 0; n < num_files; n++) {
     if (!bNoDate) {
-      cpt2 = ctime(&finfo[ixs[n]].st_mtime);
+      cpt2 = ctime(&finfo[ixs[n]].stmtime);
       cpt2[strlen(cpt2) - 1] = 0;
 
       if (bCksum)
-        printf("%s %10d %08x %s\n",cpt2,finfo[ixs[n]].st_size,
+        printf("%s %10d %08x %s\n",cpt2,finfo[ixs[n]].stsize,
           finfo[ixs[n]].cksum,finfo[ixs[n]].name);
       else
-        printf("%s %10d %s\n",cpt2,finfo[ixs[n]].st_size,
+        printf("%s %10d %s\n",cpt2,finfo[ixs[n]].stsize,
           finfo[ixs[n]].name);
     }
     else
@@ -190,7 +187,7 @@ int compare(const void *elem1,const void *elem2)
   ix1 = *(int *)elem1;
   ix2 = *(int *)elem2;
 
-  return finfo[ix2].st_mtime - finfo[ix1].st_mtime;
+  return finfo[ix2].stmtime - finfo[ix1].stmtime;
 }
 
 int get_cksum(char *filename)

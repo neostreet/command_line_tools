@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #define MAX_LINE_LEN 1024
 char line[MAX_LINE_LEN];
 
@@ -14,7 +11,7 @@ void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
 int main(int argc,char **argv)
 {
-  int bDelimChar;
+  bool bDelimChar;
   char delim_char;
   FILE *fptr;
   int linelen;
@@ -31,7 +28,7 @@ int main(int argc,char **argv)
       if (delim_char == '@')
         delim_char = ' ';
 
-      bDelimChar = TRUE;
+      bDelimChar = true;
     }
     else {
       printf(usage);
@@ -39,7 +36,7 @@ int main(int argc,char **argv)
     }
   }
   else
-    bDelimChar = FALSE;
+    bDelimChar = false;
 
   if ((fptr = fopen(argv[argc-1],"r")) == NULL) {
     printf(couldnt_open,argv[argc-1]);

@@ -2,20 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #define MAX_EXTS 1024
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
-
-#ifndef WIN32
-#define strcmpi strcmp
-#define strnicmp strncmp
-#endif
 
 #define MAX_EXT_LEN 80
 
@@ -39,24 +31,24 @@ int main(int argc,char **argv)
 {
   int n;
   int curr_arg;
-  int bSortCountDesc;
-  int bNonDefaultDelim;
+  bool bSortCountDesc;
+  bool bNonDefaultDelim;
   int delimiter;
-  int bStdin;
+  bool bStdin;
   char *filename;
   int linelen;
   char cur_ext[MAX_EXT_LEN+1];
   int tot_files;
   int tot_files_with_ext;
 
-  bSortCountDesc = FALSE;
-  bNonDefaultDelim = FALSE;
+  bSortCountDesc = false;
+  bNonDefaultDelim = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmpi(argv[curr_arg],"-sort_count_desc"))
-      bSortCountDesc = TRUE;
-    else if (!strnicmp(argv[curr_arg],"-delim",6)) {
-      bNonDefaultDelim = TRUE;
+    if (!strcmp(argv[curr_arg],"-sort_count_desc"))
+      bSortCountDesc = true;
+    else if (!strncmp(argv[curr_arg],"-delim",6)) {
+      bNonDefaultDelim = true;
       delimiter = argv[curr_arg][6];
     }
     else
@@ -72,11 +64,11 @@ int main(int argc,char **argv)
   }
 
   if (curr_arg == argc) {
-    bStdin = TRUE;
+    bStdin = true;
     filename = line;
   }
   else
-    bStdin = FALSE;
+    bStdin = false;
 
   tot_files = 0;
   tot_files_with_ext = 0;
@@ -101,7 +93,7 @@ int main(int argc,char **argv)
       tot_files_with_ext++;
 
       for (n = 0; n < num_exts; n++) {
-        if (!strcmpi(cur_ext,exts[n].ext)) {
+        if (!strcmp(cur_ext,exts[n].ext)) {
           exts[n].ext_count++;
           break;
         }
@@ -190,10 +182,10 @@ int get_ext(char *string,int delimiter,char *ext)
 
   if (n > m) {
     strncpy(ext,&string[n+1],MAX_EXT_LEN);
-    return TRUE;
+    return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 int elem_compare(const void *elem1,const void *elem2)

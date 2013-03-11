@@ -4,9 +4,6 @@
 #include <ctype.h>
 #include "uncmnt.h"
 
-#define FALSE 0
-#define TRUE  1
-
 static char open_comment[]       = "/*";
 static char close_comment[]      = "*/";
 static char new_style_comment[]  = "//";
@@ -24,7 +21,7 @@ int get_uncommented_line_info(FILE *fptr,char *line,int *line_len,int maxllen,
   int line_ix;
   int start_comment_ix;
   int stop_comment_ix;
-  int bInSingleQuote;
+  bool bInSingleQuote;
 
   local_line_len = 0;
   start_comment_ix = -1;
@@ -57,7 +54,7 @@ int get_uncommented_line_info(FILE *fptr,char *line,int *line_len,int maxllen,
   if (*bInComment)
     start_comment_ix = 0;
 
-  bInSingleQuote = FALSE;
+  bInSingleQuote = false;
 
   line_ix = 0;
 
@@ -74,7 +71,7 @@ int get_uncommented_line_info(FILE *fptr,char *line,int *line_len,int maxllen,
           }
 
           if (n == COMMENT_LEN) {
-            *bInComment = FALSE;
+            *bInComment = false;
             stop_comment_ix = line_ix+m+n;
 
             line_ix += m + COMMENT_LEN;
@@ -105,7 +102,7 @@ int get_uncommented_line_info(FILE *fptr,char *line,int *line_len,int maxllen,
         }
 
         if (m < tries) {
-          bInSingleQuote = FALSE;
+          bInSingleQuote = false;
           line_ix += m + 1;
         }
 
@@ -127,7 +124,7 @@ int get_uncommented_line_info(FILE *fptr,char *line,int *line_len,int maxllen,
         }
 
         if (m < tries) {
-          *bInDoubleQuote = FALSE;
+          *bInDoubleQuote = false;
           line_ix += m + 1;
         }
 
@@ -146,7 +143,7 @@ int get_uncommented_line_info(FILE *fptr,char *line,int *line_len,int maxllen,
       for (m = 0; m < tries; m++) {
         if ((line[line_ix+m] == open_comment[0]) &&
           (line[line_ix+m+1] == open_comment[1])) {
-          *bInComment = TRUE;
+          *bInComment = true;
           start_comment_ix = line_ix + m;
           line_ix += m + COMMENT_LEN;
 
@@ -162,13 +159,13 @@ int get_uncommented_line_info(FILE *fptr,char *line,int *line_len,int maxllen,
         }
 
         if (line[line_ix+m] == '\'') {
-          bInSingleQuote = TRUE;
+          bInSingleQuote = true;
           line_ix += m + 1;
           break;
         }
 
         if (line[line_ix+m] == '"') {
-          *bInDoubleQuote = TRUE;
+          *bInDoubleQuote = true;
           line_ix += m + 1;
           break;
         }
@@ -200,16 +197,16 @@ int uncommented_line_blank(char *line,int line_len,
   int n;
 
   if (!line_len || ((comment_start == 0) && (comment_stop == line_len)))
-    return TRUE;
+    return true;
 
   for (n = 0; n < line_len; n++) {
     if ((n < comment_start) || (n >= comment_stop)) {
       if (!isspace(line[n]))
-        return  FALSE;
+        return  false;
     }
   }
 
-  return TRUE;
+  return true;
 }
 
 void make_uncommented_line(char *uncommented_line,char *line,int line_len,

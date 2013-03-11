@@ -3,9 +3,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #define MAX_FILENAME_LEN 512
 static char filename[MAX_FILENAME_LEN];
 
@@ -14,7 +11,7 @@ int main(int argc,char **argv)
   int n;
   off_t size;
   struct stat statbuf;
-  int bStdin;
+  bool bStdin;
   char *filenam;
 
   if (argc < 2) {
@@ -30,11 +27,11 @@ int main(int argc,char **argv)
   }
 
   if (argc == 2) {
-    bStdin = TRUE;
+    bStdin = true;
     filenam = filename;
   }
   else {
-    bStdin = FALSE;
+    bStdin = false;
     n = 2;
   }
 

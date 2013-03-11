@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include "str_list.h"
 
-#define FALSE 0
-#define TRUE  1
-
 static char usage[] = "\
 usage: test_info2_list str int int int void_ptr (str int int int void_ptr ...)\n";
 

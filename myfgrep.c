@@ -4,19 +4,12 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #define MAX_SPECIAL_CHARS 20
 
 struct pair {
   int val1;
   char val2;
 };
-
-#ifndef WIN32
-#define strcmpi strcmp
-#endif
 
 #define TITLELEN 1024
 static char title[TITLELEN];
@@ -50,7 +43,7 @@ int main(int argc,char **argv)
   int p;
   int case_sens;
   int line_numbers;
-  int bTitle;
+  bool bTitle;
   int string_arg;
   int put_search_string;
   int put_line;
@@ -67,17 +60,17 @@ int main(int argc,char **argv)
 
   case_sens = 0;
   line_numbers = 1;
-  bTitle = TRUE;
+  bTitle = true;
   num_special_chars = 0;
   file_max = -1;
 
   for (curr_arg = 1; ; curr_arg++) {
-    if (!strcmpi(argv[curr_arg],"-c"))
+    if (!strcmp(argv[curr_arg],"-c"))
       case_sens = 1;
-    else if (!strcmpi(argv[curr_arg],"-nl"))
+    else if (!strcmp(argv[curr_arg],"-nl"))
       line_numbers = 0;
-    else if (!strcmpi(argv[curr_arg],"-nt"))
-      bTitle = FALSE;
+    else if (!strcmp(argv[curr_arg],"-nt"))
+      bTitle = false;
     else if (!strncmp(argv[curr_arg],"-special_char",13)) {
       if (num_special_chars == MAX_SPECIAL_CHARS) {
         printf("num_special_chars may not exceed %d\n",MAX_SPECIAL_CHARS);

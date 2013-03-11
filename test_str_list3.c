@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include "str_list.h"
 
-#define FALSE 0
-#define TRUE  1
-
 #define BUF_LEN 1024
 static char buf[BUF_LEN];
 
@@ -29,7 +26,7 @@ int main(int argc,char **argv)
 
   for (n = 0; n < 9; n++) {
     sprintf(buf,"player%d",n);
-    add_str_list_elem(&player_list,buf,FALSE);
+    add_str_list_elem(&player_list,buf,false);
   }
 
   print_str_list(&player_list);

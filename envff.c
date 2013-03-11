@@ -5,9 +5,6 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #ifdef WIN32
 #define DELIM_CHAR1 ';'
 #define DELIM_CHAR2 '\\'
@@ -26,7 +23,7 @@ int get_next_directory(char *cpt,int len,int *ix_pt,char **result);
 int main(int argc,char **argv)
 {
   int curr_arg;
-  int bDebug;
+  bool bDebug;
   int curr_dir;
   char *cpt;
   int len;
@@ -40,11 +37,11 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  bDebug = FALSE;
+  bDebug = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
-      bDebug = TRUE;
+      bDebug = true;
     else
       break;
   }
@@ -102,7 +99,7 @@ int get_next_directory(char *cpt,int len,int *ix_pt,char **result)
   }
 
   if (ix == orig_ix)
-    return FALSE;
+    return false;
 
   if (chara == DELIM_CHAR1)
     cpt[ix] = 0;
@@ -110,5 +107,5 @@ int get_next_directory(char *cpt,int len,int *ix_pt,char **result)
   *ix_pt = ix + 1;
   *result = &cpt[orig_ix];
 
-  return TRUE;
+  return true;
 }

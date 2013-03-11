@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define FALSE 0
-#define TRUE  1
-
 static char usage[] =
 "usage: permutations (-debug) (-optimize) set_size subset_size\n";
 
@@ -16,8 +13,8 @@ int main(int argc,char **argv)
   int m;
   int n;
   int curr_arg;
-  int bDebug;
-  int bOptimize;
+  bool bDebug;
+  bool bOptimize;
   int num_optimize_divides;
   int set_size;
   int subset_size;
@@ -30,14 +27,14 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  bDebug = FALSE;
-  bOptimize = FALSE;
+  bDebug = false;
+  bOptimize = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
-      bDebug = TRUE;
+      bDebug = true;
     else if (!strcmp(argv[curr_arg],"-optimize"))
-      bOptimize = TRUE;
+      bOptimize = true;
     else
       break;
   }

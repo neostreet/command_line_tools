@@ -1,8 +1,5 @@
 #include <stdio.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #define MAX_LINE_LEN 1024
 char line[MAX_LINE_LEN];
 
@@ -17,7 +14,7 @@ int main(int argc,char **argv)
   FILE *fptr;
   FILE *fptr2;
   int linelen;
-  int bFixed;
+  bool bFixed;
 
   if (argc != 2) {
     printf(usage);
@@ -35,7 +32,7 @@ int main(int argc,char **argv)
     return 3;
   }
 
-  bFixed = FALSE;
+  bFixed = false;
 
   for ( ; ; ) {
     GetLine(fptr,line,&linelen,MAX_LINE_LEN);
@@ -47,7 +44,7 @@ int main(int argc,char **argv)
       fprintf(fptr2,"%s\n",line);
     else {
       fprintf(fptr2,"%s\r\n",line);
-      bFixed = TRUE;
+      bFixed = true;
     }
   }
 

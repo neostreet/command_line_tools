@@ -5,9 +5,6 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #define MAX_SPECIAL_CHARS 20
 
 struct pair {
@@ -31,11 +28,6 @@ static char dbg_fmt_str[] = "debug:%03d:%s\n";
 
 void GetLine(FILE *fptr,char *line,unsigned int *line_len,
   unsigned int maxllen);
-
-#ifndef WIN32
-#define strcmpi strcmp
-#define strnicmp strncmp
-#endif
 
 #define TITLELEN 1024
 static char exp_title[TITLELEN];
@@ -63,29 +55,29 @@ int main(int argc,char **argv)
   unsigned int linelen;
   unsigned int searchlen;
   unsigned int line_no;
-  unsigned int first_line_no;
-  unsigned int put_title;
+  int first_line_no;
+  bool put_title;
   unsigned int tries;
   unsigned int m;
   unsigned int n;
   unsigned int p;
-  unsigned int case_sens;
+  bool case_sens;
   int curr_arg;
-  unsigned int show_title;
-  unsigned int line_numbers;
+  bool show_title;
+  bool line_numbers;
   unsigned int string_arg;
-  unsigned int show_search_string;
-  unsigned int put_search_string;
-  unsigned int reverse;
-  unsigned int put_line;
-  unsigned int bStdin;
-  unsigned int ss_specified;
-  unsigned int t_specified;
-  unsigned int l_specified;
-  unsigned int bHex;
-  unsigned int bChop;
+  bool show_search_string;
+  bool put_search_string;
+  bool reverse;
+  bool put_line;
+  bool bStdin;
+  bool ss_specified;
+  bool t_specified;
+  bool l_specified;
+  bool bHex;
+  bool bChop;
   unsigned int chop;
-  unsigned int bOffset;
+  bool bOffset;
   int nibbles[2];
   int which_nib;
   unsigned int num_special_chars;
@@ -97,63 +89,63 @@ int main(int argc,char **argv)
   struct pair special_chars[MAX_SPECIAL_CHARS];
   char buf[3];
 
-  case_sens = FALSE;
-  ss_specified = FALSE;
-  t_specified = FALSE;
-  l_specified = FALSE;
-  reverse = FALSE;
-  bHex = FALSE;
-  bChop = FALSE;
-  bOffset = FALSE;
+  case_sens = false;
+  ss_specified = false;
+  t_specified = false;
+  l_specified = false;
+  reverse = false;
+  bHex = false;
+  bChop = false;
+  bOffset = false;
   num_special_chars = 0;
-  bDateTime = FALSE;
-  bWindow = FALSE;
-  bDebug = FALSE;
+  bDateTime = false;
+  bWindow = false;
+  bDebug = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (argv[curr_arg][0] != '-')
       break;
 
-    if (!strcmpi(argv[curr_arg],"-c"))
-      case_sens = TRUE;
-    else if (!strcmpi(argv[curr_arg],"-ss")) {
-      show_search_string = TRUE;
-      ss_specified = TRUE;
+    if (!strcmp(argv[curr_arg],"-c"))
+      case_sens = true;
+    else if (!strcmp(argv[curr_arg],"-ss")) {
+      show_search_string = true;
+      ss_specified = true;
     }
-    else if (!strcmpi(argv[curr_arg],"-t")) {
-      show_title = TRUE;
-      t_specified = TRUE;
+    else if (!strcmp(argv[curr_arg],"-t")) {
+      show_title = true;
+      t_specified = true;
     }
-    else if (!strcmpi(argv[curr_arg],"-l")) {
-      line_numbers = TRUE;
-      l_specified = TRUE;
+    else if (!strcmp(argv[curr_arg],"-l")) {
+      line_numbers = true;
+      l_specified = true;
     }
-    else if (!strcmpi(argv[curr_arg],"-nss")) {
-      show_search_string = FALSE;
-      ss_specified = TRUE;
+    else if (!strcmp(argv[curr_arg],"-nss")) {
+      show_search_string = false;
+      ss_specified = true;
     }
-    else if (!strcmpi(argv[curr_arg],"-nt")) {
-      show_title = FALSE;
-      t_specified = TRUE;
+    else if (!strcmp(argv[curr_arg],"-nt")) {
+      show_title = false;
+      t_specified = true;
     }
-    else if (!strcmpi(argv[curr_arg],"-nl")) {
-      line_numbers = FALSE;
-      l_specified = TRUE;
+    else if (!strcmp(argv[curr_arg],"-nl")) {
+      line_numbers = false;
+      l_specified = true;
     }
-    else if (!strcmpi(argv[curr_arg],"-rev"))
-      reverse = TRUE;
-    else if (!strcmpi(argv[curr_arg],"-hex"))
-      bHex = TRUE;
-    else if (!strnicmp(argv[curr_arg],"-chop",5)) {
-      bChop = TRUE;
+    else if (!strcmp(argv[curr_arg],"-rev"))
+      reverse = true;
+    else if (!strcmp(argv[curr_arg],"-hex"))
+      bHex = true;
+    else if (!strncmp(argv[curr_arg],"-chop",5)) {
+      bChop = true;
       sscanf(&argv[curr_arg][5],"%u",&chop);
     }
-    else if (!strcmpi(argv[curr_arg],"-off")) {
-      bOffset = TRUE;
-      line_numbers = FALSE;
-      l_specified = TRUE;
+    else if (!strcmp(argv[curr_arg],"-off")) {
+      bOffset = true;
+      line_numbers = false;
+      l_specified = true;
     }
-    else if (!strnicmp(argv[curr_arg],"-special_char",13)) {
+    else if (!strncmp(argv[curr_arg],"-special_char",13)) {
       if (num_special_chars == MAX_SPECIAL_CHARS) {
         printf("num_special_chars may not exceed %d\n",MAX_SPECIAL_CHARS);
         return 1;
@@ -166,14 +158,14 @@ int main(int argc,char **argv)
       sscanf(buf,"%x",&special_chars[num_special_chars].val1);
       sscanf(&argv[curr_arg][15],"%c",&special_chars[num_special_chars++].val2);
     }
-    else if (!strcmpi(argv[curr_arg],"-datetime"))
-      bDateTime = TRUE;
-    else if (!strnicmp(argv[curr_arg],"-window",7)) {
-      bWindow = TRUE;
+    else if (!strcmp(argv[curr_arg],"-datetime"))
+      bDateTime = true;
+    else if (!strncmp(argv[curr_arg],"-window",7)) {
+      bWindow = true;
       sscanf(&argv[curr_arg][7],"%u",&window);
     }
-    else if (!strcmpi(argv[curr_arg],"-dbg"))
-      bDebug = TRUE;
+    else if (!strcmp(argv[curr_arg],"-dbg"))
+      bDebug = true;
     else
       break;
   }
@@ -186,7 +178,7 @@ int main(int argc,char **argv)
   string_arg = curr_arg;
 
   if (bHex) {
-    case_sens = TRUE;
+    case_sens = true;
     searchlen = strlen(argv[string_arg]);
 
     if (searchlen % 2) {
@@ -228,7 +220,7 @@ int main(int argc,char **argv)
 
   searchlen = strlen(argv[string_arg]);
 
-  if (!strcmpi(argv[string_arg],"doublequote")) {
+  if (!strcmp(argv[string_arg],"doublequote")) {
     argv[string_arg][0] = '"';
     searchlen = 1;
   }
@@ -236,16 +228,16 @@ int main(int argc,char **argv)
   curr_arg++;
 
   if (curr_arg == argc) {
-    bStdin = TRUE;
+    bStdin = true;
 
     if (!ss_specified)
-      show_search_string = FALSE;
+      show_search_string = false;
 
     /*if (!t_specified)*/
-      show_title = FALSE;
+      show_title = false;
 
     if (!l_specified)
-      line_numbers = FALSE;
+      line_numbers = false;
   }
   else {
     if (argc - curr_arg == 1) {
@@ -256,24 +248,24 @@ int main(int argc,char **argv)
       }
     }
 
-    bStdin = FALSE;
+    bStdin = false;
 
     if (!ss_specified) {
       if (argc - string_arg > 2)
-        show_search_string = TRUE;
+        show_search_string = true;
       else
-        show_search_string = FALSE;
+        show_search_string = false;
     }
 
     if (!t_specified) {
       if (argc - string_arg > 2)
-        show_title = TRUE;
+        show_title = true;
       else
-        show_title = FALSE;
+        show_title = false;
     }
 
     if (!l_specified)
-      line_numbers = TRUE;
+      line_numbers = true;
   }
 
   if ((line = (char *)malloc(MAX_LINE_LEN)) == NULL) {
@@ -282,7 +274,7 @@ int main(int argc,char **argv)
   }
 
   if (show_search_string)
-    put_search_string = FALSE;
+    put_search_string = false;
 
   /* start of argument loop: */
   for ( ; ; ) {
@@ -312,7 +304,7 @@ int main(int argc,char **argv)
   }
 
   if (show_title)
-    put_title = FALSE;
+    put_title = false;
 
   if (bOffset)
     first_line_no = -1;
@@ -339,11 +331,11 @@ int main(int argc,char **argv)
     if (bDebug)
       printf(dbg_fmt_str,line_no,line);
 
-    put_line = FALSE;
+    put_line = false;
 
     if (linelen < searchlen) {
       if (reverse)
-        put_line = TRUE;
+        put_line = true;
     }
     else {
       tries = linelen - searchlen + 1;
@@ -366,10 +358,10 @@ int main(int argc,char **argv)
 
       if (n == searchlen) {
         if (!reverse)
-          put_line = TRUE;
+          put_line = true;
       }
       else if (reverse)
-        put_line = TRUE;
+        put_line = true;
     }
 
     if (put_line && bWindow)
@@ -384,7 +376,7 @@ int main(int argc,char **argv)
       if (show_search_string) {
         if (!put_search_string) {
           printf("search string: %s\n\n",argv[string_arg]);
-          put_search_string = TRUE;
+          put_search_string = true;
         }
       }
 
@@ -405,7 +397,7 @@ int main(int argc,char **argv)
 
           putchar(0x0a);
 
-          put_title = TRUE;
+          put_title = true;
         }
       }
 

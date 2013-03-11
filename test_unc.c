@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #include "uncmnt.h"
 
-#define FALSE 0
-#define TRUE  1
-
 void main(int argc,char **argv)
 {
   FILE *fptr;
@@ -12,8 +9,8 @@ void main(int argc,char **argv)
   int line_len;
   int comment_start;
   int comment_stop;
-  int bInComment;
-  int bInDoubleQuote;
+  bool bInComment;
+  bool bInDoubleQuote;
   int curly_brace_depth;
   int debug_line_no;
 
@@ -28,8 +25,8 @@ void main(int argc,char **argv)
   }
 
   line_no = 0;
-  bInComment = FALSE;
-  bInDoubleQuote = FALSE;
+  bInComment = false;
+  bInDoubleQuote = false;
   curly_brace_depth = 0;
 
   for ( ; ; ) {

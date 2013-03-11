@@ -4,9 +4,6 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #define BUF_SIZE 4096
 static char buf[BUF_SIZE];
 
@@ -16,32 +13,32 @@ int main(int argc,char **argv)
   int work_len;
   struct stat statbuf;
   char *cpt;
-  int bStdin;
+  bool bStdin;
   char *filename;
-  int bHex;
+  bool bHex;
 
-  bHex = FALSE;
+  bHex = false;
 
   if (argc == 1) {
     filename = buf;
-    bStdin = TRUE;
+    bStdin = true;
   }
   else {
     if (!strcmp(argv[1],"-hex")) {
-      bHex = TRUE;
+      bHex = true;
 
       if (argc > 2) {
         n = 2;
-        bStdin = FALSE;
+        bStdin = false;
       }
       else {
         filename = buf;
-        bStdin = TRUE;
+        bStdin = true;
       }
     }
     else {
       n = 1;
-      bStdin = FALSE;
+      bStdin = false;
     }
   }
 

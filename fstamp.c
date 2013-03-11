@@ -1,13 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys\types.h>
-#include <sys\stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <malloc.h>
 #include <string.h>
 #include <time.h>
-
-#define FALSE 0
-#define TRUE  1
 
 static char usage[] = "usage: fstamp (-no_sort) (-terse) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
@@ -16,8 +13,8 @@ static char couldnt_get_status[] = "couldn't get status of %s\n";
 static char **cppt;
 
 struct file_info {
-  time_t st_mtime;
-  off_t st_size;
+  time_t stmtime;
+  off_t stsize;
 };
 
 static struct file_info *finfo;
@@ -32,8 +29,8 @@ int main(int argc,char **argv)
 {
   int n;
   int curr_arg;
-  int bNoSort;
-  int bTerse;
+  bool bNoSort;
+  bool bTerse;
   struct stat statbuf;
   int mem_amount;
   char *mempt;
@@ -50,14 +47,14 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  bNoSort = FALSE;
-  bTerse = FALSE;
+  bNoSort = false;
+  bTerse = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-no_sort"))
-      bNoSort = TRUE;
+      bNoSort = true;
     else if (!strcmp(argv[curr_arg],"-terse"))
-      bTerse = TRUE;
+      bTerse = true;
     else
       break;
   }
@@ -144,8 +141,8 @@ int main(int argc,char **argv)
         return 9;
       }
 
-      finfo[file_ix].st_mtime = statbuf.st_mtime;
-      finfo[file_ix].st_size = statbuf.st_size;
+      finfo[file_ix].stmtime = statbuf.st_mtime;
+      finfo[file_ix].stsize = statbuf.st_size;
 
       file_ix++;
     }
@@ -158,10 +155,10 @@ int main(int argc,char **argv)
     if (bTerse)
       printf("%s\n",cppt[ixs[n]]);
     else {
-      cpt = ctime(&finfo[ixs[n]].st_mtime);
+      cpt = ctime(&finfo[ixs[n]].stmtime);
       cpt[strlen(cpt) - 1] = 0;
 
-      printf("%s %10d %s\n",cpt,finfo[ixs[n]].st_size,cppt[ixs[n]]);
+      printf("%s %10d %s\n",cpt,finfo[ixs[n]].stsize,cppt[ixs[n]]);
     }
   }
 
@@ -181,8 +178,8 @@ int compare(const void *elem1,const void *elem2)
   ix1 = *(int *)elem1;
   ix2 = *(int *)elem2;
 
-  if (finfo[ix2].st_mtime == finfo[ix1].st_mtime)
+  if (finfo[ix2].stmtime == finfo[ix1].stmtime)
     return strcmp(cppt[ix1], cppt[ix2]);
 
-  return finfo[ix2].st_mtime - finfo[ix1].st_mtime;
+  return finfo[ix2].stmtime - finfo[ix1].stmtime;
 }

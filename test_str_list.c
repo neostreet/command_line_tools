@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "str_list.h"
 
-#define FALSE 0
-#define TRUE  1
+#define MAX_FILENAME_LEN 1024
+char include_filename[MAX_FILENAME_LEN];
 
 int main(int argc,char **argv)
 {
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   list.num_elems = 0;
 
   for (n = 1; n < argc; n++) {
-    add_str_list_elem(&list,argv[n],TRUE);
+    add_str_list_elem(&list,argv[n],true);
   }
 
   print_str_list(&list);

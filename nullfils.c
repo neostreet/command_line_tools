@@ -3,15 +3,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#define FALSE 0
-#define TRUE  1
-
 static char usage[] = "usage: nullfils (-not) filename (filename ...)\n";
 
 int main(int argc,char **argv)
 {
   int n;
-  int bNot;
+  bool bNot;
   struct stat statbuf;
 
   if (argc < 2) {
@@ -19,10 +16,10 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  bNot = FALSE;
+  bNot = false;
 
   if (!strcmp(argv[1],"-not"))
-    bNot = TRUE;
+    bNot = true;
 
   if (argc - bNot < 2) {
     printf(usage);

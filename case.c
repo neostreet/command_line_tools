@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #define MAX_LINE_LEN 1024
 char line[MAX_LINE_LEN];
 
@@ -13,12 +10,12 @@ static char couldnt_open[] = "couldn't open %s\n";
 static char tempname[] = "case.tmp";
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
-char *case_line(char *line,int line_len,int bUpper);
+char *case_line(char *line,int line_len,bool bUpper);
 
 int main(int argc,char **argv)
 {
   int n;
-  int bUpper;
+  bool bUpper;
   FILE *fptr;
   FILE *fptr2;
   int line_len;
@@ -29,9 +26,9 @@ int main(int argc,char **argv)
   }
 
   if (!strcmp(argv[1],"upper"))
-    bUpper = TRUE;
+    bUpper = true;
   else if (!strcmp(argv[1],"lower"))
-    bUpper = FALSE;
+    bUpper = false;
   else {
     printf(usage);
     return 2;
@@ -92,7 +89,7 @@ void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
   *line_len = local_line_len;
 }
 
-char *case_line(char *line,int line_len,int bUpper)
+char *case_line(char *line,int line_len,bool bUpper)
 {
   int n;
   int chara;

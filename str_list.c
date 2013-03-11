@@ -4,10 +4,7 @@
 #include <ctype.h>
 #include "str_list.h"
 
-#define FALSE 0
-#define TRUE  1
-
-int add_str_list_elem(struct str_list *str_list,char *str,
+bool add_str_list_elem(struct str_list *str_list,char *str,
   int bNoDuplicates)
 {
   int ix;
@@ -17,13 +14,13 @@ int add_str_list_elem(struct str_list *str_list,char *str,
 
   if (bNoDuplicates) {
     if (member_of_str_list(str_list,str,&ix))
-      return TRUE;
+      return true;
   }
 
   size = strlen(str) + 1 + sizeof (struct str_list_elem);
 
   if ((work_elem = (struct str_list_elem *)malloc(size)) == NULL)
-    return FALSE;
+    return false;
 
   cpt = (char *)work_elem + sizeof (struct str_list_elem);
   work_elem->str = cpt;
@@ -42,10 +39,10 @@ int add_str_list_elem(struct str_list *str_list,char *str,
   str_list->last_elem = work_elem;
   str_list->num_elems++;
 
-  return TRUE;
+  return true;
 }
 
-int add_info_list_elem(struct info_list *info_list,char *str,
+bool add_info_list_elem(struct info_list *info_list,char *str,
   int int1,int int2,int bNoDuplicates)
 {
   int ix;
@@ -55,13 +52,13 @@ int add_info_list_elem(struct info_list *info_list,char *str,
 
   if (bNoDuplicates) {
     if (member_of_info_list(info_list,str,&ix))
-      return TRUE;
+      return true;
   }
 
   size = strlen(str) + 1 + sizeof (struct info_list_elem);
 
   if ((work_elem = (struct info_list_elem *)malloc(size)) == NULL)
-    return FALSE;
+    return false;
 
   cpt = (char *)work_elem + sizeof (struct info_list_elem);
   work_elem->str = cpt;
@@ -82,10 +79,10 @@ int add_info_list_elem(struct info_list *info_list,char *str,
   info_list->last_elem = work_elem;
   info_list->num_elems++;
 
-  return TRUE;
+  return true;
 }
 
-int add_info2_list_elem(struct info2_list *info2_list,char *str,
+bool add_info2_list_elem(struct info2_list *info2_list,char *str,
   int int1,int int2,int int3,void *void_ptr)
 {
   int size;
@@ -95,7 +92,7 @@ int add_info2_list_elem(struct info2_list *info2_list,char *str,
   size = strlen(str) + 1 + sizeof (struct info2_list_elem);
 
   if ((work_elem = (struct info2_list_elem *)malloc(size)) == NULL)
-    return FALSE;
+    return false;
 
   cpt = (char *)work_elem + sizeof (struct info2_list_elem);
   work_elem->str = cpt;
@@ -118,7 +115,7 @@ int add_info2_list_elem(struct info2_list *info2_list,char *str,
   info2_list->last_elem = work_elem;
   info2_list->num_elems++;
 
-  return TRUE;
+  return true;
 }
 
 int get_str_list_elem(struct str_list *str_list,int ix,
@@ -128,7 +125,7 @@ int get_str_list_elem(struct str_list *str_list,int ix,
   struct str_list_elem *work_elem;
 
   if (ix >= str_list->num_elems)
-    return FALSE;
+    return false;
 
   work_elem = str_list->first_elem;
 
@@ -137,7 +134,7 @@ int get_str_list_elem(struct str_list *str_list,int ix,
 
   *str_list_elem = work_elem;
 
-  return TRUE;
+  return true;
 }
 
 char *get_str_list_elem_str(struct str_list *str_list,int ix)
@@ -163,7 +160,7 @@ int get_info_list_elem(struct info_list *info_list,int ix,
   struct info_list_elem *work_elem;
 
   if (ix >= info_list->num_elems)
-    return FALSE;
+    return false;
 
   work_elem = info_list->first_elem;
 
@@ -172,7 +169,7 @@ int get_info_list_elem(struct info_list *info_list,int ix,
 
   *info_list_elem = work_elem;
 
-  return TRUE;
+  return true;
 }
 
 int get_info2_list_elem(struct info2_list *info2_list,int ix,
@@ -182,7 +179,7 @@ int get_info2_list_elem(struct info2_list *info2_list,int ix,
   struct info2_list_elem *work_elem;
 
   if (ix >= info2_list->num_elems)
-    return FALSE;
+    return false;
 
   work_elem = info2_list->first_elem;
 
@@ -191,10 +188,10 @@ int get_info2_list_elem(struct info2_list *info2_list,int ix,
 
   *info2_list_elem = work_elem;
 
-  return TRUE;
+  return true;
 }
 
-int member_of_str_list(struct str_list *str_list,char *str,int *ix)
+bool member_of_str_list(struct str_list *str_list,char *str,int *ix)
 {
   int n;
   struct str_list_elem *work_elem;
@@ -205,16 +202,16 @@ int member_of_str_list(struct str_list *str_list,char *str,int *ix)
     if (!strcmp(work_elem->str,str)) {
       *ix = n;
 
-      return TRUE;
+      return true;
     }
 
     work_elem = work_elem->next_elem;
   }
 
-  return FALSE;
+  return false;
 }
 
-int member_of_str_list_from_ix(struct str_list *str_list,int in_ix,
+bool member_of_str_list_from_ix(struct str_list *str_list,int in_ix,
   char *str,int *ix)
 {
   int n;
@@ -227,17 +224,17 @@ int member_of_str_list_from_ix(struct str_list *str_list,int in_ix,
       if (!strcmp(work_elem->str,str)) {
         *ix = n;
 
-        return TRUE;
+        return true;
       }
     }
 
     work_elem = work_elem->next_elem;
   }
 
-  return FALSE;
+  return false;
 }
 
-int member_of_info_list(struct info_list *info_list,char *str,int *ix)
+bool member_of_info_list(struct info_list *info_list,char *str,int *ix)
 {
   int n;
   struct info_list_elem *work_elem;
@@ -248,16 +245,16 @@ int member_of_info_list(struct info_list *info_list,char *str,int *ix)
     if (!strcmp(work_elem->str,str)) {
       *ix = n;
 
-      return TRUE;
+      return true;
     }
 
     work_elem = work_elem->next_elem;
   }
 
-  return FALSE;
+  return false;
 }
 
-int member_of_info_list_from_ix(struct info_list *info_list,int in_ix,
+bool member_of_info_list_from_ix(struct info_list *info_list,int in_ix,
   char *str,int *ix)
 {
   int n;
@@ -270,17 +267,17 @@ int member_of_info_list_from_ix(struct info_list *info_list,int in_ix,
       if (!strcmp(work_elem->str,str)) {
         *ix = n;
 
-        return TRUE;
+        return true;
       }
     }
 
     work_elem = work_elem->next_elem;
   }
 
-  return FALSE;
+  return false;
 }
 
-int member_of_info2_list(struct info2_list *info2_list,int int2,
+bool member_of_info2_list(struct info2_list *info2_list,int int2,
   void *void_ptr,int *ix)
 {
   int n;
@@ -292,16 +289,16 @@ int member_of_info2_list(struct info2_list *info2_list,int int2,
     if ((work_elem->int2 == int2) && (work_elem->void_ptr == void_ptr)) {
       *ix = n;
 
-      return TRUE;
+      return true;
     }
 
     work_elem = work_elem->next_elem;
   }
 
-  return FALSE;
+  return false;
 }
 
-int member_of_info2_list_from_ix(struct info2_list *info2_list,
+bool member_of_info2_list_from_ix(struct info2_list *info2_list,
   int in_ix,int int2,void *void_ptr,int *ix)
 {
   int n;
@@ -314,14 +311,14 @@ int member_of_info2_list_from_ix(struct info2_list *info2_list,
       if ((work_elem->int2 == int2) && (work_elem->void_ptr == void_ptr)) {
         *ix = n;
 
-        return TRUE;
+        return true;
       }
     }
 
     work_elem = work_elem->next_elem;
   }
 
-  return FALSE;
+  return false;
 }
 
 void remove_str_list_elem(struct str_list *str_list,int ix)

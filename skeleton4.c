@@ -5,14 +5,11 @@
 #include <malloc.h>
 #include <string.h>
 
-#define FALSE 0
-#define TRUE  1
-
 static char usage[] = "usage: skeleton4 (-sort) (-reverse) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char couldnt_get_status[] = "couldn't get status of %s\n";
 
-static int bReverse;
+static bool bReverse;
 
 static char **cppt;
 static int *per_line_int_data;
@@ -27,7 +24,7 @@ int main(int argc,char **argv)
 {
   int n;
   int curr_arg;
-  int bSort;
+  bool bSort;
   struct stat statbuf;
   int mem_amount;
   char *mempt;
@@ -43,14 +40,14 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  bSort = FALSE;
-  bReverse = FALSE;
+  bSort = false;
+  bReverse = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-sort"))
-      bSort = TRUE;
+      bSort = true;
     else if (!strcmp(argv[curr_arg],"-reverse"))
-      bReverse = TRUE;
+      bReverse = true;
     else
       break;
   }

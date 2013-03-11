@@ -1,14 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#define FALSE 0
-#define TRUE  1
-
 int main(int argc,char **argv)
 {
   int n;
   int curr_arg;
-  int bSuffix;
+  bool bSuffix;
   char *suffix;
   int start_val;
   int end_val;
@@ -18,12 +15,12 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  bSuffix = FALSE;
+  bSuffix = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strncmp(argv[curr_arg],"-suffix",7)) {
       suffix = &argv[curr_arg][7];
-      bSuffix = TRUE;
+      bSuffix = true;
     }
     else
       break;

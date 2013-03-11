@@ -2,9 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define FALSE 0
-#define TRUE  1
-
 static char usage[] = "usage: mysql_grab (-to_screen) script\n";
 
 #define BUFLEN 256
@@ -13,18 +10,18 @@ static char buf[BUFLEN];
 int main(int argc,char **argv)
 {
   int curr_arg;
-  int bToScreen;
+  bool bToScreen;
 
   if ((argc != 2) && (argc != 3)) {
     printf(usage);
     return 1;
   }
 
-  bToScreen = FALSE;
+  bToScreen = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-to_screen"))
-      bToScreen = TRUE;
+      bToScreen = true;
     else
       break;
   }
