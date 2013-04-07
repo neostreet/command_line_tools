@@ -1,25 +1,29 @@
 #include <stdio.h>
 #include <string.h>
 
-static char usage[] = "runtot (-initial_balbal) filename\n";
+static char usage[] = "runtot (-initial_balbal) (-verbose) filename\n";
 
 int main(int argc,char **argv)
 {
   int curr_arg;
+  bool bVerbose;
   FILE *fptr;
   int runtot;
   int work;
 
-  if ((argc < 2) || (argc > 3)) {
+  if ((argc < 2) || (argc > 4)) {
     printf(usage);
     return 1;
   }
 
   runtot = 0;
+  bVerbose = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strncmp(argv[curr_arg],"-initial_bal",12))
       sscanf(&argv[curr_arg][12],"%d",&runtot);
+    else if (!strcmp(argv[curr_arg],"-verbose"))
+      bVerbose = true;
     else
       break;
   }
@@ -41,7 +45,11 @@ int main(int argc,char **argv)
       break;
 
     runtot += work;
-    printf("%d\n",runtot);
+
+    if (!bVerbose)
+      printf("%d\n",runtot);
+    else
+      printf("%d %d\n",work,runtot);
   }
 
   fclose(fptr);
