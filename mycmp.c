@@ -6,34 +6,47 @@
 #include <sys/stat.h>
 #ifdef WIN32
 #include <io.h>
+#include <direct.h>
 #else
+#define _MAX_PATH 4096
 #include <unistd.h>
 #endif
 
-static char usage[] = "usage: mycmp (-verbose) file1 file2\n";
+#define FALSE 0
+#define TRUE  1
+
+static char usage[] = "usage: mycmp (-equal) (-verbose) file1 file2\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char couldnt_get_status[] = "couldn't get status of %s\n";
 static char file_differs[] = "%s differs\n";
-static char file_matches[] = "%s matches\n";
+static char file_equal[] = "%s equal\n";
+static char file_differs_verbose[] = "%s\\%s differs\n";
+static char file_equal_verbose[] = "%s\\%s equal\n";
+
+static char save_dir[_MAX_PATH];
 
 static int comp_files(char *file1,char *file2);
 
 int main(int argc,char **argv)
 {
   int curr_arg;
-  bool bVerbose;
+  int bEqual;
+  int bVerbose;
   int retval;
 
-  if ((argc != 3) && (argc != 4)) {
+  if ((argc < 3) || (argc > 5)) {
     printf(usage);
     return 1;
   }
 
-  bVerbose = false;
+  bEqual = FALSE;
+  bVerbose = FALSE;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmp(argv[curr_arg],"-verbose"))
-      bVerbose = true;
+    if (!strcmp(argv[curr_arg],"-equal"))
+      bEqual = TRUE;
+    else if (!strcmp(argv[curr_arg],"-verbose"))
+      bVerbose = TRUE;
     else
       break;
   }
@@ -43,12 +56,27 @@ int main(int argc,char **argv)
     return 2;
   }
 
+  if (bVerbose)
+    getcwd(save_dir,_MAX_PATH);
+
   retval = comp_files(argv[curr_arg],argv[curr_arg+1]);
 
-  if ((retval == 3) || (retval == 7))
-    printf(file_differs,argv[curr_arg+1]);
-  else if (bVerbose)
-    printf(file_matches,argv[curr_arg+1]);
+  if (!bEqual) {
+    if ((retval == 3) || (retval == 7)) {
+      if (!bVerbose)
+        printf(file_differs,argv[curr_arg+1]);
+      else
+        printf(file_differs_verbose,save_dir,argv[curr_arg+1]);
+    }
+  }
+  else {
+    if ((retval != 3) && (retval != 7)) {
+      if (!bVerbose)
+        printf(file_equal,argv[curr_arg+1]);
+      else
+        printf(file_equal_verbose,save_dir,argv[curr_arg+1]);
+    }
+  }
 
   return 0;
 }
