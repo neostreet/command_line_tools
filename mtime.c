@@ -57,14 +57,17 @@ int main(int argc,char **argv)
         cpt = ctime(&statbuf.st_mtime);
         cpt[strlen(cpt) - 1] = 0;
 
-        printf("%s %10d %s\n",cpt,
-          statbuf.st_size,filename);
+        printf("%s %10d ",cpt,
+          statbuf.st_size);
+        printf("%s\n",filename);
       }
       else
         printf("%08x %10d %s\n",
           statbuf.st_mtime,
           statbuf.st_size,filename);
     }
+    else
+      printf("couldn't get status of %s\n",filename);
 
     if (!bStdin) {
       n++;
