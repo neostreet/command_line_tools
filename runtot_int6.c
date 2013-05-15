@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #define MAX_STR_LEN 256
 
 static char usage[] = "runtot_int6 (-initial_balbal) (-verbose) filename\n";
@@ -11,7 +8,7 @@ static char usage[] = "runtot_int6 (-initial_balbal) (-verbose) filename\n";
 int main(int argc,char **argv)
 {
   int curr_arg;
-  int bVerbose;
+  bool bVerbose;
   FILE *fptr;
   int runtot;
   int work;
@@ -23,13 +20,13 @@ int main(int argc,char **argv)
   }
 
   runtot = 0;
-  bVerbose = FALSE;
+  bVerbose = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strncmp(argv[curr_arg],"-initial_bal",12))
       sscanf(&argv[curr_arg][12],"%d",&runtot);
     else if (!strcmp(argv[curr_arg],"-verbose"))
-      bVerbose = TRUE;
+      bVerbose = true;
     else
       break;
   }
