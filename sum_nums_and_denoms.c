@@ -75,8 +75,7 @@ int main(int argc,char **argv)
   work = (double)nums_total / (double)denoms_total;
 
   printf("%8.6lf ",work);
-  printf("(%d %d)",
-    nums_total,denoms_total);
+  printf("(%d %d)\n",nums_total,denoms_total);
 
   return 0;
 }
