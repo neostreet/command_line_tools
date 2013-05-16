@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FALSE 0
-#define TRUE 1
-
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
 
@@ -17,8 +14,8 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 int main(int argc,char **argv)
 {
   int curr_arg;
-  int bVerbose;
-  int bZeroIsLosing;
+  bool bVerbose;
+  bool bZeroIsLosing;
   int m;
   int n;
   FILE *fptr;
@@ -33,14 +30,14 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  bVerbose = FALSE;
-  bZeroIsLosing = FALSE;
+  bVerbose = false;
+  bZeroIsLosing = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
-      bVerbose = TRUE;
+      bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-zero_is_losing"))
-      bZeroIsLosing = TRUE;
+      bZeroIsLosing = true;
     else
       break;
   }
