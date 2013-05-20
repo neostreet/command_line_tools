@@ -44,6 +44,7 @@ int main(int argc,char **argv)
   int ix;
   int delta;
   int totals[3];
+  double work;
 
   if (argc != 2) {
     printf(usage);
@@ -103,11 +104,15 @@ int main(int argc,char **argv)
     totals[n] = 0;
 
   for (n = 0; n < hand_types.num_elems; n++) {
-    printf("%10d %10d %10d %5d %s\n",
+    work = (double)(work_elem->int2 + work_elem->int3) /
+      (double)work_elem->int1;
+
+    printf("%10d %10d %10d %5d %11.2lf   %s\n",
       work_elem->int2 + work_elem->int3,
       work_elem->int2,
       work_elem->int3,
       work_elem->int1,
+      work,
       work_elem->str);
     totals[0] += work_elem->int2;
     totals[1] += work_elem->int3;
@@ -117,9 +122,11 @@ int main(int argc,char **argv)
 
   free_info_list(&hand_types);
 
-  printf("\n%10d %10d %10d %5d\n",
+  work = (double)(totals[0] + totals[1]) / (double)totals[2];
+
+  printf("\n%10d %10d %10d %5d %11.2lf\n",
     totals[0] + totals[1],
-    totals[0],totals[1],totals[2]);
+    totals[0],totals[1],totals[2],work);
 
   return 0;
 }
