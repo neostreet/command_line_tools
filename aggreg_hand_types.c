@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   hand_types.num_elems = 0;
 
   for (n = 0; n < NUM_HAND_TYPES; n++)
-    add_info_list_elem(&hand_types,plain_hand_types[n],0,0,true);
+    add_info_list_elem(&hand_types,plain_hand_types[n],0,0,0,true);
 
   for ( ; ; ) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
@@ -79,11 +79,19 @@ int main(int argc,char **argv)
     if (member_of_info_list(&hand_types,hand_type,&ix)) {
       if (get_info_list_elem(&hand_types,ix,&work_elem)) {
         work_elem->int1++;
-        work_elem->int2 += delta;
+
+        if (delta > 0)
+          work_elem->int2 += delta;
+        else
+          work_elem->int3 += delta;
       }
     }
-    else
-      add_info_list_elem(&hand_types,hand_type,1,delta,true);
+    else {
+      if (delta > 0)
+        add_info_list_elem(&hand_types,hand_type,1,delta,0,true);
+      else
+        add_info_list_elem(&hand_types,hand_type,1,0,delta,true);
+    }
   }
 
   fclose(fptr);
@@ -91,8 +99,12 @@ int main(int argc,char **argv)
   work_elem = hand_types.first_elem;
 
   for (n = 0; n < hand_types.num_elems; n++) {
-    printf("%10d %5d %s\n",
-      work_elem->int2,work_elem->int1,work_elem->str);
+    printf("%10d %10d %10d %5d %s\n",
+      work_elem->int2 + work_elem->int3,
+      work_elem->int2,
+      work_elem->int3,
+      work_elem->int1,
+      work_elem->str);
     work_elem = work_elem->next_elem;
   }
 
