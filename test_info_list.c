@@ -1,11 +1,14 @@
 #include <stdio.h>
+#include <string.h>
 #include "str_list.h"
 
-static char usage[] = "usage: test_info_list str int int (str int int ...)\n";
+static char usage[] = "usage: test_info_list (-no_duplicates) str int int (str int int ...)\n";
 
 int main(int argc,char **argv)
 {
   int n;
+  int curr_arg;
+  bool bNoDuplicates;
   struct info_list list;
   struct info_list_elem *work_elem;
   int work1;
@@ -16,17 +19,26 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  if ((argc - 1) % 3) {
+  bNoDuplicates = false;
+
+  for (curr_arg = 1; curr_arg < argc; curr_arg++) {
+    if (!strcmp(argv[curr_arg],"-no_duplicates"))
+      bNoDuplicates = true;
+    else
+      break;
+  }
+
+  if ((argc - curr_arg) % 3) {
     printf(usage);
     return 2;
   }
 
   list.num_elems = 0;
 
-  for (n = 1; n < argc; n += 3) {
-    sscanf(argv[n+1],"%d",&work1);
-    sscanf(argv[n+2],"%d",&work2);
-    add_info_list_elem(&list,argv[n],work1,work2,true);
+  for ( ; curr_arg < argc; curr_arg += 3) {
+    sscanf(argv[curr_arg+1],"%d",&work1);
+    sscanf(argv[curr_arg+2],"%d",&work2);
+    add_info_list_elem(&list,argv[curr_arg],work1,work2,bNoDuplicates);
   }
 
   print_info_list(&list);
