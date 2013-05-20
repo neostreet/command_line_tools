@@ -13,6 +13,7 @@ int main(int argc,char **argv)
   struct info_list_elem *work_elem;
   int work1;
   int work2;
+  int ix;
 
   if (argc < 4) {
     printf(usage);
@@ -38,7 +39,15 @@ int main(int argc,char **argv)
   for ( ; curr_arg < argc; curr_arg += 3) {
     sscanf(argv[curr_arg+1],"%d",&work1);
     sscanf(argv[curr_arg+2],"%d",&work2);
-    add_info_list_elem(&list,argv[curr_arg],work1,work2,bNoDuplicates);
+
+    if (member_of_info_list(&list,argv[curr_arg],&ix)) {
+      if (get_info_list_elem(&list,ix,&work_elem)) {
+        work_elem->int1 += work1;
+        work_elem->int2 += work2;
+      }
+    }
+    else
+      add_info_list_elem(&list,argv[curr_arg],work1,work2,bNoDuplicates);
   }
 
   print_info_list(&list);
