@@ -43,6 +43,7 @@ int main(int argc,char **argv)
   struct info_list_elem *work_elem;
   int ix;
   int delta;
+  int totals[3];
 
   if (argc != 2) {
     printf(usage);
@@ -98,6 +99,9 @@ int main(int argc,char **argv)
 
   work_elem = hand_types.first_elem;
 
+  for (n = 0; n < 3; n++)
+    totals[n] = 0;
+
   for (n = 0; n < hand_types.num_elems; n++) {
     printf("%10d %10d %10d %5d %s\n",
       work_elem->int2 + work_elem->int3,
@@ -105,10 +109,17 @@ int main(int argc,char **argv)
       work_elem->int3,
       work_elem->int1,
       work_elem->str);
+    totals[0] += work_elem->int2;
+    totals[1] += work_elem->int3;
+    totals[2] += work_elem->int1;
     work_elem = work_elem->next_elem;
   }
 
   free_info_list(&hand_types);
+
+  printf("\n%10d %10d %10d %5d\n",
+    totals[0] + totals[1],
+    totals[0],totals[1],totals[2]);
 
   return 0;
 }
