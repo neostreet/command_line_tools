@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define FALSE 0
-#define TRUE  1
-
 #define MAX_STR_LEN 256
 
 static char usage[] =
@@ -12,10 +9,10 @@ static char usage[] =
 int main(int argc,char **argv)
 {
   int curr_arg;
-  int bVerbose;
-  int bTerse;
-  int bStarBlue;
-  int bNoRuntot;
+  bool bVerbose;
+  bool bTerse;
+  bool bStarBlue;
+  bool bNoRuntot;
   FILE *fptr;
   int runtot;
   int max;
@@ -30,10 +27,10 @@ int main(int argc,char **argv)
 
   runtot = 0;
   max = 0;
-  bVerbose = FALSE;
-  bTerse = FALSE;
-  bStarBlue = FALSE;
-  bNoRuntot = FALSE;
+  bVerbose = false;
+  bTerse = false;
+  bStarBlue = false;
+  bNoRuntot = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strncmp(argv[curr_arg],"-initial_bal",12)) {
@@ -41,13 +38,13 @@ int main(int argc,char **argv)
       max = runtot;
     }
     else if (!strcmp(argv[curr_arg],"-verbose"))
-      bVerbose = TRUE;
+      bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-terse"))
-      bTerse = TRUE;
+      bTerse = true;
     else if (!strcmp(argv[curr_arg],"-star_blue"))
-      bStarBlue = TRUE;
+      bStarBlue = true;
     else if (!strcmp(argv[curr_arg],"-no_runtot"))
-      bNoRuntot = TRUE;
+      bNoRuntot = true;
     else
       break;
   }

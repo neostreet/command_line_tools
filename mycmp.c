@@ -12,9 +12,6 @@
 #include <unistd.h>
 #endif
 
-#define FALSE 0
-#define TRUE  1
-
 static char usage[] = "usage: mycmp (-equal) (-verbose) file1 file2\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char couldnt_get_status[] = "couldn't get status of %s\n";
@@ -30,8 +27,8 @@ static int comp_files(char *file1,char *file2);
 int main(int argc,char **argv)
 {
   int curr_arg;
-  int bEqual;
-  int bVerbose;
+  bool bEqual;
+  bool bVerbose;
   int retval;
 
   if ((argc < 3) || (argc > 5)) {
@@ -39,14 +36,14 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  bEqual = FALSE;
-  bVerbose = FALSE;
+  bEqual = false;
+  bVerbose = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-equal"))
-      bEqual = TRUE;
+      bEqual = true;
     else if (!strcmp(argv[curr_arg],"-verbose"))
-      bVerbose = TRUE;
+      bVerbose = true;
     else
       break;
   }
