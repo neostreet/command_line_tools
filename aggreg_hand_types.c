@@ -7,7 +7,7 @@ static char line[MAX_LINE_LEN];
 #define MAX_HAND_TYPE_LEN 15
 static char hand_type[MAX_HAND_TYPE_LEN+1];
 
-static char usage[] = "usage: aggregate_hand_types filename\n";
+static char usage[] = "usage: aggregate_hand_types offset filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static char *plain_hand_types[] = {
@@ -28,6 +28,7 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 static int get_hand_type_and_delta(
   char *line,
   int line_len,
+  int offset,
   char *hand_type,
   int max_hand_type_len,
   int *delta_ptr);
@@ -35,6 +36,7 @@ static int get_hand_type_and_delta(
 int main(int argc,char **argv)
 {
   int n;
+  int offset;
   FILE *fptr;
   int line_len;
   int line_no;
@@ -46,13 +48,15 @@ int main(int argc,char **argv)
   int totals[3];
   double work;
 
-  if (argc != 2) {
+  if (argc != 3) {
     printf(usage);
     return 1;
   }
 
-  if ((fptr = fopen(argv[1],"r")) == NULL) {
-    printf(couldnt_open,argv[1]);
+  sscanf(argv[1],"%d",&offset);
+
+  if ((fptr = fopen(argv[2],"r")) == NULL) {
+    printf(couldnt_open,argv[2]);
     return 2;
   }
 
@@ -70,7 +74,7 @@ int main(int argc,char **argv)
 
     line_no++;
 
-    retval = get_hand_type_and_delta(line,line_len,hand_type,MAX_HAND_TYPE_LEN,
+    retval = get_hand_type_and_delta(line,line_len,offset,hand_type,MAX_HAND_TYPE_LEN,
       &delta);
 
     if (retval) {
@@ -158,6 +162,7 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
 static int get_hand_type_and_delta(
   char *line,
   int line_len,
+  int offset,
   char *hand_type,
   int max_hand_type_len,
   int *delta_ptr)
@@ -166,7 +171,7 @@ static int get_hand_type_and_delta(
   int n;
   char delta_str[11];
 
-  for (m = 0, n = 17; ((n < 17 + max_hand_type_len) && (n < line_len - 1)); n++) {
+  for (m = 0, n = offset; ((n < offset + max_hand_type_len) && (n < line_len - 1)); n++) {
     if ((line[n] == 'c') && (line[n+1] == ':'))
       break;
 
