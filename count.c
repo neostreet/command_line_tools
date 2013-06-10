@@ -4,14 +4,11 @@
 #define MAX_LINE_LEN 2048
 char line[MAX_LINE_LEN];
 
-static char usage[] = "usage: count (-c) string filename (filename ...)\n";
+static char usage[] =
+"usage: count (-c) (-by_line) string filename (filename ...)\n";
 static char fmt_str[] = "%s: %d\n";
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
-
-#ifndef WIN32
-#define strcmpi strcmp
-#endif
 
 int main(int argc,char **argv)
 {
@@ -24,20 +21,25 @@ int main(int argc,char **argv)
   int tries;
   int m;
   int n;
-  int case_sens;
-  int bStdin;
+  bool bCaseSens;
+  bool bByLine;
+  bool bStdin;
   int curr_arg;
   int count;
   int tcount;
+  int line_count;
   int string_arg;
-  int bMultiple;
+  bool bMultiple;
 
-  case_sens = 0;
-  bStdin = 0;
+  bCaseSens = false;
+  bByLine = false;
+  bStdin = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-c"))
-      case_sens = 1;
+      bCaseSens = true;
+    else if (!strcmp(argv[curr_arg],"-by_line"))
+      bByLine = true;
     else
       break;
   }
@@ -50,7 +52,7 @@ int main(int argc,char **argv)
   string_arg = curr_arg;
 
   for (offset = 0; (chara = argv[curr_arg][offset]); offset++) {
-    if (!case_sens) {
+    if (!bCaseSens) {
       if ((chara >= 'A') && (chara <= 'Z'))
         argv[curr_arg][offset] = (char)(chara - 'A' + 'a');
     }
@@ -59,7 +61,7 @@ int main(int argc,char **argv)
   searchlen = offset;
 
   if (argc - curr_arg == 1)
-    bStdin = 1;
+    bStdin = true;
   else {
     curr_arg++;
 
@@ -91,7 +93,7 @@ int main(int argc,char **argv)
     GetLine(fptr,line,&linelen,MAX_LINE_LEN);
 
     if (feof(fptr)) {
-      if (count) {
+      if (!bByLine && count) {
         if (!bStdin) {
           if (bMultiple)
             printf(fmt_str,argv[curr_arg],count);
@@ -111,13 +113,16 @@ int main(int argc,char **argv)
     }
 
     if (linelen >= searchlen) {
+      if (bByLine)
+        line_count = 0;
+
       tries = linelen - searchlen + 1;
 
       for (m = 0; m < tries; m++) {
         for (n = 0; n < searchlen; n++) {
           chara = line[m+n];
 
-          if (!case_sens)
+          if (!bCaseSens)
             if ((chara >= 'A') && (chara <= 'Z'))
               chara -= 'A' - 'a';
 
@@ -125,9 +130,16 @@ int main(int argc,char **argv)
             break;
         }
 
-        if (n == searchlen)
-          count++;
+        if (n == searchlen) {
+          if (!bByLine)
+            count++;
+          else
+            line_count++;
+        }
       }
+
+      if (bByLine && line_count)
+        printf("%5d: %5d\n",line_no,line_count);
     }
   }
 
@@ -142,7 +154,7 @@ int main(int argc,char **argv)
 
   }
 
-  if ((argc - case_sens > 3) && (tcount))
+  if ((argc - bCaseSens > 3) && (tcount))
     printf("\n%4d\n",tcount);
 
   return 0;
