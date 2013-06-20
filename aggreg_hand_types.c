@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   struct info_list_elem *work_elem;
   int ix;
   int delta;
-  int totals[3];
+  int totals[4];
   double work;
 
   if (argc != 3) {
@@ -64,7 +64,7 @@ int main(int argc,char **argv)
   hand_types.num_elems = 0;
 
   for (n = 0; n < NUM_HAND_TYPES; n++)
-    add_info_list_elem(&hand_types,plain_hand_types[n],0,0,0,true);
+    add_info_list_elem(&hand_types,plain_hand_types[n],0,0,0,0,true);
 
   for ( ; ; ) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
@@ -84,19 +84,21 @@ int main(int argc,char **argv)
 
     if (member_of_info_list(&hand_types,hand_type,&ix)) {
       if (get_info_list_elem(&hand_types,ix,&work_elem)) {
-        work_elem->int1++;
-
-        if (delta > 0)
-          work_elem->int2 += delta;
-        else
+        if (delta > 0) {
+          work_elem->int1++;
           work_elem->int3 += delta;
+        }
+        else {
+          work_elem->int2++;
+          work_elem->int4 += delta;
+        }
       }
     }
     else {
       if (delta > 0)
-        add_info_list_elem(&hand_types,hand_type,1,delta,0,true);
+        add_info_list_elem(&hand_types,hand_type,1,0,delta,0,true);
       else
-        add_info_list_elem(&hand_types,hand_type,1,0,delta,true);
+        add_info_list_elem(&hand_types,hand_type,0,1,0,delta,true);
     }
   }
 
@@ -104,33 +106,37 @@ int main(int argc,char **argv)
 
   work_elem = hand_types.first_elem;
 
-  for (n = 0; n < 3; n++)
+  for (n = 0; n < 4; n++)
     totals[n] = 0;
 
   for (n = 0; n < hand_types.num_elems; n++) {
-    work = (double)(work_elem->int2 + work_elem->int3) /
-      (double)work_elem->int1;
+    work = (double)(work_elem->int3 + work_elem->int4) /
+      (double)(work_elem->int1 + work_elem->int2);
 
-    printf("%10d %10d %10d %5d %11.2lf   %s\n",
-      work_elem->int2 + work_elem->int3,
-      work_elem->int2,
+    printf("%10d %10d %10d %5d %5d %5d %11.2lf   %s\n",
+      work_elem->int3 + work_elem->int4,
       work_elem->int3,
+      work_elem->int4,
+      work_elem->int1 + work_elem->int2,
       work_elem->int1,
+      work_elem->int2,
       work,
       work_elem->str);
-    totals[0] += work_elem->int2;
-    totals[1] += work_elem->int3;
+    totals[0] += work_elem->int3;
+    totals[1] += work_elem->int4;
     totals[2] += work_elem->int1;
+    totals[3] += work_elem->int2;
     work_elem = work_elem->next_elem;
   }
 
   free_info_list(&hand_types);
 
-  work = (double)(totals[0] + totals[1]) / (double)totals[2];
+  work = (double)(totals[0] + totals[1]) /
+    (double)(totals[2] + totals[3]);
 
-  printf("\n%10d %10d %10d %5d %11.2lf\n",
+  printf("\n%10d %10d %10d %5d %5d %5d %11.2lf\n",
     totals[0] + totals[1],
-    totals[0],totals[1],totals[2],work);
+    totals[0],totals[1],totals[2] + totals[3],totals[2],totals[3],work);
 
   return 0;
 }

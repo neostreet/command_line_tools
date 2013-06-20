@@ -43,7 +43,7 @@ bool add_str_list_elem(struct str_list *str_list,char *str,
 }
 
 bool add_info_list_elem(struct info_list *info_list,char *str,
-  int int1,int int2,int int3,int bNoDuplicates)
+  int int1,int int2,int int3,int int4,int bNoDuplicates)
 {
   int ix;
   int size;
@@ -66,6 +66,7 @@ bool add_info_list_elem(struct info_list *info_list,char *str,
   work_elem->int1 = int1;
   work_elem->int2 = int2;
   work_elem->int3 = int3;
+  work_elem->int4 = int4;
   work_elem->next_elem = NULL;
 
   if (!info_list->num_elems) {

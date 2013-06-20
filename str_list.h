@@ -18,6 +18,7 @@ struct info_list_elem {
   int int1;
   int int2;
   int int3;
+  int int4;
   struct info_list_elem *next_elem;
   struct info_list_elem *prev_elem;
 };
@@ -47,7 +48,7 @@ struct info2_list {
 bool add_str_list_elem(struct str_list *str_list,char *str,
   int bNoDuplicates);
 bool add_info_list_elem(struct info_list *info_list,char *str,
-  int int1,int int2,int int3,int bNoDuplicates);
+  int int1,int int2,int int3,int int4,int bNoDuplicates);
 bool add_info2_list_elem(struct info2_list *info2_list,char *str,
   int int1,int int2,int int3,void *void_ptr);
 int get_str_list_elem(struct str_list *str_list,int ix,
