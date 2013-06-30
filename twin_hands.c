@@ -6,7 +6,7 @@ static char line[MAX_LINE_LEN];
 static char prev_line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: twin_hands (-line_no) (-first_only) (-second_only) filename\n";
+"usage: twin_hands (-line_no) (-first_only) (-second_only) offset len filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -17,11 +17,13 @@ int main(int argc,char **argv)
   bool bLineNo;
   bool bFirstOnly;
   bool bSecondOnly;
+  int offset;
+  int len;
   FILE *fptr;
   int line_len;
   int line_no;
 
-  if ((argc < 2) || (argc > 5)) {
+  if ((argc < 4) || (argc > 7)) {
     printf(usage);
     return 1;
   }
@@ -41,7 +43,7 @@ int main(int argc,char **argv)
       break;
   }
 
-  if (argc - curr_arg != 1) {
+  if (argc - curr_arg != 3) {
     printf(usage);
     return 2;
   }
@@ -51,8 +53,11 @@ int main(int argc,char **argv)
     return 3;
   }
 
-  if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
-    printf(couldnt_open,argv[curr_arg]);
+  sscanf(argv[curr_arg],"%d",&offset);
+  sscanf(argv[curr_arg+1],"%d",&len);
+
+  if ((fptr = fopen(argv[curr_arg+2],"r")) == NULL) {
+    printf(couldnt_open,argv[curr_arg+2]);
     return 4;
   }
 
@@ -67,7 +72,7 @@ int main(int argc,char **argv)
     line_no++;
 
     if (line_no > 1) {
-      if (!strncmp(prev_line,line,5)) {
+      if (!strncmp(&prev_line[offset],&line[offset],len)) {
         if (!bLineNo) {
           if (bFirstOnly)
             printf("%s\n",prev_line);
