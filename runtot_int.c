@@ -5,7 +5,7 @@
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"runtot (-initial_balbal) (-verbose) (-start_bal) (-offsetoffset) filename\n";
+"usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-offsetoffset) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 

@@ -4,7 +4,7 @@
 #define MAX_STR_LEN 256
 
 static char usage[] =
-"runtot_int3 (-initial_balbal) (-verbose) (-terse) (-star_blue) (-no_runtot) filename\n";
+"usage: runtot_int3 (-initial_balbal) (-verbose) (-terse) (-star_blue) (-no_runtot) filename\n";
 
 int main(int argc,char **argv)
 {
