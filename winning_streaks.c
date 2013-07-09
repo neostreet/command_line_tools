@@ -24,6 +24,7 @@ int main(int argc,char **argv)
   int *deltas;
   int max_winning_streak;
   int max_winning_streak_start;
+  int num_positive_deltas;
 
   if ((argc < 2) || (argc > 4)) {
     printf(usage);
@@ -91,8 +92,13 @@ int main(int argc,char **argv)
   }
 
   max_winning_streak = 0;
+  max_winning_streak_start = -1;
+  num_positive_deltas = 0;
 
   for (n = 0; n < num_deltas - 1; n++) {
+    if (deltas[n] > 0)
+      num_positive_deltas++;
+
     if ((deltas[n] > 0) && (deltas[n + 1] > 0)) {
       for (m = n + 2; m < num_deltas; m++) {
         if (deltas[m] <= 0)
@@ -115,6 +121,9 @@ int main(int argc,char **argv)
   }
 
   free(deltas);
+
+  if (num_positive_deltas && !max_winning_streak)
+    max_winning_streak = 1;
 
   if (!bVerbose) {
     if (!bDebug)
