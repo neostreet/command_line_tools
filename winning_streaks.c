@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   int n;
   FILE *fptr;
   int line_len;
-  int num_sessions;
+  int num_deltas;
   int *deltas;
   int max_winning_streak;
   int max_winning_streak_start;
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
     return 3;
   }
 
-  num_sessions = 0;
+  num_deltas = 0;
 
   for ( ; ; ) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
@@ -60,19 +60,19 @@ int main(int argc,char **argv)
     if (feof(fptr))
       break;
 
-    num_sessions++;
+    num_deltas++;
   }
 
   if ((deltas = (int *)malloc(
-    num_sessions * sizeof (int))) == NULL) {
-    printf(malloc_failed,num_sessions);
+    num_deltas * sizeof (int))) == NULL) {
+    printf(malloc_failed,num_deltas);
     fclose(fptr);
     return 4;
   }
 
   fseek(fptr,0L,SEEK_SET);
 
-  for (n = 0; n < num_sessions; n++) {
+  for (n = 0; n < num_deltas; n++) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
 
     if (feof(fptr))
@@ -83,11 +83,18 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
+  if (bDebug && bVerbose) {
+    for (n = 0; n < num_deltas; n++)
+      printf("%d\n",deltas[n]);
+
+    printf("---------------------\n");
+  }
+
   max_winning_streak = 0;
 
-  for (n = 0; n < num_sessions - 1; n++) {
+  for (n = 0; n < num_deltas - 1; n++) {
     if ((deltas[n] > 0) && (deltas[n + 1] > 0)) {
-      for (m = n + 2; m < num_sessions; m++) {
+      for (m = n + 2; m < num_deltas; m++) {
         if (deltas[m] <= 0)
           break;
       }
@@ -100,7 +107,7 @@ int main(int argc,char **argv)
         max_winning_streak_start = n;
       }
 
-      if (m >= num_sessions - 1)
+      if (m >= num_deltas - 1)
         break;
       else
         n = m - 1;
