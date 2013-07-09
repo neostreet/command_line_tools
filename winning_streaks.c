@@ -5,7 +5,7 @@
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
 
-static char usage[] = "usage: winning_streaks (-verbose) filename\n";
+static char usage[] = "usage: winning_streaks (-debug) (-verbose) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char malloc_failed[] = "malloc of %d ints failed\n";
 
@@ -14,6 +14,7 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 int main(int argc,char **argv)
 {
   int curr_arg;
+  bool bDebug;
   bool bVerbose;
   int m;
   int n;
@@ -24,15 +25,18 @@ int main(int argc,char **argv)
   int max_winning_streak;
   int max_winning_streak_start;
 
-  if ((argc < 2) || (argc > 3)) {
+  if ((argc < 2) || (argc > 4)) {
     printf(usage);
     return 1;
   }
 
+  bDebug = false;
   bVerbose = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmp(argv[curr_arg],"-verbose"))
+    if (!strcmp(argv[curr_arg],"-debug"))
+      bDebug = true;
+    else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
     else
       break;
@@ -84,12 +88,11 @@ int main(int argc,char **argv)
   for (n = 0; n < num_sessions - 1; n++) {
     if ((deltas[n] > 0) && (deltas[n + 1] > 0)) {
       for (m = n + 2; m < num_sessions; m++) {
-        if (deltas[m] < 0)
+        if (deltas[m] <= 0)
           break;
       }
-      if (!bVerbose)
-        printf("%3d %3d\n",n,m-1);
-      else
+
+      if (bVerbose)
         printf("%3d %3d (%2d)\n",n,m-1,m-n);
 
       if (m - n > max_winning_streak) {
@@ -106,7 +109,13 @@ int main(int argc,char **argv)
 
   free(deltas);
 
-  if (bVerbose) {
+  if (!bVerbose) {
+    if (!bDebug)
+      printf("%d\n",max_winning_streak);
+    else
+      printf("%d %s\n",max_winning_streak,argv[curr_arg]);
+  }
+  else {
     printf("\nmax_winning_streak = %2d (%3d)\n",
       max_winning_streak,max_winning_streak_start);
   }
