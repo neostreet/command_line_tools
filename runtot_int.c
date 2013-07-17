@@ -30,6 +30,7 @@ int main(int argc,char **argv)
     return 1;
   }
 
+  runtot = 0;
   bVerbose = false;
   bStartBal = false;
   bGainLoss = false;
@@ -59,8 +60,6 @@ int main(int argc,char **argv)
     printf("couldn't open %s\n",argv[curr_arg]);
     return 3;
   }
-
-  runtot = 0;
 
   if (bGainLoss) {
     runtot_gain = 0;
