@@ -1,11 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <string.h>
 #include <time.h>
+#include <ctype.h>
+
+#define MONTH_IX 0
+#define DAY_IX   1
+#define YEAR_IX  2
 
 static char usage[] = "usage: dateadd date days\n";
+
+static char *months[] = {
+  "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+  "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
+};
+#define NUM_MONTHS (sizeof months / sizeof (char *))
 
 #define SECS_PER_MIN  60
 #define MINS_PER_HOUR 60
@@ -25,11 +36,14 @@ static struct digit_range date_checks[3] = {
   80, 2095   /* year */
 };
 
+static int get_today(time_t *today_ptr);
+static int get_month(char *month_str,int *month_ptr);
 static time_t cvt_date(char *date_str);
 
 int main(int argc,char **argv)
 {
   int retval;
+  time_t today;
   time_t date1;
   int days;
 
@@ -38,11 +52,21 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  date1 = cvt_date(argv[1]);
+  retval = get_today(&today);
+
+  if (retval) {
+    printf("get_today() failed: %d\n",retval);
+    return 2;
+  }
+
+  if (!strcmp(argv[1],"today"))
+    date1 = today;
+  else
+    date1 = cvt_date(argv[1]);
 
   if (date1 == -1L) {
     printf("%s: invalid date\n",argv[1]);
-    return 2;
+    return 3;
   }
 
   sscanf(argv[2],"%d",&days);
@@ -51,6 +75,73 @@ int main(int argc,char **argv)
 
   printf("%s",ctime(&date1));
 
+  return 0;
+}
+
+static int get_today(time_t *today_ptr)
+{
+  int n;
+  time_t now;
+  char *cpt;
+  int retval;
+  int month;
+  char today_buf[11];
+  time_t today;
+
+  time(&now);
+  cpt = ctime(&now);
+
+  retval = get_month(&cpt[4],&month);
+
+  if (retval)
+    return 1;
+
+  sprintf(today_buf,"%02d-",month);
+
+  for (n = 0; n < 2; n++)
+    today_buf[3+n] = cpt[8+n];
+
+  if (today_buf[3] == ' ')
+    today_buf[3] = '0';
+
+  today_buf[5] = '-';
+
+  for (n = 0; n < 4; n++)
+    today_buf[6+n] = cpt[20+n];
+
+  today_buf[10] = 0;
+
+  today = cvt_date(today_buf);
+
+  if (today == -1L)
+    return 2;
+
+  *today_ptr = today;
+
+  return 0;
+}
+
+static int get_month(char *month_str,int *month_ptr)
+{
+  int n;
+  int month;
+
+  *month_ptr = 0;
+
+  for (month = 0; month < NUM_MONTHS; month++) {
+    for (n = 0; n < 3; n++) {
+      if (toupper(month_str[n]) != months[month][n])
+        break;
+    }
+
+    if (n == 3)
+      break;
+  }
+
+  if (month == NUM_MONTHS)
+    return 1;
+
+  *month_ptr = month + 1;
   return 0;
 }
 
@@ -98,15 +189,15 @@ static time_t cvt_date(char *date_str)
       return -1L;
   }
 
-  if (digits[2] >= 100)
-    if (digits[2] < 1970)
+  if (digits[YEAR_IX] >= 100)
+    if (digits[YEAR_IX] < 1970)
       return -1L;
     else
-      digits[2] -= 1900;
+      digits[YEAR_IX] -= 1900;
 
-  tim.tm_mon = digits[0] - 1;
-  tim.tm_mday = digits[1];
-  tim.tm_year = digits[2];
+  tim.tm_mon = digits[MONTH_IX] - 1;
+  tim.tm_mday = digits[DAY_IX];
+  tim.tm_year = digits[YEAR_IX];
 
   tim.tm_hour = 0;
   tim.tm_min = 0;
