@@ -6,7 +6,11 @@
 #include <time.h>
 #include <ctype.h>
 
-static char usage[] = "usage: datediff (-years) date date\n";
+#define MONTH_IX 0
+#define DAY_IX   1
+#define YEAR_IX  2
+
+static char usage[] = "usage: datediff (-debug) (-years) date date\n";
 
 static char *months[] = {
   "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
@@ -39,6 +43,7 @@ static time_t cvt_date(char *date_str);
 int main(int argc,char **argv)
 {
   int curr_arg;
+  bool bDebug;
   bool bYears;
   int retval;
   time_t today;
@@ -46,16 +51,20 @@ int main(int argc,char **argv)
   time_t date2;
   time_t datediff;
   double years;
+  char *cpt;
 
   if ((argc != 3) && (argc != 4)) {
     printf(usage);
     return 1;
   }
 
+  bDebug = false;
   bYears = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmp(argv[curr_arg],"-years"))
+    if (!strcmp(argv[curr_arg],"-debug"))
+      bDebug = true;
+    else if (!strcmp(argv[curr_arg],"-years"))
       bYears = true;
     else
       break;
@@ -91,6 +100,15 @@ int main(int argc,char **argv)
   if (date2 == -1L) {
     printf("%s: invalid date\n",argv[curr_arg+1]);
     return 5;
+  }
+
+  if (bDebug) {
+    cpt = ctime(&date1);
+    cpt[strlen(cpt)-1] = 0;
+    printf("date1: %s\n",cpt);
+    cpt = ctime(&date2);
+    cpt[strlen(cpt)-1] = 0;
+    printf("date2: %s\n",cpt);
   }
 
   if (date1 > date2)
@@ -221,15 +239,15 @@ static time_t cvt_date(char *date_str)
       return -1L;
   }
 
-  if (digits[2] >= 100)
-    if (digits[2] < 1970)
+  if (digits[YEAR_IX] >= 100)
+    if (digits[YEAR_IX] < 1970)
       return -1L;
     else
-      digits[2] -= 1900;
+      digits[YEAR_IX] -= 1900;
 
-  tim.tm_mon = digits[0] - 1;
-  tim.tm_mday = digits[1];
-  tim.tm_year = digits[2];
+  tim.tm_mon = digits[MONTH_IX] - 1;
+  tim.tm_mday = digits[DAY_IX];
+  tim.tm_year = digits[YEAR_IX];
 
   tim.tm_hour = 0;
   tim.tm_min = 0;
