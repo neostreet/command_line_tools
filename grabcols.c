@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define TAB 0x09
@@ -12,7 +13,7 @@ char line[MAX_LINE_LEN];
 #define MAX_COL_LEN 1024
 char column[MAX_COL_LEN];
 
-static char usage[] = "usage: grabcol delim col filename\n";
+static char usage[] = "usage: grabcols delim col (col ...) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -21,14 +22,16 @@ int grab_col(char *line,int line_len,int line_no,int delim,int col,
 
 int main(int argc,char **argv)
 {
+  int n;
   int delim;
-  int col;
+  int num_cols;
+  int *cols;
   FILE *fptr;
   int linelen;
   int line_no;
   int retval;
 
-  if (argc != 4) {
+  if (argc < 4) {
     printf(usage);
     return 1;
   }
@@ -38,16 +41,28 @@ int main(int argc,char **argv)
   else
     delim = argv[1][0];
 
-  sscanf(argv[2],"%d",&col);
+  num_cols = argc - 3;
 
-  if (col < 1) {
-    printf("col must be >= 1\n");
+  cols = (int *)malloc(num_cols * sizeof (int));
+
+  if (cols == NULL) {
+    printf("couldn't malloc %d ints\n",num_cols);
     return 2;
   }
 
-  if ((fptr = fopen(argv[3],"r")) == NULL) {
-    printf(couldnt_open,argv[3]);
-    return 3;
+  for (n = 0; n < num_cols; n++) {
+    sscanf(argv[2+n],"%d",&cols[n]);
+
+    if (cols[n] < 1) {
+      printf("col must be >= 1\n");
+      return 3;
+    }
+  }
+
+  if ((fptr = fopen(argv[argc-1],"r")) == NULL) {
+    printf(couldnt_open,argv[argc-1]);
+    free(cols);
+    return 4;
   }
 
   line_no = 0;
@@ -60,15 +75,25 @@ int main(int argc,char **argv)
 
     line_no++;
 
-    retval = grab_col(line,linelen,line_no,delim,col,column,MAX_COL_LEN);
+    for (n = 0; n < num_cols; n++) {
+      retval = grab_col(line,linelen,line_no,delim,cols[n],column,MAX_COL_LEN);
 
-    if (retval)
-      printf("grab_col() failed on line %d: %d\n",line_no,retval);
-    else
-      printf("%s\n",column);
+      if (retval)
+        printf("grab_col() failed on line %d: %d\n",line_no,retval);
+      else {
+        printf("%s",column);
+
+        if (n < num_cols - 1)
+          putchar(',');
+        else
+          putchar(0x0a);
+      }
+    }
   }
 
   fclose(fptr);
+
+  free(cols);
 
   return 0;
 }
