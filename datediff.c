@@ -10,7 +10,7 @@
 #define DAY_IX   1
 #define YEAR_IX  2
 
-static char usage[] = "usage: datediff (-debug) (-years) date date\n";
+static char usage[] = "usage: datediff (-debug) (-weeks) (-years) date date\n";
 
 static char *months[] = {
   "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
@@ -44,26 +44,30 @@ int main(int argc,char **argv)
 {
   int curr_arg;
   bool bDebug;
+  bool bWeeks;
   bool bYears;
   int retval;
   time_t today;
   time_t date1;
   time_t date2;
   time_t datediff;
-  double years;
+  double dwork;
   char *cpt;
 
-  if ((argc != 3) && (argc != 4)) {
+  if ((argc < 3) || (argc > 6)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
+  bWeeks = false;
   bYears = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
+    else if (!strcmp(argv[curr_arg],"-weeks"))
+      bWeeks = true;
     else if (!strcmp(argv[curr_arg],"-years"))
       bYears = true;
     else
@@ -75,11 +79,16 @@ int main(int argc,char **argv)
     return 2;
   }
 
+  if (bWeeks && bYears) {
+    printf("can't specify both -weeks and -years\n");
+    return 3;
+  }
+
   retval = get_today(&today);
 
   if (retval) {
     printf("get_today() failed: %d\n",retval);
-    return 3;
+    return 4;
   }
 
   if (!strcmp(argv[curr_arg],"today"))
@@ -89,7 +98,7 @@ int main(int argc,char **argv)
 
   if (date1 == -1L) {
     printf("%s: invalid date\n",argv[curr_arg]);
-    return 4;
+    return 5;
   }
 
   if (!strcmp(argv[curr_arg+1],"today"))
@@ -99,7 +108,7 @@ int main(int argc,char **argv)
 
   if (date2 == -1L) {
     printf("%s: invalid date\n",argv[curr_arg+1]);
-    return 5;
+    return 6;
   }
 
   if (bDebug) {
@@ -118,11 +127,17 @@ int main(int argc,char **argv)
 
   datediff /= (SECS_PER_DAY);
 
-  if (!bYears)
-    printf("%d days\n",datediff);
+  if (!bWeeks) {
+    if (!bYears)
+      printf("%d days\n",datediff);
+    else {
+      dwork = (double)datediff / 365.25;
+      printf("%lf years\n",dwork);
+    }
+  }
   else {
-    years = (double)datediff / 365.25;
-    printf("%lf years\n",years);
+    dwork = (double)datediff / (double)7;
+    printf("%lf weeks\n",dwork);
   }
 
   return 0;
