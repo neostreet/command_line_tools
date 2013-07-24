@@ -10,7 +10,7 @@
 #define DAY_IX   1
 #define YEAR_IX  2
 
-static char usage[] = "usage: dateadd date days\n";
+static char usage[] = "usage: dateadd (-weeks) date days\n";
 
 static char *months[] = {
   "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
@@ -42,34 +42,53 @@ static time_t cvt_date(char *date_str);
 
 int main(int argc,char **argv)
 {
+  int curr_arg;
+  bool bWeeks;
   int retval;
   time_t today;
   time_t date1;
   int days;
 
-  if (argc != 3) {
+  if ((argc < 3) || (argc > 4)) {
     printf(usage);
     return 1;
+  }
+
+  bWeeks = false;
+
+  for (curr_arg = 1; curr_arg < argc; curr_arg++) {
+    if (!strcmp(argv[curr_arg],"-weeks"))
+      bWeeks = true;
+    else
+      break;
+  }
+
+  if (argc - curr_arg != 2) {
+    printf(usage);
+    return 2;
   }
 
   retval = get_today(&today);
 
   if (retval) {
     printf("get_today() failed: %d\n",retval);
-    return 2;
-  }
-
-  if (!strcmp(argv[1],"today"))
-    date1 = today;
-  else
-    date1 = cvt_date(argv[1]);
-
-  if (date1 == -1L) {
-    printf("%s: invalid date\n",argv[1]);
     return 3;
   }
 
-  sscanf(argv[2],"%d",&days);
+  if (!strcmp(argv[curr_arg],"today"))
+    date1 = today;
+  else
+    date1 = cvt_date(argv[curr_arg]);
+
+  if (date1 == -1L) {
+    printf("%s: invalid date\n",argv[curr_arg]);
+    return 4;
+  }
+
+  sscanf(argv[curr_arg+1],"%d",&days);
+
+  if (bWeeks)
+    days *= 7;
 
   date1 += days * SECS_PER_DAY;
 
