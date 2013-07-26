@@ -4,19 +4,23 @@
 #define MAX_LINE_LEN 8192
 static char line[MAX_LINE_LEN];
 
-static char usage[] = "usage: llens (-verbose) filename (filename ...)\n";
+static char usage[] =
+"usage: llens (-verbose) (-skip_spaces) filename (filename ...)\n";
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
 int main(int argc,char **argv)
 {
+  int n;
   int curr_arg;
   bool bVerbose;
+  bool bSkipSpaces;
   FILE *fptr;
   int linelen;
   int line_no;
   int num_files;
   int first_file_ix;
   int len;
+  int space_count;
 
   if (argc < 2) {
     printf(usage);
@@ -24,10 +28,13 @@ int main(int argc,char **argv)
   }
 
   bVerbose = false;
+  bSkipSpaces = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
+    else if (!strcmp(argv[curr_arg],"-skip_spaces"))
+      bSkipSpaces = true;
     else
       break;
   }
@@ -67,10 +74,19 @@ int main(int argc,char **argv)
 
       line_no++;
 
+      space_count = 0;
+
+      if (bSkipSpaces) {
+        for (n = 0; n < linelen; n++) {
+          if (line[n] == ' ')
+            space_count++;
+        }
+      }
+
       if (!bVerbose)
-        printf("%d\n",linelen);
+        printf("%d\n",linelen - space_count);
       else
-        printf("%3d %s\n",linelen,line);
+        printf("%3d %s\n",linelen - space_count,line);
     }
 
     fclose(fptr);
