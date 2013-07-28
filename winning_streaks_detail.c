@@ -77,6 +77,7 @@ int main(int argc,char **argv)
   FILE *fptr;
   int line_len;
   int num_sessions;
+  int num_winning_streak_sessions;
   int winning_streak_amount;
   int winning_streak_end_ix;
   int num_streaks;
@@ -176,12 +177,15 @@ int main(int argc,char **argv)
     }
 
     if (winning_streak_end_ix > m) {
-      session_info[m].num_winning_streak_sessions = winning_streak_end_ix - m + 1;
+      num_winning_streak_sessions = winning_streak_end_ix - m + 1;
+      session_info[m].num_winning_streak_sessions = num_winning_streak_sessions;
       session_info[m].winning_streak_amount = winning_streak_amount;
       session_info[m].avg_amount_gained =
         (double)session_info[m].winning_streak_amount /
         (double)session_info[m].num_winning_streak_sessions;
       session_info[m].streak_end_date = session_info[winning_streak_end_ix].streak_start_date;
+
+      m += num_winning_streak_sessions - 1;
     }
   }
 
