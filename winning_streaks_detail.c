@@ -248,7 +248,7 @@ int main(int argc,char **argv)
     printf("%s\n",format_date(cpt));
 
     printf(fmt1,
-      session_info[sort_ixs[n]].starting_amount -
+      session_info[sort_ixs[n]].starting_amount +
         session_info[sort_ixs[n]].winning_streak_amount,
       session_info[sort_ixs[n]].starting_ix +
         session_info[sort_ixs[n]].num_winning_streak_sessions - 1);
