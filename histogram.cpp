@@ -1,6 +1,9 @@
+#include <list>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+using namespace std;
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
@@ -9,17 +12,12 @@ static char usage[] = "usage: histogram (-sort) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char malloc_fail[] = "malloc of %d ints failed\n";
 
-#define MAX_HISTOGRAM_VALUES 21
-
 struct histogram {
   int value;
   int observations;
 };
 
-static struct histogram word_len_histogram[MAX_HISTOGRAM_VALUES];
-
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
-int compare(const void *elem1,const void *elem2);
 
 int main(int argc,char **argv)
 {
@@ -29,10 +27,12 @@ int main(int argc,char **argv)
   FILE *fptr;
   int line_len;
   int line_no;
-  int num_histogram_values;
+  list<struct histogram> word_len_histogram;
+  list<struct histogram>::iterator it;
+  bool bUpserted;
+  struct histogram work;
   int total_words;
   int total_letters;
-  int *ixs;
 
   if ((argc < 2) || (argc > 3)) {
     printf(usage);
@@ -59,8 +59,6 @@ int main(int argc,char **argv)
   }
 
   line_no = 0;
-  num_histogram_values = 0;
-  total_letters = 0;
 
   for ( ; ; ) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
@@ -69,49 +67,45 @@ int main(int argc,char **argv)
       break;
 
     line_no++;
+    bUpserted = false;
 
-    total_letters += line_len;
-
-    for (n = 0; n < num_histogram_values; n++) {
-      if (word_len_histogram[n].value == line_len)
+    for (it = word_len_histogram.begin(); it != word_len_histogram.end(); it++) {
+      if (line_len == it->value) {
+        it->observations++;
+        bUpserted = true;
         break;
+      }
+      else if (line_len < it->value) {
+        work.value = line_len;
+        work.observations = 1;
+        word_len_histogram.insert(it,work);
+        bUpserted = true;
+        break;
+      }
     }
 
-    if (n == num_histogram_values) {
-      word_len_histogram[n].value = line_len;
-      word_len_histogram[n].observations = 1;
-      num_histogram_values++;
+    if (!bUpserted) {
+      work.value = line_len;
+      work.observations = 1;
+      word_len_histogram.push_back(work);
     }
-    else
-      word_len_histogram[n].observations++;
   }
 
   fclose(fptr);
 
-  if ((ixs = (int *)malloc(num_histogram_values * sizeof (int))) == NULL) {
-    printf(malloc_fail,num_histogram_values);
-    return 4;
-  }
-
-  for (n = 0; n < num_histogram_values; n++)
-    ixs[n] = n;
-
-  if (bSort)
-    qsort(ixs,num_histogram_values,sizeof (int),compare);
-
   total_words = 0;
+  total_letters = 0;
 
-  for (n = 0; n < num_histogram_values; n++) {
+  for (it = word_len_histogram.begin(); it != word_len_histogram.end(); it++) {
     printf("%3d %3d %5d\n",
-      word_len_histogram[ixs[n]].value,
-      word_len_histogram[ixs[n]].observations,
-      word_len_histogram[ixs[n]].value * word_len_histogram[ixs[n]].observations);
-    total_words += word_len_histogram[ixs[n]].observations;
+      it->value,
+      it->observations,
+      it->value * it->observations);
+    total_words += it->observations;
+    total_letters += it->value * it->observations;
   }
 
   printf("\n    %3d %5d\n",total_words,total_letters);
-
-  free(ixs);
 
   return 0;
 }
@@ -138,16 +132,4 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
 
   line[local_line_len] = 0;
   *line_len = local_line_len;
-}
-
-int compare(const void *elem1,const void *elem2)
-{
-  int int1;
-  int int2;
-
-  int1 = *(int *)elem1;
-  int2 = *(int *)elem2;
-
-  return word_len_histogram[int1].value -
-    word_len_histogram[int2].value;
 }
