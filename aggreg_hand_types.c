@@ -192,15 +192,15 @@ static int get_hand_type_and_delta(
   else
     hand_type[m] = 0;
 
-  for (m = 6; m < 16; m++) {
+  for (m = 0; m < 10; m++) {
     if (line[m] != ' ')
       break;
   }
 
-  if (m == 16)
+  if (m == 10)
     return 2;
 
-  for (n = 0; m < 16; m++)
+  for (n = 0; m < 10; m++)
     delta_str[n++] = line[m];
 
   delta_str[n] = 0;
