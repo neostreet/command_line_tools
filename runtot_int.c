@@ -5,7 +5,7 @@
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-offsetoffset)\n"
+"usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-start_and_end) (-offsetoffset)\n"
 "  (-gain_loss) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -15,6 +15,7 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bVerbose;
   bool bStartBal;
+  bool bStartAndEnd;
   bool bGainLoss;
   int offset;
   FILE *fptr;
@@ -25,7 +26,7 @@ int main(int argc,char **argv)
   int runtot_gain;
   int runtot_loss;
 
-  if ((argc < 2) || (argc > 7)) {
+  if ((argc < 2) || (argc > 8)) {
     printf(usage);
     return 1;
   }
@@ -33,6 +34,7 @@ int main(int argc,char **argv)
   runtot = 0;
   bVerbose = false;
   bStartBal = false;
+  bStartAndEnd = false;
   bGainLoss = false;
   offset = 0;
 
@@ -43,6 +45,8 @@ int main(int argc,char **argv)
       bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-start_bal"))
       bStartBal = true;
+    else if (!strcmp(argv[curr_arg],"-start_and_end"))
+      bStartAndEnd = true;
     else if (!strncmp(argv[curr_arg],"-offset",7))
       sscanf(&argv[curr_arg][7],"%d",&offset);
     else if (!strcmp(argv[curr_arg],"-gain_loss"))
@@ -56,9 +60,14 @@ int main(int argc,char **argv)
     return 2;
   }
 
+  if (bStartBal && bStartAndEnd) {
+    printf("can't specify both -start_bal and -start_and_end\n");
+    return 3;
+  }
+
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf("couldn't open %s\n",argv[curr_arg]);
-    return 3;
+    return 4;
   }
 
   if (bGainLoss) {
@@ -74,7 +83,7 @@ int main(int argc,char **argv)
 
     sscanf(&line[offset],"%d",&work);
 
-    if (!bStartBal) {
+    if (!bStartBal && !bStartAndEnd) {
       runtot += work;
 
       if (bGainLoss) {
@@ -98,7 +107,7 @@ int main(int argc,char **argv)
         printf("%10d (%10d %10d) %s\n",runtot,runtot_gain,runtot_loss,line);
     }
 
-    if (bStartBal) {
+    if (bStartBal || bStartAndEnd) {
       runtot += work;
 
       if (bGainLoss) {
@@ -111,6 +120,21 @@ int main(int argc,char **argv)
   }
 
   fclose(fptr);
+
+  if (bStartAndEnd) {
+    if (!bVerbose) {
+      if (!bGainLoss)
+        printf("%d\n",runtot);
+      else
+        printf("%d (%d %d)\n",runtot,runtot_gain,runtot_loss);
+    }
+    else {
+      if (!bGainLoss)
+        printf("%10d %s\n",runtot,line);
+      else
+        printf("%10d (%10d %10d) %s\n",runtot,runtot_gain,runtot_loss,line);
+    }
+  }
 
   return 0;
 }
