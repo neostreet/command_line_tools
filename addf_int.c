@@ -13,7 +13,8 @@ static char save_dir[_MAX_PATH];
 #define MAX_LINE_LEN 1024
 char line[MAX_LINE_LEN];
 
-static char usage[] = "usage: addf (-debug) (-verbose) (-offsetoffset) filename\n";
+static char usage[] = "usage: addf (-debug) (-verbose) (-offsetoffset)\n"
+"  (-datedatestring) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -23,6 +24,8 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bDebug;
   bool bVerbose;
+  bool bHaveDateString;
+  char *date_string;
   int offset;
   FILE *fptr;
   int linelen;
@@ -32,13 +35,14 @@ int main(int argc,char **argv)
   int negative_total;
   int positive_total;
 
-  if ((argc < 2) || (argc > 5)) {
+  if ((argc < 2) || (argc > 6)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
   bVerbose = false;
+  bHaveDateString = false;
   offset = 0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
@@ -50,6 +54,10 @@ int main(int argc,char **argv)
       bVerbose = true;
     else if (!strncmp(argv[curr_arg],"-offset",7))
       sscanf(&argv[curr_arg][7],"%d",&offset);
+    else if (!strncmp(argv[curr_arg],"-date",5)) {
+      date_string = &argv[curr_arg][5];
+      bHaveDateString = true;
+    }
     else
       break;
   }
@@ -95,17 +103,36 @@ int main(int argc,char **argv)
   fclose(fptr);
 
   if (!bVerbose) {
-    if (!bDebug)
-      printf("%d\n",total);
-    else
-      printf("%d %s\\%s\n",total,save_dir,argv[curr_arg]);
+    if (!bDebug) {
+      if (!bHaveDateString)
+        printf("%d\n",total);
+      else
+        printf("%s\t%d\n",date_string,total);
+    }
+    else {
+      if (!bHaveDateString)
+        printf("%d %s\\%s\n",total,save_dir,argv[curr_arg]);
+      else
+        printf("%s\t%d %s\\%s\n",date_string,total,save_dir,argv[curr_arg]);
+    }
   }
   else {
-    if (!bDebug)
-      printf("%d %d %d\n",total,negative_total,positive_total);
-    else
-      printf("%d %d %d %s\\%s\n",
-        total,negative_total,positive_total,save_dir,argv[curr_arg]);
+    if (!bDebug) {
+      if (!bHaveDateString)
+        printf("%d %d %d\n",total,negative_total,positive_total);
+      else
+        printf("%s\t%d %d %d\n",date_string,total,negative_total,positive_total);
+    }
+    else {
+      if (!bHaveDateString) {
+        printf("%d %d %d %s\\%s\n",
+          total,negative_total,positive_total,save_dir,argv[curr_arg]);
+      }
+      else {
+        printf("%s\t%d %d %d %s\\%s\n",
+          date_string,total,negative_total,positive_total,save_dir,argv[curr_arg]);
+      }
+    }
   }
 
   return 0;
