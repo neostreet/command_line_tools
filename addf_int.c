@@ -14,10 +14,11 @@ static char save_dir[_MAX_PATH];
 char line[MAX_LINE_LEN];
 
 static char usage[] = "usage: addf (-debug) (-verbose) (-offsetoffset)\n"
-"  (-datedatestring) filename\n";
+"  (-datedatestring) (-get_date_from_cwd) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
+static int get_date_from_cwd(char *cwd,char **date_string_ptr);
 
 int main(int argc,char **argv)
 {
@@ -26,6 +27,8 @@ int main(int argc,char **argv)
   bool bVerbose;
   bool bHaveDateString;
   char *date_string;
+  bool bGetDateFromCwd;
+  int retval;
   int offset;
   FILE *fptr;
   int linelen;
@@ -35,7 +38,7 @@ int main(int argc,char **argv)
   int negative_total;
   int positive_total;
 
-  if ((argc < 2) || (argc > 6)) {
+  if ((argc < 2) || (argc > 7)) {
     printf(usage);
     return 1;
   }
@@ -43,13 +46,12 @@ int main(int argc,char **argv)
   bDebug = false;
   bVerbose = false;
   bHaveDateString = false;
+  bGetDateFromCwd = false;
   offset = 0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmp(argv[curr_arg],"-debug")) {
+    if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
-      getcwd(save_dir,_MAX_PATH);
-    }
     else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
     else if (!strncmp(argv[curr_arg],"-offset",7))
@@ -58,6 +60,8 @@ int main(int argc,char **argv)
       date_string = &argv[curr_arg][5];
       bHaveDateString = true;
     }
+    else if (!strcmp(argv[curr_arg],"-get_date_from_cwd"))
+      bGetDateFromCwd = true;
     else
       break;
   }
@@ -67,9 +71,28 @@ int main(int argc,char **argv)
     return 2;
   }
 
+  if (bHaveDateString && bGetDateFromCwd) {
+    printf("can't specify both -date and -get_date_from_cwd\n");
+    return 3;
+  }
+
+  if (bDebug || bGetDateFromCwd)
+    getcwd(save_dir,_MAX_PATH);
+
+  if (bGetDateFromCwd) {
+    retval = get_date_from_cwd(save_dir,&date_string);
+
+    if (retval) {
+      printf("get_date_from_cwd() failed: %d\n",retval);
+      return 4;
+    }
+
+    bHaveDateString = true;
+  }
+
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf(couldnt_open,argv[curr_arg]);
-    return 3;
+    return 5;
   }
 
   line_no = 0;
@@ -107,13 +130,13 @@ int main(int argc,char **argv)
       if (!bHaveDateString)
         printf("%d\n",total);
       else
-        printf("%s\t%d\n",date_string,total);
+        printf("%d\t%s\n",total,date_string);
     }
     else {
       if (!bHaveDateString)
-        printf("%d %s\\%s\n",total,save_dir,argv[curr_arg]);
+        printf("%d %s/%s\n",total,save_dir,argv[curr_arg]);
       else
-        printf("%s\t%d %s\\%s\n",date_string,total,save_dir,argv[curr_arg]);
+        printf("%d\t%s %s/%s\n",total,date_string,save_dir,argv[curr_arg]);
     }
   }
   else {
@@ -121,16 +144,16 @@ int main(int argc,char **argv)
       if (!bHaveDateString)
         printf("%d %d %d\n",total,negative_total,positive_total);
       else
-        printf("%s\t%d %d %d\n",date_string,total,negative_total,positive_total);
+        printf("%d\t%s %d %d\n",total,date_string,negative_total,positive_total);
     }
     else {
       if (!bHaveDateString) {
-        printf("%d %d %d %s\\%s\n",
+        printf("%d %d %d %s/%s\n",
           total,negative_total,positive_total,save_dir,argv[curr_arg]);
       }
       else {
-        printf("%s\t%d %d %d %s\\%s\n",
-          date_string,total,negative_total,positive_total,save_dir,argv[curr_arg]);
+        printf("%d\t%s %d %d %s/%s\n",
+          total,date_string,negative_total,positive_total,save_dir,argv[curr_arg]);
       }
     }
   }
@@ -160,4 +183,42 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
 
   line[local_line_len] = 0;
   *line_len = local_line_len;
+}
+
+static char sql_date_string[11];
+
+static int get_date_from_cwd(char *cwd,char **date_string_ptr)
+{
+  int n;
+  int len;
+  int slash_count;
+
+  len = strlen(cwd);
+  slash_count = 0;
+
+  for (n = len - 1; (n >= 0); n--) {
+    if (cwd[n] == '/') {
+      slash_count++;
+
+      if (slash_count == 2)
+        break;
+    }
+  }
+
+  if (slash_count != 2)
+    return 1;
+
+  if (cwd[n+5] != '/')
+    return 2;
+
+  strncpy(sql_date_string,&cwd[n+1],4);
+  sql_date_string[4] = '-';
+  strncpy(&sql_date_string[5],&cwd[n+6],2);
+  sql_date_string[7] = '-';
+  strncpy(&sql_date_string[8],&cwd[n+8],2);
+  sql_date_string[10] = 0;
+
+  *date_string_ptr = sql_date_string;
+
+  return 0;
 }
