@@ -1,11 +1,9 @@
 #include <stdio.h>
+#include <string.h>
 #include "str_list.h"
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
-
-#define MAX_HAND_TYPE_LEN 15
-static char hand_type[MAX_HAND_TYPE_LEN+1];
 
 static char usage[] = "usage: aggregate_hand_types offset filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
@@ -23,14 +21,14 @@ static char *plain_hand_types[] = {
   "royal flush"
 };
 #define NUM_HAND_TYPES (sizeof plain_hand_types / sizeof (char *))
+static int plain_hand_type_lens[NUM_HAND_TYPES];
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 static int get_hand_type_and_delta(
   char *line,
   int line_len,
   int offset,
-  char *hand_type,
-  int max_hand_type_len,
+  char **hand_type_ptr,
   int *delta_ptr);
 
 int main(int argc,char **argv)
@@ -44,6 +42,7 @@ int main(int argc,char **argv)
   struct info_list hand_types;
   struct info_list_elem *work_elem;
   int ix;
+  char *hand_type;
   int delta;
   int totals[4];
   double work;
@@ -63,8 +62,10 @@ int main(int argc,char **argv)
   line_no = 0;
   hand_types.num_elems = 0;
 
-  for (n = 0; n < NUM_HAND_TYPES; n++)
+  for (n = 0; n < NUM_HAND_TYPES; n++) {
+    plain_hand_type_lens[n] = strlen(plain_hand_types[n]);
     add_info_list_elem(&hand_types,plain_hand_types[n],0,0,0,0,true);
+  }
 
   for ( ; ; ) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
@@ -74,8 +75,7 @@ int main(int argc,char **argv)
 
     line_no++;
 
-    retval = get_hand_type_and_delta(line,line_len,offset,hand_type,MAX_HAND_TYPE_LEN,
-      &delta);
+    retval = get_hand_type_and_delta(line,line_len,offset,&hand_type,&delta);
 
     if (retval) {
       printf("get_hand_type() failed on line %d: %d\n",line_no,retval);
@@ -169,28 +169,22 @@ static int get_hand_type_and_delta(
   char *line,
   int line_len,
   int offset,
-  char *hand_type,
-  int max_hand_type_len,
+  char **hand_type_ptr,
   int *delta_ptr)
 {
   int m;
   int n;
   char delta_str[11];
 
-  for (m = 0, n = offset; ((n < offset + max_hand_type_len) && (n < line_len - 1)); n++) {
-    if ((line[n] == 'c') && (line[n+1] == ':'))
+  for (n = NUM_HAND_TYPES - 1; (n >= 0); n--) {
+    if (!strncmp(&line[offset],plain_hand_types[n],plain_hand_type_lens[n]))
       break;
-
-    hand_type[m++] = line[n];
   }
 
-  if (!m)
+  if (n < 0)
     return 1;
 
-  if (hand_type[m - 1] == ' ')
-    hand_type[m - 1] = 0;
-  else
-    hand_type[m] = 0;
+  *hand_type_ptr = plain_hand_types[n];
 
   for (m = 0; m < 10; m++) {
     if (line[m] != ' ')
