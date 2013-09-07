@@ -30,7 +30,7 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  sscanf(argv[3],"%d",&offset);
+  sscanf(argv[3],"%x",&offset);
 
   if (!strcmp(argv[1],argv[4])) {
     printf("outfile must differ from infile\n");
