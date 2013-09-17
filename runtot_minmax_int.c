@@ -13,7 +13,7 @@ static char save_dir[_MAX_PATH];
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: minmax_int (-debug) (-verbose) (-offsetoffset) filename\n";
+"usage: runtot_minmax_int (-debug) (-verbose) (-offsetoffset) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
