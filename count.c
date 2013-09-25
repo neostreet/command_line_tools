@@ -5,8 +5,8 @@
 char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: count (-c) (-by_line) string filename (filename ...)\n";
-static char fmt_str[] = "%s: %d\n";
+"usage: count (-c) (-by_line) (-total) string filename (filename ...)\n";
+static char fmt_str[] = "%10d %s\n";
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
@@ -23,6 +23,7 @@ int main(int argc,char **argv)
   int n;
   bool bCaseSens;
   bool bByLine;
+  bool bTotal;
   bool bStdin;
   int curr_arg;
   int count;
@@ -33,6 +34,7 @@ int main(int argc,char **argv)
 
   bCaseSens = false;
   bByLine = false;
+  bTotal = false;
   bStdin = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
@@ -40,6 +42,8 @@ int main(int argc,char **argv)
       bCaseSens = true;
     else if (!strcmp(argv[curr_arg],"-by_line"))
       bByLine = true;
+    else if (!strcmp(argv[curr_arg],"-total"))
+      bTotal = true;
     else
       break;
   }
@@ -96,9 +100,9 @@ int main(int argc,char **argv)
       if (!bByLine && count) {
         if (!bStdin) {
           if (bMultiple)
-            printf(fmt_str,argv[curr_arg],count);
+            printf(fmt_str,count,argv[curr_arg]);
           else
-            printf(fmt_str,argv[string_arg],count);
+            printf(fmt_str,count,argv[string_arg]);
         }
         else
           printf("%d\n",count);
@@ -154,8 +158,8 @@ int main(int argc,char **argv)
 
   }
 
-  if ((argc - bCaseSens > 3) && (tcount))
-    printf("\n%4d\n",tcount);
+  if (bTotal && bMultiple && (tcount))
+    printf("\n%10d\n",tcount);
 
   return 0;
 }
