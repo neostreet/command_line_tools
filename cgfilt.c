@@ -13,7 +13,7 @@ char line[MAX_LINE_LEN];
 #define MAX_FILENAME_LEN 256
 
 static char usage[] = "\
-usage: cgfilt (-qnn) [white | black] filename\n";
+usage: cgfilt (-keep_checks) (-qnn) [white | black] filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static int word_count;
@@ -22,13 +22,14 @@ static char txt_ext[] = "txt";
 #define TXT_EXT_LEN (sizeof txt_ext - 1)
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
-void filter(FILE *fptr,char *line,int line_len);
-int fprint_word(FILE *fptr,char *word,int word_len);
+void filter(FILE *fptr,char *line,int line_len,bool bKeepChecks);
+int fprint_word(FILE *fptr,char *word,int word_len,bool bKeepChecks);
 int create_outname(char *filename,char *outname,int max_outname_len);
 
 int main(int argc,char **argv)
 {
   int curr_arg;
+  bool bKeepChecks;
   int quiz_number;
   int initial_move;
   bool bBlack;
@@ -37,15 +38,19 @@ int main(int argc,char **argv)
   int retval;
   char outname[MAX_FILENAME_LEN];
 
-  if ((argc != 3) && (argc != 4)) {
+  if ((argc < 3) && (argc > 5)) {
     printf(usage);
     return 1;
   }
 
+  bKeepChecks = false;
+
   quiz_number = -1;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strncmp(argv[curr_arg],"-qn",3))
+    if (!strcmp(argv[curr_arg],"-keep_checks"))
+      bKeepChecks = true;
+    else if (!strncmp(argv[curr_arg],"-qn",3))
       sscanf(&argv[curr_arg][3],"%d",&quiz_number);
     else
       break;
@@ -110,7 +115,7 @@ int main(int argc,char **argv)
       break;
 
     if (linelen && (line[0] != '['))
-      filter(fptr[1],line,linelen);
+      filter(fptr[1],line,linelen,bKeepChecks);
   }
 
   if (word_count == 1)
@@ -146,7 +151,7 @@ void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
   *line_len = local_line_len;
 }
 
-void filter(FILE *fptr,char *line,int line_len)
+void filter(FILE *fptr,char *line,int line_len,bool bKeepChecks)
 {
   int ix;
   int sav_ix;
@@ -164,7 +169,7 @@ void filter(FILE *fptr,char *line,int line_len)
       break;
 
     line[ix] = 0;
-    word_count += fprint_word(fptr,&line[sav_ix],ix - sav_ix);
+    word_count += fprint_word(fptr,&line[sav_ix],ix - sav_ix,bKeepChecks);
 
     if (word_count == 2) {
       fputc(0x0a,fptr);
@@ -178,7 +183,7 @@ void filter(FILE *fptr,char *line,int line_len)
   }
 }
 
-int fprint_word(FILE *fptr,char *word,int word_len)
+int fprint_word(FILE *fptr,char *word,int word_len,bool bKeepChecks)
 {
   int ix;
 
@@ -194,8 +199,10 @@ int fprint_word(FILE *fptr,char *word,int word_len)
     return 0;
 
   for (ix = 0; ix < word_len; ix++) {
-    if ((word[ix] != CAPTURE) && (word[ix] != CHECK) && (word[ix] != MATE))
-      fputc(word[ix],fptr);
+    if (word[ix] != MATE) {
+      if (bKeepChecks || (word[ix] != CHECK))
+        fputc(word[ix],fptr);
+    }
 
     if (word[ix] == DOT)
       fputc(SPACE,fptr);
