@@ -1,30 +1,47 @@
 #include <stdio.h>
+#include <string.h>
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
 
-static char usage[] = "usage: ge_int val filename\n";
+static char usage[] = "usage: ge_int (-offsetoffset) val filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
 int main(int argc,char **argv)
 {
+  int curr_arg;
+  int offset;
   int val;
   FILE *fptr;
   int line_len;
   int line_no;
   int work;
 
-  if (argc != 3) {
+  if ((argc < 3) || (argc > 4)) {
     printf(usage);
     return 1;
   }
 
-  sscanf(argv[1],"%d",&val);
+  offset = 0;
 
-  if ((fptr = fopen(argv[2],"r")) == NULL) {
-    printf(couldnt_open,argv[2]);
+  for (curr_arg = 1; curr_arg < argc; curr_arg++) {
+    if (!strncmp(argv[curr_arg],"-offset",7))
+      sscanf(&argv[curr_arg][7],"%d",&offset);
+    else
+      break;
+  }
+
+  if (argc - curr_arg != 2) {
+    printf(usage);
+    return 2;
+  }
+
+  sscanf(argv[curr_arg],"%d",&val);
+
+  if ((fptr = fopen(argv[curr_arg+1],"r")) == NULL) {
+    printf(couldnt_open,argv[curr_arg+1]);
     return 2;
   }
 
@@ -38,10 +55,10 @@ int main(int argc,char **argv)
 
     line_no++;
 
-    sscanf(line,"%d",&work);
+    sscanf(&line[offset],"%d",&work);
 
     if (work >= val)
-      printf("%d: %d\n",line_no,work);
+      printf("%s\n",line);
   }
 
   fclose(fptr);
