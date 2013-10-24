@@ -122,7 +122,7 @@ int main(int argc,char **argv)
     total += work;
 
     if (bVerbose)
-      printf("%lf %s\n",total,line);
+      printf("%lf %lf %s\n",total,work,line);
 
     if (bPosNeg) {
       if (work < (double)0)
