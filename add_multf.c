@@ -13,7 +13,7 @@ static char save_dir[_MAX_PATH];
 #define MAX_LINE_LEN 1024
 char line[MAX_LINE_LEN];
 
-static char usage[] = "usage: addf (-debug) (-verbose) (-offsetoffset)\n"
+static char usage[] = "usage: add_multf (-debug) (-verbose) (-offsetoffset)\n"
 "  (-datedatestring) (-get_date_from_cwd) (-pos_neg) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
