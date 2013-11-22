@@ -7,13 +7,13 @@
 #define FALSE 0
 #define TRUE  1
 
-#define MAX_LINE_LEN 8192
-char line[MAX_LINE_LEN];
+#define MAX_LINE_LEN 32768
+static char line[MAX_LINE_LEN];
 
-#define MAX_COL_LEN 1024
-char column[MAX_COL_LEN];
+#define MAX_COL_LEN 4096
+static char column[MAX_COL_LEN];
 
-static char usage[] = "usage: grabcols delim col (col ...) filename\n";
+static char usage[] = "usage: grabcols in_delim out_delim col (col ...) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -23,7 +23,8 @@ int grab_col(char *line,int line_len,int line_no,int delim,int col,
 int main(int argc,char **argv)
 {
   int n;
-  int delim;
+  int in_delim;
+  int out_delim;
   int num_cols;
   int *cols;
   FILE *fptr;
@@ -31,17 +32,22 @@ int main(int argc,char **argv)
   int line_no;
   int retval;
 
-  if (argc < 4) {
+  if (argc < 5) {
     printf(usage);
     return 1;
   }
 
   if (!strcmp(argv[1],"tab"))
-    delim = TAB;
+    in_delim = TAB;
   else
-    delim = argv[1][0];
+    in_delim = argv[1][0];
 
-  num_cols = argc - 3;
+  if (!strcmp(argv[2],"tab"))
+    out_delim = TAB;
+  else
+    out_delim = argv[2][0];
+
+  num_cols = argc - 4;
 
   cols = (int *)malloc(num_cols * sizeof (int));
 
@@ -51,7 +57,7 @@ int main(int argc,char **argv)
   }
 
   for (n = 0; n < num_cols; n++) {
-    sscanf(argv[2+n],"%d",&cols[n]);
+    sscanf(argv[3+n],"%d",&cols[n]);
 
     if (cols[n] < 1) {
       printf("col must be >= 1\n");
@@ -76,7 +82,7 @@ int main(int argc,char **argv)
     line_no++;
 
     for (n = 0; n < num_cols; n++) {
-      retval = grab_col(line,linelen,line_no,delim,cols[n],column,MAX_COL_LEN);
+      retval = grab_col(line,linelen,line_no,in_delim,cols[n],column,MAX_COL_LEN);
 
       if (retval)
         printf("grab_col() failed on line %d: %d\n",line_no,retval);
@@ -84,7 +90,7 @@ int main(int argc,char **argv)
         printf("%s",column);
 
         if (n < num_cols - 1)
-          putchar(',');
+          putchar(out_delim);
         else
           putchar(0x0a);
       }
