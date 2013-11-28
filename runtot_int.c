@@ -5,8 +5,8 @@
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-start_and_end) (-offsetoffset)\n"
-"  (-gain_loss) filename\n";
+"usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-start_and_end)\n"
+"  (-offsetoffset) (-gain_loss) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
