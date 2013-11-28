@@ -10,7 +10,7 @@
 #include <unistd.h>
 #endif
 
-static char usage[] = "usage: sortints (-descending) filename\n";
+static char usage[] = "usage: sortints (-descending) (-line_numbers) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char couldnt_get_status[] = "couldn't get status of %s\n";
 
@@ -24,6 +24,7 @@ int main(int argc,char **argv)
   int m;
   int n;
   int curr_arg;
+  bool bLineNumbers;
   int ix;
   int num_ints;
   int work;
@@ -36,16 +37,19 @@ int main(int argc,char **argv)
   char **cppt;
   int *ixs;
 
-  if ((argc < 2) || (argc > 3)) {
+  if ((argc < 2) || (argc > 4)) {
     printf(usage);
     return 1;
   }
 
   bDescending = false;
+  bLineNumbers = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-descending"))
       bDescending = true;
+    else if (!strcmp(argv[curr_arg],"-line_numbers"))
+      bLineNumbers= true;
     else
       break;
   }
@@ -129,8 +133,12 @@ int main(int argc,char **argv)
 
   qsort(ixs,num_ints,sizeof (int),compare);
 
-  for (n = 0; n < num_ints; n++)
-    printf("%s\n",cppt[ixs[n]]);
+  for (n = 0; n < num_ints; n++) {
+    if (!bLineNumbers)
+      printf("%s\n",cppt[ixs[n]]);
+    else
+      printf("%s (%d)\n",cppt[ixs[n]],ixs[n] + 1);
+  }
 
   free(ixs);
   free(cppt);
