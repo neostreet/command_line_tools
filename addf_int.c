@@ -100,6 +100,7 @@ int main(int argc,char **argv)
   }
 
   line_no = 0;
+
   total = 0;
 
   if (bPosNeg) {
@@ -119,48 +120,54 @@ int main(int argc,char **argv)
 
     total += work;
 
-    if (bVerbose)
-      printf("%d %s\n",total,line);
-
     if (bPosNeg) {
       if (work < 0)
         negative_total += work;
       else
         positive_total += work;
     }
+
+    if (bVerbose) {
+      if (!bPosNeg)
+        printf("%d %s\n",total,line);
+      else
+        printf("%d %d %d %s\n",total,positive_total,negative_total,line);
+    }
   }
 
   fclose(fptr);
 
-  if (!bPosNeg) {
-    if (!bDebug) {
-      if (!bHaveDateString)
-        printf("%d\n",total);
-      else
-        printf("%d\t%s\n",total,date_string);
-    }
-    else {
-      if (!bHaveDateString)
-        printf("%d %s/%s\n",total,save_dir,argv[curr_arg]);
-      else
-        printf("%d\t%s %s/%s\n",total,date_string,save_dir,argv[curr_arg]);
-    }
-  }
-  else {
-    if (!bDebug) {
-      if (!bHaveDateString)
-        printf("%d %d %d\n",total,positive_total,negative_total);
-      else
-        printf("%d\t%s %d %d\n",total,date_string,positive_total,negative_total);
-    }
-    else {
-      if (!bHaveDateString) {
-        printf("%d %d %d %s/%s\n",
-          total,positive_total,negative_total,save_dir,argv[curr_arg]);
+  if (!bVerbose) {
+    if (!bPosNeg) {
+      if (!bDebug) {
+        if (!bHaveDateString)
+          printf("%d\n",total);
+        else
+          printf("%d\t%s\n",total,date_string);
       }
       else {
-        printf("%d\t%s %d %d %s/%s\n",
-          total,date_string,positive_total,negative_total,save_dir,argv[curr_arg]);
+        if (!bHaveDateString)
+          printf("%d %s/%s\n",total,save_dir,argv[curr_arg]);
+        else
+          printf("%d\t%s %s/%s\n",total,date_string,save_dir,argv[curr_arg]);
+      }
+    }
+    else {
+      if (!bDebug) {
+        if (!bHaveDateString)
+          printf("%d %d %d\n",total,positive_total,negative_total);
+        else
+          printf("%d\t%s %d %d\n",total,date_string,positive_total,negative_total);
+      }
+      else {
+        if (!bHaveDateString) {
+          printf("%d %d %d %s/%s\n",
+            total,positive_total,negative_total,save_dir,argv[curr_arg]);
+        }
+        else {
+          printf("%d\t%s %d %d %s/%s\n",
+            total,date_string,positive_total,negative_total,save_dir,argv[curr_arg]);
+        }
       }
     }
   }
