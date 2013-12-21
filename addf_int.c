@@ -145,7 +145,7 @@ int main(int argc,char **argv)
         if (bCounts)
           negative_count++;
       }
-      else {
+      else if (work > 0) {
         positive_total += work;
 
         if (bCounts)
