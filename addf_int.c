@@ -206,10 +206,10 @@ int main(int argc,char **argv)
         }
         else {
           if (!bCounts)
-            printf("%d\t%s %d %d\n",total,date_string,positive_total,negative_total);
+            printf("%10d %10d %10d\t%s\n",total,positive_total,negative_total,date_string);
           else {
-            printf("%d (%d)\t%s %d (%d) %d (%d)\n",
-              total,count,date_string,positive_total,positive_count,negative_total,negative_count);
+            printf("%10d (%5d) %10d (%5d) %10d (%5d)\t%s\n",
+              total,count,positive_total,positive_count,negative_total,negative_count,date_string);
           }
         }
       }
