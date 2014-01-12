@@ -16,6 +16,7 @@ int main(int argc,char **argv)
   int curr_arg;
   int len;
   int chara;
+  int total;
 
   if (argc < 2) {
     printf(usage);
@@ -43,6 +44,11 @@ int main(int argc,char **argv)
       letter_counts[chara]++;
     }
 
+    total = 0;
+
+    for (n = 0; n < NUM_LETTERS; n++)
+      total += letter_counts[n];
+
     for (n = 0; n < NUM_LETTER_ROWS; n++) {
       for (m = 0; m < LETTERS_PER_ROW; m++) {
         printf("   %c",'a' + (n * LETTERS_PER_ROW) + m);
@@ -58,8 +64,12 @@ int main(int argc,char **argv)
 
         if (m < LETTERS_PER_ROW - 1)
           putchar(' ');
-        else
-          putchar(0x0a);
+        else {
+          if (!n)
+            putchar(0x0a);
+          else
+            printf(" %4d\n",total);
+        }
       }
     }
 
