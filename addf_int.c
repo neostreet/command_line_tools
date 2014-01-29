@@ -14,7 +14,7 @@ static char save_dir[_MAX_PATH];
 char line[MAX_LINE_LEN];
 
 static char usage[] = "usage: addf (-debug) (-verbose) (-offsetoffset)\n"
-"  (-datedatestring) (-get_date_from_cwd) (-pos_neg) (-counts) filename\n";
+"  (-datedatestring) (-get_date_from_cwd) (-pos_neg) (-counts) (-abs) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -30,6 +30,7 @@ int main(int argc,char **argv)
   bool bGetDateFromCwd;
   bool bPosNeg;
   bool bCounts;
+  bool bAbs;
   int retval;
   int offset;
   FILE *fptr;
@@ -43,7 +44,7 @@ int main(int argc,char **argv)
   int negative_total;
   int negative_count;
 
-  if ((argc < 2) || (argc > 9)) {
+  if ((argc < 2) || (argc > 10)) {
     printf(usage);
     return 1;
   }
@@ -54,6 +55,7 @@ int main(int argc,char **argv)
   bGetDateFromCwd = false;
   bPosNeg = false;
   bCounts = false;
+  bAbs = false;
   offset = 0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
@@ -73,6 +75,8 @@ int main(int argc,char **argv)
       bPosNeg = true;
     else if (!strcmp(argv[curr_arg],"-counts"))
       bCounts = true;
+    else if (!strcmp(argv[curr_arg],"-abs"))
+      bAbs = true;
     else
       break;
   }
@@ -133,7 +137,14 @@ int main(int argc,char **argv)
 
     sscanf(&line[offset],"%d",&work);
 
-    total += work;
+    if (!bAbs)
+      total += work;
+    else {
+      if (work < 0)
+        total -= work;
+      else
+        total += work;
+    }
 
     if (bCounts)
       count++;
