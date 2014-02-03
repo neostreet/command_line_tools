@@ -27,6 +27,8 @@ int main(int argc,char **argv)
   int work;
   int runtot_gain;
   int runtot_loss;
+  int num_gains;
+  int num_losses;
 
   if ((argc < 2) || (argc > 10)) {
     printf(usage);
@@ -96,11 +98,17 @@ int main(int argc,char **argv)
   if (bGainLoss) {
     runtot_gain = 0;
     runtot_loss = 0;
+    num_gains = 0;
+    num_losses = 0;
   }
-  else if (bGainOnly)
+  else if (bGainOnly) {
     runtot_gain = 0;
-  else if (bLossOnly)
+    num_gains = 0;
+  }
+  else if (bLossOnly) {
     runtot_loss = 0;
+    num_losses = 0;
+  }
 
   for ( ; ; ) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
@@ -115,18 +123,26 @@ int main(int argc,char **argv)
         runtot += work;
 
       if (bGainLoss) {
-        if (work > 0)
+        if (work > 0) {
           runtot_gain += work;
-        else if (work < 0)
+          num_gains++;
+        }
+        else if (work < 0) {
           runtot_loss += work;
+          num_losses++;
+        }
       }
       else if (bGainOnly) {
-        if (work > 0)
+        if (work > 0) {
           runtot_gain += work;
+          num_gains++;
+        }
       }
       else if (bLossOnly) {
-        if (work < 0)
+        if (work < 0) {
           runtot_loss += work;
+          num_losses++;
+        }
       }
     }
 
@@ -134,11 +150,13 @@ int main(int argc,char **argv)
       if (!bGainLoss && !bGainOnly && !bLossOnly)
         printf("%d\n",runtot);
       else if (bGainOnly)
-        printf("%d\n",runtot_gain);
+        printf("%d (%d)\n",runtot_gain,num_gains);
       else if (bLossOnly)
-        printf("%d\n",runtot_loss);
-      else
-        printf("%d (%d %d)\n",runtot,runtot_gain,runtot_loss);
+        printf("%d (%d)\n",runtot_loss,num_losses);
+      else {
+        printf("%d (%d %d %d %d)\n",runtot,runtot_gain,runtot_loss,
+          num_gains,num_losses);
+      }
     }
     else {
       if (!bGainLoss && !bGainOnly && !bLossOnly)
