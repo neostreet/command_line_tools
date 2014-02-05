@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   char *filenam;
 
   if (argc < 2) {
-    printf("usage: timeis_like filename (filename filename ...)\n");
+    printf("usage: timeis_later filename (filename filename ...)\n");
     return 1;
   }
 
