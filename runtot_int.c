@@ -154,7 +154,8 @@ int main(int argc,char **argv)
       else if (bLossOnly)
         printf("%d (%d)\n",runtot_loss,num_losses);
       else {
-        printf("%d (%d %d %d %d)\n",runtot,runtot_gain,runtot_loss,
+        printf("%d (%d %d %d %d %d)\n",runtot,work,
+          runtot_gain,runtot_loss,
           num_gains,num_losses);
       }
     }
