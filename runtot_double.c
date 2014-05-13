@@ -5,7 +5,7 @@
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-start_and_end) (-offsetoffset)\n"
+"usage: runtot_double (-initial_balbal) (-terse) (-verbose) (-start_bal) (-start_and_end) (-offsetoffset)\n"
 "  (-gain_loss) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -13,6 +13,7 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 int main(int argc,char **argv)
 {
   int curr_arg;
+  bool bTerse;
   bool bVerbose;
   bool bStartBal;
   bool bStartAndEnd;
@@ -26,12 +27,13 @@ int main(int argc,char **argv)
   double runtot_gain;
   double runtot_loss;
 
-  if ((argc < 2) || (argc > 8)) {
+  if ((argc < 2) || (argc > 9)) {
     printf(usage);
     return 1;
   }
 
   runtot = 0;
+  bTerse = false;
   bVerbose = false;
   bStartBal = false;
   bStartAndEnd = false;
@@ -41,6 +43,8 @@ int main(int argc,char **argv)
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strncmp(argv[curr_arg],"-initial_bal",12))
       sscanf(&argv[curr_arg][12],"%d",&runtot);
+    else if (!strcmp(argv[curr_arg],"-terse"))
+      bTerse = true;
     else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-start_bal"))
@@ -65,9 +69,14 @@ int main(int argc,char **argv)
     return 3;
   }
 
+  if (bTerse && bVerbose) {
+    printf("can't specify both -terse and -verbose\n");
+    return 4;
+  }
+
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf("couldn't open %s\n",argv[curr_arg]);
-    return 4;
+    return 5;
   }
 
   if (bGainLoss) {
@@ -94,7 +103,9 @@ int main(int argc,char **argv)
       }
     }
 
-    if (!bVerbose) {
+    if (bTerse)
+      ;
+    else if (!bVerbose) {
       if (!bGainLoss)
         printf("%lf\n",runtot);
       else
@@ -121,7 +132,7 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
-  if (bStartAndEnd) {
+  if (bTerse || bStartAndEnd) {
     if (!bVerbose) {
       if (!bGainLoss)
         printf("%lf\n",runtot);
