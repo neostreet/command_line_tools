@@ -14,7 +14,8 @@ static char save_dir[_MAX_PATH];
 char line[MAX_LINE_LEN];
 
 static char usage[] = "usage: addf (-debug) (-verbose) (-offsetoffset)\n"
-"  (-datedatestring) (-get_date_from_cwd) (-pos_neg) (-counts) (-abs) filename\n";
+"  (-datedatestring) (-get_date_from_cwd) (-pos_neg) (-counts) (-abs)\n"
+"  (-neg_only) (-pos_only) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -31,6 +32,8 @@ int main(int argc,char **argv)
   bool bPosNeg;
   bool bCounts;
   bool bAbs;
+  bool bNegOnly;
+  bool bPosOnly;
   int retval;
   int offset;
   FILE *fptr;
@@ -44,7 +47,7 @@ int main(int argc,char **argv)
   int negative_total;
   int negative_count;
 
-  if ((argc < 2) || (argc > 10)) {
+  if ((argc < 2) || (argc > 12)) {
     printf(usage);
     return 1;
   }
@@ -56,6 +59,8 @@ int main(int argc,char **argv)
   bPosNeg = false;
   bCounts = false;
   bAbs = false;
+  bNegOnly = false;
+  bPosOnly = false;
   offset = 0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
@@ -77,6 +82,10 @@ int main(int argc,char **argv)
       bCounts = true;
     else if (!strcmp(argv[curr_arg],"-abs"))
       bAbs = true;
+    else if (!strcmp(argv[curr_arg],"-neg_only"))
+      bNegOnly = true;
+    else if (!strcmp(argv[curr_arg],"-pos_only"))
+      bPosOnly = true;
     else
       break;
   }
@@ -91,6 +100,11 @@ int main(int argc,char **argv)
     return 3;
   }
 
+  if (bNegOnly && bPosOnly) {
+    printf("can't specify both -neg_only and -pos_only\n");
+    return 4;
+  }
+
   if (bDebug || bGetDateFromCwd)
     getcwd(save_dir,_MAX_PATH);
 
@@ -99,7 +113,7 @@ int main(int argc,char **argv)
 
     if (retval) {
       printf("get_date_from_cwd() failed: %d\n",retval);
-      return 4;
+      return 5;
     }
 
     bHaveDateString = true;
@@ -107,7 +121,7 @@ int main(int argc,char **argv)
 
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf(couldnt_open,argv[curr_arg]);
-    return 5;
+    return 6;
   }
 
   line_no = 0;
@@ -137,8 +151,18 @@ int main(int argc,char **argv)
 
     sscanf(&line[offset],"%d",&work);
 
-    if (!bAbs)
-      total += work;
+    if (!bAbs) {
+      if (bNegOnly) {
+        if (work < 0)
+          total += work;
+      }
+      else if (bPosOnly) {
+        if (work > 0)
+          total += work;
+      }
+      else
+        total += work;
+    }
     else {
       if (work < 0)
         total -= work;
