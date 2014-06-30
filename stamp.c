@@ -9,13 +9,13 @@ static char couldnt_get_status[] = "couldn't get status of %s\n";
 
 #define MAX_FILES 30000
 
-#define MAX_LINE_LEN 128
+#define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
 
 struct file_info {
   char name[MAX_LINE_LEN];
-  time_t stmtime;
-  off_t stsize;
+  time_t my_st_mtime;
+  off_t my_st_size;
   int cksum;
 };
 
@@ -24,6 +24,8 @@ static struct file_info *finfo;
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 int compare(const void *elem1,const void *elem2);
 int get_cksum(char *filename);
+
+static bool bReverse;
 
 int main(int argc,char **argv)
 {
@@ -57,6 +59,7 @@ int main(int argc,char **argv)
   bNoSort = false;
   bNoDate = false;
   bCksum = false;
+  bReverse = false;
 
   for (n = 1; n < argc; n++) {
     if (!strcmp(argv[n],"-no_sort"))
@@ -65,11 +68,13 @@ int main(int argc,char **argv)
       bNoDate = true;
     else if (!strcmp(argv[n],"-cksum"))
       bCksum = true;
+    else if (!strcmp(argv[n],"-reverse"))
+      bReverse = true;
     else
       break;
   }
 
-  if (argc - (bNoSort + bNoDate + bCksum) == 1) {
+  if (argc - (bNoSort + bNoDate + bCksum + bReverse) == 1) {
     bStdin = true;
     cpt1 = line;
   }
@@ -109,8 +114,8 @@ int main(int argc,char **argv)
     }
 
     strcpy(finfo[curr_file].name,cpt1);
-    finfo[curr_file].stmtime = statbuf.st_mtime;
-    finfo[curr_file].stsize = statbuf.st_size;
+    finfo[curr_file].my_st_mtime = statbuf.st_mtime;
+    finfo[curr_file].my_st_size = statbuf.st_size;
 
     if (bCksum)
       finfo[curr_file].cksum = get_cksum(cpt1);
@@ -135,15 +140,16 @@ int main(int argc,char **argv)
 
   for (n = 0; n < num_files; n++) {
     if (!bNoDate) {
-      cpt2 = ctime(&finfo[ixs[n]].stmtime);
+      cpt2 = ctime(&finfo[ixs[n]].my_st_mtime);
       cpt2[strlen(cpt2) - 1] = 0;
 
       if (bCksum)
-        printf("%s %10d %08x %s\n",cpt2,finfo[ixs[n]].stsize,
+        printf("%s %10d %08x %s\n",cpt2,finfo[ixs[n]].my_st_size,
           finfo[ixs[n]].cksum,finfo[ixs[n]].name);
-      else
-        printf("%s %10d %s\n",cpt2,finfo[ixs[n]].stsize,
-          finfo[ixs[n]].name);
+      else {
+        printf("%s %10d ",cpt2,finfo[ixs[n]].my_st_size);
+        printf("%s\n",finfo[ixs[n]].name);
+      }
     }
     else
       printf("%s\n",finfo[ixs[n]].name);
@@ -187,7 +193,10 @@ int compare(const void *elem1,const void *elem2)
   ix1 = *(int *)elem1;
   ix2 = *(int *)elem2;
 
-  return finfo[ix2].stmtime - finfo[ix1].stmtime;
+  if (!bReverse)
+    return finfo[ix2].my_st_mtime - finfo[ix1].my_st_mtime;
+  else
+    return finfo[ix1].my_st_mtime - finfo[ix2].my_st_mtime;
 }
 
 int get_cksum(char *filename)
