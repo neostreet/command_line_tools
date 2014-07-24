@@ -1,8 +1,17 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#ifdef WIN32
+#include <direct.h>
+#else
+#define _MAX_PATH 4096
+#include <unistd.h>
+#endif
 
-static char usage[] = "usage: sortabs (-descending) (-verbose) filename\n";
+static char save_dir[_MAX_PATH];
+
+static char usage[] =
+"usage: sortabs (-descending) (-verbose) (-streak) filename\n";
 
 static bool bDescending;
 
@@ -20,28 +29,36 @@ int main(int argc,char **argv)
   int n;
   int curr_arg;
   bool bVerbose;
+  bool bStreak;
   int ix;
   FILE *fptr;
   int num_val_ixs;
   int work;
   int *ixs;
+  int streak_count;
 
-  if ((argc < 2) || (argc > 4)) {
+  if ((argc < 2) || (argc > 5)) {
     printf(usage);
     return 1;
   }
 
   bDescending = false;
   bVerbose = false;
+  bStreak = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-descending"))
       bDescending = true;
     else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
+    else if (!strcmp(argv[curr_arg],"-streak"))
+      bStreak = true;
     else
       break;
   }
+
+  if (bStreak)
+    getcwd(save_dir,_MAX_PATH);
 
   if (argc - curr_arg != 1) {
     printf(usage);
@@ -97,11 +114,33 @@ int main(int argc,char **argv)
 
   qsort(ixs,num_val_ixs,sizeof (int),compare);
 
-  for (n = 0; n < num_val_ixs; n++) {
-    if (!bVerbose)
-      printf("%d\n",val_ixs[ixs[n]].val);
-    else
-      printf("%d (%d)\n",val_ixs[ixs[n]].val,val_ixs[ixs[n]].ix+1);
+  if (!bStreak) {
+    for (n = 0; n < num_val_ixs; n++) {
+      if (!bVerbose)
+        printf("%d\n",val_ixs[ixs[n]].val);
+      else
+        printf("%d (%d)\n",val_ixs[ixs[n]].val,val_ixs[ixs[n]].ix+1);
+    }
+  }
+  else {
+    streak_count = 0;
+
+    for (n = 0; n < num_val_ixs; n++) {
+      if (!bDescending) {
+        if (val_ixs[ixs[n]].val < 0)
+          streak_count++;
+        else
+          break;
+      }
+      else {
+        if (val_ixs[ixs[n]].val > 0)
+          streak_count++;
+        else
+          break;
+      }
+    }
+
+    printf("%d %s/%s\n",streak_count,save_dir,argv[curr_arg]);
   }
 
   free(ixs);
