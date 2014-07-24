@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_LINE_LEN 1024
+#define MAX_LINE_LEN 8192
 char line[MAX_LINE_LEN];
 
 static char usage[] = "usage: unchop (-delim_charc) filename\n";
@@ -15,6 +15,7 @@ int main(int argc,char **argv)
   char delim_char;
   FILE *fptr;
   int linelen;
+  int line_no;
 
   if ((argc != 2) && (argc != 3)) {
     printf(usage);
@@ -43,14 +44,22 @@ int main(int argc,char **argv)
     return 3;
   }
 
+  line_no = 0;
+
   for ( ; ; ) {
     GetLine(fptr,line,&linelen,MAX_LINE_LEN);
 
     if (feof(fptr))
       break;
 
-    if (bDelimChar)
-      printf("%s%c",line,delim_char);
+    line_no++;
+
+    if (bDelimChar) {
+      if (line_no == 1)
+        printf("%s",line);
+      else
+        printf("%c%s",delim_char,line);
+    }
     else
       printf("%s",line);
   }
