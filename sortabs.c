@@ -11,16 +11,11 @@
 static char save_dir[_MAX_PATH];
 
 static char usage[] =
-"usage: sortabs (-descending) (-verbose) (-streak) filename\n";
+"usage: sortabs (-descending) (-line_numbers) (-streak) filename\n";
 
 static bool bDescending;
 
-struct val_ix {
-  int val;
-  int ix;
-};
-
-static struct val_ix *val_ixs;
+static int *vals;
 
 int compare(const void *elem1,const void *elem2);
 
@@ -28,11 +23,11 @@ int main(int argc,char **argv)
 {
   int n;
   int curr_arg;
-  bool bVerbose;
+  bool bLineNumbers;
   bool bStreak;
   int ix;
   FILE *fptr;
-  int num_val_ixs;
+  int num_vals;
   int work;
   int *ixs;
   int streak_count;
@@ -43,14 +38,14 @@ int main(int argc,char **argv)
   }
 
   bDescending = false;
-  bVerbose = false;
+  bLineNumbers = false;
   bStreak = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-descending"))
       bDescending = true;
-    else if (!strcmp(argv[curr_arg],"-verbose"))
-      bVerbose = true;
+    else if (!strcmp(argv[curr_arg],"-line_numbers"))
+      bLineNumbers = true;
     else if (!strcmp(argv[curr_arg],"-streak"))
       bStreak = true;
     else
@@ -70,7 +65,7 @@ int main(int argc,char **argv)
     return 3;
   }
 
-  num_val_ixs = 0;
+  num_vals = 0;
 
   for ( ; ; ) {
     fscanf(fptr,"%d",&work);
@@ -78,17 +73,17 @@ int main(int argc,char **argv)
     if (feof(fptr))
       break;
 
-    num_val_ixs++;
+    num_vals++;
   }
 
-  if ((val_ixs = (struct val_ix *)malloc(num_val_ixs * sizeof (struct val_ix))) == NULL) {
-    printf("couldn't malloc %d structs\n",num_val_ixs);
+  if ((vals = (int *)malloc(num_vals * sizeof (int))) == NULL) {
+    printf("couldn't malloc %d structs\n",num_vals);
     return 4;
   }
 
-  if ((ixs = (int *)malloc(num_val_ixs * sizeof (int))) == NULL) {
-    printf("couldn't malloc %d ints\n",num_val_ixs);
-    free(val_ixs);
+  if ((ixs = (int *)malloc(num_vals * sizeof (int))) == NULL) {
+    printf("couldn't malloc %d ints\n",num_vals);
+    free(vals);
     return 5;
   }
 
@@ -102,38 +97,36 @@ int main(int argc,char **argv)
     if (feof(fptr))
       break;
 
-    val_ixs[ix].val = work;
-    val_ixs[ix].ix = ix;
-    ix++;
+    vals[ix++] = work;
   }
 
   fclose(fptr);
 
-  for (n = 0; n < num_val_ixs; n++)
+  for (n = 0; n < num_vals; n++)
     ixs[n] = n;
 
-  qsort(ixs,num_val_ixs,sizeof (int),compare);
+  qsort(ixs,num_vals,sizeof (int),compare);
 
   if (!bStreak) {
-    for (n = 0; n < num_val_ixs; n++) {
-      if (!bVerbose)
-        printf("%d\n",val_ixs[ixs[n]].val);
+    for (n = 0; n < num_vals; n++) {
+      if (!bLineNumbers)
+        printf("%d\n",vals[ixs[n]]);
       else
-        printf("%d (%d)\n",val_ixs[ixs[n]].val,val_ixs[ixs[n]].ix+1);
+        printf("%d (%d)\n",vals[ixs[n]],ixs[n]+1);
     }
   }
   else {
     streak_count = 0;
 
-    for (n = 0; n < num_val_ixs; n++) {
+    for (n = 0; n < num_vals; n++) {
       if (!bDescending) {
-        if (val_ixs[ixs[n]].val < 0)
+        if (vals[ixs[n]] < 0)
           streak_count++;
         else
           break;
       }
       else {
-        if (val_ixs[ixs[n]].val > 0)
+        if (vals[ixs[n]] > 0)
           streak_count++;
         else
           break;
@@ -144,7 +137,7 @@ int main(int argc,char **argv)
   }
 
   free(ixs);
-  free(val_ixs);
+  free(vals);
 
   return 0;
 }
@@ -159,8 +152,8 @@ int compare(const void *elem1,const void *elem2)
   ix1 = *(int *)elem1;
   ix2 = *(int *)elem2;
 
-  int1 = val_ixs[ix1].val;
-  int2 = val_ixs[ix2].val;
+  int1 = vals[ix1];
+  int2 = vals[ix2];
 
   if (int1 < 0)
     int1 *= -1;
