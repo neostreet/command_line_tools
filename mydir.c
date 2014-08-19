@@ -166,7 +166,7 @@ int main(int argc,char **argv)
         }
       }
 
-      sprintf(fmt_str_buf,"%%-%ds   %%10ld    %%s",max_filename_len);
+      sprintf(fmt_str_buf,"%%-%ds   %%10d    ",max_filename_len);
     }
 
     for (n = 0; n < num_files_found; n++) {
@@ -181,8 +181,8 @@ int main(int argc,char **argv)
         if (!bNameLast) {
           printf(fmt_str_buf,
             fi[file_ixs[n]].filename,
-            fi[file_ixs[n]].filesize,
-            cpt);
+            fi[file_ixs[n]].filesize);
+          printf("%s",cpt);
         }
         else {
           cpt[strlen(cpt) - 1] = 0;
