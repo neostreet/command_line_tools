@@ -251,7 +251,7 @@ int main(int argc,char **argv)
       else {
         if (!bHaveDateString) {
           if (!bCounts) {
-            printf("%d %d %d %s/%s\n",
+            printf("%10d %10d %10d %s/%s\n",
               total,positive_total,negative_total,save_dir,argv[curr_arg]);
           }
           else {
