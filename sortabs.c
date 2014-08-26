@@ -11,7 +11,7 @@
 static char save_dir[_MAX_PATH];
 
 static char usage[] =
-"usage: sortabs (-descending) (-line_numbers) (-streak) filename\n";
+"usage: sortabs (-descending) (-line_numbers) (-streak) (-ends_with_a_bang) filename\n";
 
 static bool bDescending;
 
@@ -25,6 +25,9 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bLineNumbers;
   bool bStreak;
+  bool bEndsWithABang;
+  int last_winning_hand_ix;
+  bool bBang;
   int ix;
   FILE *fptr;
   int num_vals;
@@ -32,7 +35,7 @@ int main(int argc,char **argv)
   int *ixs;
   int streak_count;
 
-  if ((argc < 2) || (argc > 5)) {
+  if ((argc < 2) || (argc > 6)) {
     printf(usage);
     return 1;
   }
@@ -40,6 +43,7 @@ int main(int argc,char **argv)
   bDescending = false;
   bLineNumbers = false;
   bStreak = false;
+  bEndsWithABang = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-descending"))
@@ -48,6 +52,11 @@ int main(int argc,char **argv)
       bLineNumbers = true;
     else if (!strcmp(argv[curr_arg],"-streak"))
       bStreak = true;
+    else if (!strcmp(argv[curr_arg],"-ends_with_a_bang")) {
+      bEndsWithABang = true;
+      bStreak = true;
+      bDescending = true;
+    }
     else
       break;
   }
@@ -105,6 +114,17 @@ int main(int argc,char **argv)
   for (n = 0; n < num_vals; n++)
     ixs[n] = n;
 
+  if (bEndsWithABang) {
+    last_winning_hand_ix = -1;
+
+    for (n = num_vals - 1; n >= 0; n--) {
+      if (vals[n] > 0) {
+        last_winning_hand_ix = n;
+        break;
+      }
+    }
+  }
+
   qsort(ixs,num_vals,sizeof (int),compare);
 
   if (!bStreak) {
@@ -116,7 +136,10 @@ int main(int argc,char **argv)
     }
   }
   else {
-    streak_count = 0;
+    if (!bEndsWithABang)
+      streak_count = 0;
+    else
+      bBang = false;
 
     for (n = 0; n < num_vals; n++) {
       if (!bDescending) {
@@ -126,14 +149,21 @@ int main(int argc,char **argv)
           break;
       }
       else {
-        if (vals[ixs[n]] > 0)
-          streak_count++;
+        if (vals[ixs[n]] > 0) {
+          if (!bEndsWithABang)
+            streak_count++;
+          else if (ixs[n] == last_winning_hand_ix)
+            bBang = true;
+        }
         else
           break;
       }
     }
 
-    printf("%d %s/%s\n",streak_count,save_dir,argv[curr_arg]);
+    if (!bEndsWithABang)
+      printf("%d %s/%s\n",streak_count,save_dir,argv[curr_arg]);
+    else if (bBang)
+      printf("%s/%s\n",save_dir,argv[curr_arg]);
   }
 
   free(ixs);
