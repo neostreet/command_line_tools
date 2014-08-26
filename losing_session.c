@@ -14,7 +14,7 @@ static char save_dir[_MAX_PATH];
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: winning_session (-verbose) filename\n";
+"usage: losing_session (-verbose) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
@@ -68,7 +68,7 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
-  if (runtot > 0) {
+  if (runtot < 0) {
     if (!bVerbose)
       printf("%s\n",save_dir);
     else
