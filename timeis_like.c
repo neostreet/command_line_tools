@@ -3,39 +3,75 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#define FALSE 0
-#define TRUE  1
+static char usage[] =
+"usage: timeis_like (-date_only) filename (filename filename ...)\n";
+
+void get_year_month_day(time_t *timtpt,int *yearpt,int *monthpt,int *daypt);
 
 #define MAX_FILENAME_LEN 512
 static char filename[MAX_FILENAME_LEN];
 
+static char *months[] = {
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};
+#define NUM_MONTHS (sizeof months / sizeof (char *))
+
 int main(int argc,char **argv)
 {
-  int n;
+  int curr_arg;
+  int like_file_arg;
+  bool bDateOnly;
   time_t mtime;
+  int year;
+  int month;
+  int day;
+  int compare_year;
+  int compare_month;
+  int compare_day;
   struct stat statbuf;
   int bStdin;
   char *filenam;
 
   if (argc < 2) {
-    printf("usage: timeis_like filename (filename filename ...)\n");
+    printf(usage);
     return 1;
   }
 
-  if (!stat(argv[1],&statbuf))
-    mtime = statbuf.st_mtime;
-  else {
-    printf("couldn't get status of %s\n",argv[1]);
+  bDateOnly = false;
+
+  for (curr_arg = 1; curr_arg < argc; curr_arg++) {
+    if (!strcmp(argv[curr_arg],"-date_only"))
+      bDateOnly = true;
+    else
+      break;
+  }
+
+  if (argc - curr_arg < 1) {
+    printf(usage);
     return 2;
   }
 
-  if (argc == 2) {
-    bStdin = TRUE;
+  like_file_arg = curr_arg;
+
+  if (!stat(argv[like_file_arg],&statbuf)) {
+    mtime = statbuf.st_mtime;
+
+    if (bDateOnly)
+      get_year_month_day(&mtime,&year,&month,&day);
+  }
+  else {
+    printf("couldn't get status of %s\n",argv[like_file_arg]);
+    return 3;
+  }
+
+  if (argc - curr_arg == 1) {
+    bStdin = true;
     filenam = filename;
   }
   else {
-    bStdin = FALSE;
-    n = 2;
+    bStdin = false;
+    curr_arg++;
   }
 
   for ( ; ; ) {
@@ -46,19 +82,58 @@ int main(int argc,char **argv)
         break;
     }
     else
-      filenam = argv[n];
+      filenam = argv[curr_arg];
 
-    if (!stat(filenam,&statbuf))
-      if ((statbuf.st_mtime == mtime) && (strcmp(filenam,argv[1])))
-        printf("%s\n",filenam);
+    if ((strcmp(filenam,argv[like_file_arg])) && !stat(filenam,&statbuf)) {
+      if (!bDateOnly) {
+        if ((statbuf.st_mtime == mtime))
+          printf("%s\n",filenam);
+      }
+      else {
+        get_year_month_day(&statbuf.st_mtime,&compare_year,&compare_month,&compare_day);
+
+        if ((compare_year == year) && (compare_month == month) && (compare_day == day))
+          printf("%s\n",filenam);
+      }
+    }
 
     if (!bStdin) {
-      n++;
+      curr_arg++;
 
-      if (n == argc)
+      if (curr_arg == argc)
         break;
     }
   }
 
   return 0;
+}
+
+void get_year_month_day(time_t *timtpt,int *yearpt,int *monthpt,int *daypt)
+{
+  int m;
+  char *cpt;
+  int month;
+
+  cpt = ctime(timtpt);
+
+  sscanf(&cpt[20],"%d",yearpt);
+
+  for (month = 0; month < NUM_MONTHS; month++) {
+    for (m = 0; m < 3; m++) {
+      if (months[month][m] != cpt[4+m])
+        break;
+    }
+
+    if (m == 3)
+      break;
+  }
+
+  if (month == NUM_MONTHS)
+    month = 1;
+  else
+    month++;
+
+  *monthpt = month;
+
+  sscanf(&cpt[8],"%d",daypt);
 }
