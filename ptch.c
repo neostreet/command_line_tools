@@ -73,7 +73,10 @@ int main(int argc,char **argv)
     O_CREAT | O_EXCL | O_BINARY | O_WRONLY,
     S_IREAD | S_IWRITE)) == -1) {
     printf(couldnt_open,argv[2]);
-    free(buf);
+
+    for (n = 0; n < 2; n++)
+      free(buf[n]);
+
     close(fhndl[0]);
     return 7;
   }
