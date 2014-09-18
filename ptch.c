@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   if ((out_fhndl = open(argv[4],
     O_CREAT | O_EXCL | O_BINARY | O_WRONLY,
     S_IREAD | S_IWRITE)) == -1) {
-    printf(couldnt_open,argv[2]);
+    printf(couldnt_open,argv[4]);
 
     for (n = 0; n < 2; n++)
       free(buf[n]);
