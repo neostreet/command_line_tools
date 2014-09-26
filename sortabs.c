@@ -11,7 +11,8 @@
 static char save_dir[_MAX_PATH];
 
 static char usage[] =
-"usage: sortabs (-descending) (-line_numbers) (-streak) (-ends_with_a_bang) filename\n";
+"usage: sortabs (-descending) (-line_numbers) (-streak) (-ends_with_a_bang)\n"
+"  (-only_zero) filename\n";
 
 static bool bDescending;
 
@@ -26,6 +27,7 @@ int main(int argc,char **argv)
   bool bLineNumbers;
   bool bStreak;
   bool bEndsWithABang;
+  bool bOnlyZero;
   int last_winning_hand_ix;
   bool bBang;
   int ix;
@@ -35,7 +37,7 @@ int main(int argc,char **argv)
   int *ixs;
   int streak_count;
 
-  if ((argc < 2) || (argc > 6)) {
+  if ((argc < 2) || (argc > 7)) {
     printf(usage);
     return 1;
   }
@@ -44,6 +46,7 @@ int main(int argc,char **argv)
   bLineNumbers = false;
   bStreak = false;
   bEndsWithABang = false;
+  bOnlyZero = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-descending"))
@@ -57,6 +60,8 @@ int main(int argc,char **argv)
       bStreak = true;
       bDescending = true;
     }
+    else if (!strcmp(argv[curr_arg],"-only_zero"))
+      bOnlyZero = true;
     else
       break;
   }
@@ -160,8 +165,10 @@ int main(int argc,char **argv)
       }
     }
 
-    if (!bEndsWithABang)
-      printf("%d %s/%s\n",streak_count,save_dir,argv[curr_arg]);
+    if (!bEndsWithABang) {
+      if (!bOnlyZero || !streak_count)
+        printf("%d %s/%s\n",streak_count,save_dir,argv[curr_arg]);
+    }
     else if (bBang)
       printf("%s/%s\n",save_dir,argv[curr_arg]);
   }
