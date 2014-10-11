@@ -12,7 +12,7 @@ static char save_dir[_MAX_PATH];
 
 static char usage[] =
 "usage: sortabs (-descending) (-line_numbers) (-streak) (-ends_with_a_bang)\n"
-"  (-only_zero) filename\n";
+"  (-ends_with_a_big_bang) (-only_zero) filename\n";
 
 static bool bDescending;
 
@@ -27,6 +27,7 @@ int main(int argc,char **argv)
   bool bLineNumbers;
   bool bStreak;
   bool bEndsWithABang;
+  bool bEndsWithABigBang;
   bool bOnlyZero;
   int last_winning_hand_ix;
   bool bBang;
@@ -37,7 +38,7 @@ int main(int argc,char **argv)
   int *ixs;
   int streak_count;
 
-  if ((argc < 2) || (argc > 7)) {
+  if ((argc < 2) || (argc > 8)) {
     printf(usage);
     return 1;
   }
@@ -46,6 +47,7 @@ int main(int argc,char **argv)
   bLineNumbers = false;
   bStreak = false;
   bEndsWithABang = false;
+  bEndsWithABigBang = false;
   bOnlyZero = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
@@ -60,10 +62,20 @@ int main(int argc,char **argv)
       bStreak = true;
       bDescending = true;
     }
+    else if (!strcmp(argv[curr_arg],"-ends_with_a_big_bang")) {
+      bEndsWithABigBang = true;
+      bStreak = true;
+      bDescending = true;
+    }
     else if (!strcmp(argv[curr_arg],"-only_zero"))
       bOnlyZero = true;
     else
       break;
+  }
+
+  if (bEndsWithABang && bEndsWithABigBang) {
+    printf("can't specify both -ends_with_a_bang and -ends_with_a_big_bang\n");
+    return 2;
   }
 
   if (bStreak)
@@ -71,12 +83,12 @@ int main(int argc,char **argv)
 
   if (argc - curr_arg != 1) {
     printf(usage);
-    return 2;
+    return 3;
   }
 
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf("couldn't open %s\n",argv[curr_arg]);
-    return 3;
+    return 4;
   }
 
   num_vals = 0;
@@ -92,13 +104,13 @@ int main(int argc,char **argv)
 
   if ((vals = (int *)malloc(num_vals * sizeof (int))) == NULL) {
     printf("couldn't malloc %d structs\n",num_vals);
-    return 4;
+    return 5;
   }
 
   if ((ixs = (int *)malloc(num_vals * sizeof (int))) == NULL) {
     printf("couldn't malloc %d ints\n",num_vals);
     free(vals);
-    return 5;
+    return 6;
   }
 
   fseek(fptr,0L,SEEK_SET);
@@ -119,7 +131,7 @@ int main(int argc,char **argv)
   for (n = 0; n < num_vals; n++)
     ixs[n] = n;
 
-  if (bEndsWithABang) {
+  if (bEndsWithABang || bEndsWithABigBang) {
     last_winning_hand_ix = -1;
 
     for (n = num_vals - 1; n >= 0; n--) {
@@ -141,7 +153,7 @@ int main(int argc,char **argv)
     }
   }
   else {
-    if (!bEndsWithABang)
+    if (!bEndsWithABang && !bEndsWithABigBang)
       streak_count = 0;
     else
       bBang = false;
@@ -155,17 +167,23 @@ int main(int argc,char **argv)
       }
       else {
         if (vals[ixs[n]] > 0) {
-          if (!bEndsWithABang)
+          if (!bEndsWithABang && !bEndsWithABigBang)
             streak_count++;
-          else if (ixs[n] == last_winning_hand_ix)
-            bBang = true;
+          else if (bEndsWithABang) {
+            if (ixs[n] == last_winning_hand_ix)
+              bBang = true;
+          }
+          else {
+            if (!n && ixs[n] == last_winning_hand_ix)
+              bBang = true;
+          }
         }
         else
           break;
       }
     }
 
-    if (!bEndsWithABang) {
+    if (!bEndsWithABang && !bEndsWithABigBang) {
       if (!bOnlyZero || !streak_count)
         printf("%d %s/%s\n",streak_count,save_dir,argv[curr_arg]);
     }
