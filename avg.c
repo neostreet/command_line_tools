@@ -14,9 +14,12 @@ static char save_dir[_MAX_PATH];
 char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: avg (-debug) (-verbose) (-runtot) (-abs) (-date_string)\n"
+"usage: avg (-debug) (-verbose) (-abs) (-date_string)\n"
 "  filename (filename ...)\n";
 static char couldnt_open[] = "couldn't open %s\n";
+static char fmt1[] = "%9.2lf";
+static char fmt2[] = "%9.2lf (%d %d)";
+static char fmt3[] = " %s\n";
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 static int get_date_from_path(char *path,char slash_char,int num_slashes,char **date_string_ptr);
@@ -26,7 +29,6 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bDebug;
   bool bVerbose;
-  bool bRunTot;
   bool bAbs;
   bool bDateString;
   int retval;
@@ -45,7 +47,6 @@ int main(int argc,char **argv)
 
   bDebug = false;
   bVerbose = false;
-  bRunTot = false;
   bAbs = false;
   bDateString = false;
 
@@ -54,8 +55,6 @@ int main(int argc,char **argv)
       bDebug = true;
     else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
-    else if (!strcmp(argv[curr_arg],"-runtot"))
-      bRunTot = true;
     else if (!strcmp(argv[curr_arg],"-abs"))
       bAbs = true;
     else if (!strcmp(argv[curr_arg],"-date_string"))
@@ -111,10 +110,15 @@ int main(int argc,char **argv)
       if (bVerbose) {
         dwork = (double)tot / (double)line_no;
 
-        if (!bRunTot)
-          printf("  %10d %9.2lf\n",work,dwork);
+        if (!bDebug)
+          printf(fmt1,dwork);
         else
-          printf("  %10d %10d %9.2lf\n",work,tot,dwork);
+          printf(fmt2,dwork,tot,line_no);
+
+        if (!bDateString)
+          putchar(0x0a);
+        else
+          printf(fmt3,date_string);
       }
     }
 
@@ -123,19 +127,15 @@ int main(int argc,char **argv)
     if (!bVerbose) {
       dwork = (double)tot / (double)line_no;
 
-      if (!bRunTot) {
-        if (!bDebug)
-          printf("%9.2lf",dwork);
-        else
-          printf("%9.2lf (%d %d)",dwork,tot,line_no);
-      }
+      if (!bDebug)
+        printf(fmt1,dwork);
       else
-        printf("%10d %9.2lf",tot,dwork);
+        printf(fmt2,dwork,tot,line_no);
 
       if (!bDateString)
         putchar(0x0a);
       else
-        printf(" %s\n",date_string);
+        printf(fmt3,date_string);
     }
   }
 
