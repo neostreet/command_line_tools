@@ -14,7 +14,8 @@ static char save_dir[_MAX_PATH];
 char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: avg (-verbose) (-runtot) (-abs) (-date_string) filename (filename ...)\n";
+"usage: avg (-debug) (-verbose) (-runtot) (-abs) (-date_string)\n"
+"  filename (filename ...)\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -23,6 +24,7 @@ static int get_date_from_path(char *path,char slash_char,int num_slashes,char **
 int main(int argc,char **argv)
 {
   int curr_arg;
+  bool bDebug;
   bool bVerbose;
   bool bRunTot;
   bool bAbs;
@@ -41,13 +43,16 @@ int main(int argc,char **argv)
     return 1;
   }
 
+  bDebug = false;
   bVerbose = false;
   bRunTot = false;
   bAbs = false;
   bDateString = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmp(argv[curr_arg],"-verbose"))
+    if (!strcmp(argv[curr_arg],"-debug"))
+      bDebug = true;
+    else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-runtot"))
       bRunTot = true;
@@ -107,9 +112,9 @@ int main(int argc,char **argv)
         dwork = (double)tot / (double)line_no;
 
         if (!bRunTot)
-          printf("  %10d %13.2lf\n",work,dwork);
+          printf("  %10d %9.2lf\n",work,dwork);
         else
-          printf("  %10d %10d %13.2lf\n",work,tot,dwork);
+          printf("  %10d %10d %9.2lf\n",work,tot,dwork);
       }
     }
 
@@ -118,10 +123,14 @@ int main(int argc,char **argv)
     if (!bVerbose) {
       dwork = (double)tot / (double)line_no;
 
-      if (!bRunTot)
-        printf("%13.2lf",dwork);
+      if (!bRunTot) {
+        if (!bDebug)
+          printf("%9.2lf",dwork);
+        else
+          printf("%9.2lf (%d %d)",dwork,tot,line_no);
+      }
       else
-        printf("%10d %13.2lf",tot,dwork);
+        printf("%10d %9.2lf",tot,dwork);
 
       if (!bDateString)
         putchar(0x0a);
