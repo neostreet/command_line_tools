@@ -4,8 +4,10 @@
 #define MAX_LINE_LEN 8192
 static char line[MAX_LINE_LEN];
 
+#define TAB 0x9
+
 static char usage[] =
-"usage: llens (-verbose) (-skip_spaces) filename (filename ...)\n";
+"usage: llens (-verbose) (-skip_spaces) (-tabn) filename (filename ...)\n";
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
 int main(int argc,char **argv)
@@ -14,6 +16,8 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bVerbose;
   bool bSkipSpaces;
+  bool bTab;
+  int tab_len;
   FILE *fptr;
   int linelen;
   int line_no;
@@ -21,6 +25,7 @@ int main(int argc,char **argv)
   int first_file_ix;
   int len;
   int space_count;
+  int tab_count;
 
   if (argc < 2) {
     printf(usage);
@@ -29,12 +34,17 @@ int main(int argc,char **argv)
 
   bVerbose = false;
   bSkipSpaces = false;
+  bTab = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-skip_spaces"))
       bSkipSpaces = true;
+    else if (!strncmp(argv[curr_arg],"-tab",4)) {
+      bTab = true;
+      sscanf(&argv[curr_arg][4],"%d",&tab_len);
+    }
     else
       break;
   }
@@ -74,19 +84,32 @@ int main(int argc,char **argv)
 
       line_no++;
 
-      space_count = 0;
-
       if (bSkipSpaces) {
+        space_count = 0;
+
         for (n = 0; n < linelen; n++) {
           if (line[n] == ' ')
             space_count++;
         }
+
+        linelen -= space_count;
+      }
+
+      if (bTab) {
+        tab_count = 0;
+
+        for (n = 0; n < linelen; n++) {
+          if (line[n] == TAB)
+            tab_count++;
+        }
+
+        linelen += tab_count * (tab_len - 1);
       }
 
       if (!bVerbose)
-        printf("%d\n",linelen - space_count);
+        printf("%d\n",linelen);
       else
-        printf("%3d %s\n",linelen - space_count,line);
+        printf("%3d %s\n",linelen,line);
     }
 
     fclose(fptr);
