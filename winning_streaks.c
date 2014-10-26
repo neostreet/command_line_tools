@@ -4,10 +4,14 @@
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
+static char save_line[MAX_LINE_LEN];
 
 static char usage[] = "usage: winning_streaks (-debug) (-verbose) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
-static char malloc_failed[] = "malloc of %d ints failed\n";
+
+static char fmt[] = "%s\n";
+static char fmt2[] = "%2d %s\n";
+static char fmt3[] = "%2d %s %d\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
@@ -16,15 +20,12 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bDebug;
   bool bVerbose;
-  int m;
-  int n;
   FILE *fptr;
   int line_len;
-  int num_deltas;
-  int *deltas;
-  int max_winning_streak;
-  int max_winning_streak_start;
-  int num_positive_deltas;
+  int line_no;
+  int curr_winning_streak;
+  int curr_winning_streak_start_line;
+  int delta;
 
   if ((argc < 2) || (argc > 4)) {
     printf(usage);
@@ -53,7 +54,8 @@ int main(int argc,char **argv)
     return 3;
   }
 
-  num_deltas = 0;
+  line_no = 0;
+  curr_winning_streak = 0;
 
   for ( ; ; ) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
@@ -61,79 +63,49 @@ int main(int argc,char **argv)
     if (feof(fptr))
       break;
 
-    num_deltas++;
-  }
+    line_no++;
 
-  if ((deltas = (int *)malloc(
-    num_deltas * sizeof (int))) == NULL) {
-    printf(malloc_failed,num_deltas);
-    fclose(fptr);
-    return 4;
-  }
+    sscanf(line,"%d",&delta);
 
-  fseek(fptr,0L,SEEK_SET);
+    if (delta <= 0) {
+      if (curr_winning_streak >= 2) {
+        if (!bVerbose) {
+          if (!bDebug)
+            printf(fmt2,curr_winning_streak,save_line);
+          else
+            printf(fmt3,curr_winning_streak,argv[curr_arg],curr_winning_streak_start_line);
+        }
+      }
 
-  for (n = 0; n < num_deltas; n++) {
-    GetLine(fptr,line,&line_len,MAX_LINE_LEN);
+      curr_winning_streak = 0;
+    }
+    else {
+      curr_winning_streak++;
 
-    if (feof(fptr))
-      break;
+      if (curr_winning_streak == 1) {
+        strcpy(save_line,line);
+        curr_winning_streak_start_line = line_no;
+      }
 
-    sscanf(line,"%d",&deltas[n]);
+      if (bVerbose) {
+        if (curr_winning_streak == 2)
+          printf(fmt,save_line);
+
+        if (curr_winning_streak >= 2)
+          printf(fmt,line);
+      }
+    }
   }
 
   fclose(fptr);
 
-  if (bDebug && bVerbose) {
-    for (n = 0; n < num_deltas; n++)
-      printf("%d\n",deltas[n]);
-
-    printf("---------------------\n");
-  }
-
-  max_winning_streak = 0;
-  max_winning_streak_start = -1;
-  num_positive_deltas = 0;
-
-  for (n = 0; n < num_deltas - 1; n++) {
-    if (deltas[n] > 0)
-      num_positive_deltas++;
-
-    if ((deltas[n] > 0) && (deltas[n + 1] > 0)) {
-      for (m = n + 2; m < num_deltas; m++) {
-        if (deltas[m] <= 0)
-          break;
-      }
-
-      if (bVerbose)
-        printf("%3d %3d (%2d)\n",n,m-1,m-n);
-
-      if (m - n > max_winning_streak) {
-        max_winning_streak = m - n;
-        max_winning_streak_start = n;
-      }
-
-      if (m >= num_deltas - 1)
-        break;
+  if (curr_winning_streak >= 2) {
+    if (!bVerbose) {
+      if (!bDebug)
+        printf(fmt2,curr_winning_streak,save_line);
       else
-        n = m - 1;
+        printf(fmt3,curr_winning_streak,argv[curr_arg],curr_winning_streak_start_line);
     }
-  }
-
-  free(deltas);
-
-  if (num_positive_deltas && !max_winning_streak)
-    max_winning_streak = 1;
-
-  if (!bVerbose) {
-    if (!bDebug)
-      printf("%d\n",max_winning_streak);
-    else
-      printf("%d %s\n",max_winning_streak,argv[curr_arg]);
-  }
-  else {
-    printf("\nmax_winning_streak = %2d (%3d)\n",
-      max_winning_streak,max_winning_streak_start);
   }
 
   return 0;
