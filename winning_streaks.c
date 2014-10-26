@@ -9,9 +9,8 @@ static char save_line[MAX_LINE_LEN];
 static char usage[] = "usage: winning_streaks (-debug) (-verbose) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
-static char fmt[] = "%s\n";
+static char fmt[] = "%2d %d\n";
 static char fmt2[] = "%2d %s\n";
-static char fmt3[] = "%2d %s %d\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
@@ -24,7 +23,7 @@ int main(int argc,char **argv)
   int line_len;
   int line_no;
   int curr_winning_streak;
-  int curr_winning_streak_start_line;
+  int curr_winning_streak_end_line;
   int delta;
 
   if ((argc < 2) || (argc > 4)) {
@@ -71,9 +70,9 @@ int main(int argc,char **argv)
       if (curr_winning_streak >= 2) {
         if (!bVerbose) {
           if (!bDebug)
-            printf(fmt2,curr_winning_streak,save_line);
+            printf(fmt,curr_winning_streak,curr_winning_streak_end_line);
           else
-            printf(fmt3,curr_winning_streak,argv[curr_arg],curr_winning_streak_start_line);
+            printf(fmt2,curr_winning_streak,save_line);
         }
       }
 
@@ -82,17 +81,17 @@ int main(int argc,char **argv)
     else {
       curr_winning_streak++;
 
-      if (curr_winning_streak == 1) {
-        strcpy(save_line,line);
-        curr_winning_streak_start_line = line_no;
-      }
-
       if (bVerbose) {
         if (curr_winning_streak == 2)
-          printf(fmt,save_line);
+          printf(fmt2,1,save_line);
 
         if (curr_winning_streak >= 2)
-          printf(fmt,line);
+          printf(fmt2,curr_winning_streak,line);
+      }
+
+      if (curr_winning_streak) {
+        strcpy(save_line,line);
+        curr_winning_streak_end_line = line_no;
       }
     }
   }
@@ -102,9 +101,9 @@ int main(int argc,char **argv)
   if (curr_winning_streak >= 2) {
     if (!bVerbose) {
       if (!bDebug)
-        printf(fmt2,curr_winning_streak,save_line);
+        printf(fmt,curr_winning_streak,curr_winning_streak_end_line);
       else
-        printf(fmt3,curr_winning_streak,argv[curr_arg],curr_winning_streak_start_line);
+        printf(fmt2,curr_winning_streak,save_line);
     }
   }
 
