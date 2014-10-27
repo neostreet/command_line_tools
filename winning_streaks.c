@@ -10,7 +10,7 @@ static char usage[] = "usage: winning_streaks (-debug) (-verbose) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static char fmt[] = "%2d %d\n";
-static char fmt2[] = "%2d %s\n";
+static char fmt2[] = "%2d %10d %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
@@ -23,8 +23,10 @@ int main(int argc,char **argv)
   int line_len;
   int line_no;
   int curr_winning_streak;
+  int curr_moving_sum;
   int curr_winning_streak_end_line;
   int delta;
+  int first_delta;
 
   if ((argc < 2) || (argc > 4)) {
     printf(usage);
@@ -55,6 +57,7 @@ int main(int argc,char **argv)
 
   line_no = 0;
   curr_winning_streak = 0;
+  curr_moving_sum = 0;
 
   for ( ; ; ) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
@@ -72,21 +75,27 @@ int main(int argc,char **argv)
           if (!bDebug)
             printf(fmt,curr_winning_streak,curr_winning_streak_end_line);
           else
-            printf(fmt2,curr_winning_streak,save_line);
+            printf(fmt2,curr_winning_streak,curr_moving_sum,save_line);
         }
       }
 
       curr_winning_streak = 0;
+      curr_moving_sum = 0;
     }
     else {
       curr_winning_streak++;
 
+      if (curr_winning_streak == 1)
+        first_delta = delta;
+
+      curr_moving_sum += delta;
+
       if (bVerbose) {
         if (curr_winning_streak == 2)
-          printf(fmt2,1,save_line);
+          printf(fmt2,1,first_delta,save_line);
 
         if (curr_winning_streak >= 2)
-          printf(fmt2,curr_winning_streak,line);
+          printf(fmt2,curr_winning_streak,curr_moving_sum,line);
       }
 
       if (curr_winning_streak) {
@@ -103,7 +112,7 @@ int main(int argc,char **argv)
       if (!bDebug)
         printf(fmt,curr_winning_streak,curr_winning_streak_end_line);
       else
-        printf(fmt2,curr_winning_streak,save_line);
+        printf(fmt2,curr_winning_streak,curr_moving_sum,save_line);
     }
   }
 
