@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#define MAX_LINE_LEN 1024
+#define MAX_LINE_LEN 8192
 char line[MAX_LINE_LEN];
 
 static char usage[] = "usage: fixtext filename\n";
