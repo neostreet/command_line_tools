@@ -13,7 +13,7 @@ static char save_dir[_MAX_PATH];
 static char usage[] =
 "usage: sortabs (-descending) (-line_numbers) (-pos_streak) (-neg_streak)\n"
 "  (-ends_with_a_bang) (-ends_with_a_big_bang) (-only_zero) (-only_nonzero)\n"
-"  (-get_date_from_cwd) filename\n";
+"  (-get_date_from_path) filename\n";
 
 static bool bDescending;
 
