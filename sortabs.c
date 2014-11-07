@@ -13,13 +13,14 @@ static char save_dir[_MAX_PATH];
 static char usage[] =
 "usage: sortabs (-descending) (-line_numbers) (-pos_streak) (-neg_streak)\n"
 "  (-ends_with_a_bang) (-ends_with_a_big_bang) (-only_zero) (-only_nonzero)\n"
-"  filename\n";
+"  (-get_date_from_cwd) filename\n";
 
 static bool bDescending;
 
 static int *vals;
 
 int compare(const void *elem1,const void *elem2);
+static int get_date_from_path(char *path,char slash_char,int num_slashes,char **date_string_ptr);
 
 int main(int argc,char **argv)
 {
@@ -32,16 +33,19 @@ int main(int argc,char **argv)
   bool bEndsWithABigBang;
   bool bOnlyZero;
   bool bOnlyNonzero;
+  bool bGetDateFromPath;
   int last_winning_hand_ix;
   bool bBang;
   int ix;
   FILE *fptr;
+  int retval;
+  char *date_string;
   int num_vals;
   int work;
   int *ixs;
   int streak_count;
 
-  if ((argc < 2) || (argc > 10)) {
+  if ((argc < 2) || (argc > 11)) {
     printf(usage);
     return 1;
   }
@@ -53,6 +57,7 @@ int main(int argc,char **argv)
   bEndsWithABigBang = false;
   bOnlyZero = false;
   bOnlyNonzero = false;
+  bGetDateFromPath = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-descending"))
@@ -88,6 +93,8 @@ int main(int argc,char **argv)
       bOnlyZero = true;
     else if (!strcmp(argv[curr_arg],"-only_nonzero"))
       bOnlyNonzero = true;
+    else if (!strcmp(argv[curr_arg],"-get_date_from_path"))
+      bGetDateFromPath = true;
     else
       break;
   }
@@ -102,17 +109,26 @@ int main(int argc,char **argv)
     return 4;
   }
 
-  if (bStreak)
+  if (bStreak || bGetDateFromPath)
     getcwd(save_dir,_MAX_PATH);
+
+  if (bGetDateFromPath) {
+    retval = get_date_from_path(save_dir,'/',2,&date_string);
+
+    if (retval) {
+      printf("get_date_from_path() on %s failed: %d\n",save_dir,retval);
+      return 5;
+    }
+  }
 
   if (argc - curr_arg != 1) {
     printf(usage);
-    return 5;
+    return 6;
   }
 
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf("couldn't open %s\n",argv[curr_arg]);
-    return 6;
+    return 7;
   }
 
   num_vals = 0;
@@ -128,13 +144,13 @@ int main(int argc,char **argv)
 
   if ((vals = (int *)malloc(num_vals * sizeof (int))) == NULL) {
     printf("couldn't malloc %d structs\n",num_vals);
-    return 7;
+    return 8;
   }
 
   if ((ixs = (int *)malloc(num_vals * sizeof (int))) == NULL) {
     printf("couldn't malloc %d ints\n",num_vals);
     free(vals);
-    return 8;
+    return 9;
   }
 
   fseek(fptr,0L,SEEK_SET);
@@ -219,8 +235,12 @@ int main(int argc,char **argv)
         if (!bOnlyNonzero || streak_count)
           printf("%d %s/%s\n",streak_count,save_dir,argv[curr_arg]);
     }
-    else if (bBang)
-      printf("%s/%s\n",save_dir,argv[curr_arg]);
+    else if (bBang) {
+      if (!bGetDateFromPath)
+        printf("%s/%s\n",save_dir,argv[curr_arg]);
+      else
+        printf("%s\n",date_string);
+    }
   }
 
   free(ixs);
@@ -252,4 +272,42 @@ int compare(const void *elem1,const void *elem2)
     return int1 - int2;
 
   return int2 - int1;
+}
+
+static char sql_date_string[11];
+
+static int get_date_from_path(char *path,char slash_char,int num_slashes,char **date_string_ptr)
+{
+  int n;
+  int len;
+  int slash_count;
+
+  len = strlen(path);
+  slash_count = 0;
+
+  for (n = len - 1; (n >= 0); n--) {
+    if (path[n] == slash_char) {
+      slash_count++;
+
+      if (slash_count == num_slashes)
+        break;
+    }
+  }
+
+  if (slash_count != num_slashes)
+    return 1;
+
+  if (path[n+5] != slash_char)
+    return 2;
+
+  strncpy(sql_date_string,&path[n+1],4);
+  sql_date_string[4] = '-';
+  strncpy(&sql_date_string[5],&path[n+6],2);
+  sql_date_string[7] = '-';
+  strncpy(&sql_date_string[8],&path[n+8],2);
+  sql_date_string[10] = 0;
+
+  *date_string_ptr = sql_date_string;
+
+  return 0;
 }
