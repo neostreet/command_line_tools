@@ -16,6 +16,7 @@ int main(int argc,char **argv)
   FILE *fptr;
   int linel;
   int lineno;
+  int repeat_count;
 
   if (argc != 4) {
     printf(usage);
@@ -40,8 +41,12 @@ int main(int argc,char **argv)
 
     lineno++;
 
-    if ((lineno > 1) && !strncmp(&prev_line[offset],&line[offset],len))
-      printf("%7d: %s\n",lineno,line);
+    if ((lineno > 1) && !strncmp(&prev_line[offset],&line[offset],len)) {
+      repeat_count++;
+      printf("%7d (%d): %s\n",lineno,repeat_count,line);
+    }
+    else
+      repeat_count = 0;
 
     strcpy(prev_line,line);
   }
