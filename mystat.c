@@ -1,13 +1,16 @@
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-static char usage[] = "usage: mystat filename (filename ...)\n";
+static char usage[] =
+"usage: mystat (-reverse) filename (filename ...)\n";
 static char status_err[] = "couldn't get status of %s\n";
 
 int main(int argc,char **argv)
 {
-  int n;
+  int curr_arg;
+  bool bReverse;
   struct stat statbuf;
 
   if (argc < 2) {
@@ -15,9 +18,32 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  for (n = 1; n < argc; n++) {
-    if (stat(argv[n],&statbuf))
-      printf("couldn't get status of %s\n",argv[n]);
+  bReverse = false;
+
+  for (curr_arg = 1; curr_arg < argc; curr_arg++) {
+    if (!strcmp(argv[curr_arg],"-reverse"))
+      bReverse = true;
+    else
+      break;
+  }
+
+  if (argc - curr_arg < 1) {
+    printf(usage);
+    return 2;
+  }
+
+
+  for ( ; curr_arg < argc; curr_arg++) {
+    if (!bReverse) {
+      if (stat(argv[curr_arg],&statbuf))
+        printf("couldn't get status of %s\n",argv[curr_arg]);
+    }
+    else {
+      if (stat(argv[curr_arg],&statbuf))
+        ;
+      else
+        printf("%s\n",argv[curr_arg]);
+    }
   }
 
   return 0;
