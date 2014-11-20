@@ -4,10 +4,8 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#define FALSE 0
-#define TRUE  1
-
-static char usage[] = "usage: fmtime (-noctime) filename\n";
+static char usage[] =
+"usage: fmtime (-noctime) (-suppress_errors) filename\n";
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
@@ -17,23 +15,27 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 int main(int argc,char **argv)
 {
   int n;
-  int bNoCtime;
+  bool bNoCtime;
+  bool bSuppressErrors;
   FILE *fptr;
   int line_no;
   int linelen;
   struct stat stat_buf;
   char *cpt;
 
-  if ((argc != 2) && (argc != 3)) {
+  if ((argc < 2) || (argc > 4)) {
     printf(usage);
     return 1;
   }
 
-  bNoCtime = FALSE;
+  bNoCtime = false;
+  bSuppressErrors = false;
 
   for (n = 1; n < argc; n++) {
     if (!strcmp(argv[n],"-noctime"))
-      bNoCtime = TRUE;
+      bNoCtime = true;
+    else if (!strcmp(argv[n],"-suppress_errors"))
+      bSuppressErrors = true;
     else
       break;
   }
@@ -68,8 +70,10 @@ int main(int argc,char **argv)
         printf("%s\n",line);
       }
     }
-    else
-      printf("stat() failed on %s\n",line);
+    else {
+      if (!bSuppressErrors)
+        printf("stat() failed on %s\n",line);
+    }
   }
 
   fclose(fptr);
