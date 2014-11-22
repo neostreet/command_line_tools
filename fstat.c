@@ -5,7 +5,7 @@
 #include <time.h>
 
 static char usage[] =
-"usage: fstat (-suppress_errors) filename\n";
+"usage: fstat (-suppress_errors) (-reverse) filename\n";
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
@@ -16,21 +16,25 @@ int main(int argc,char **argv)
 {
   int n;
   bool bSuppressErrors;
+  bool bReverse;
   FILE *fptr;
   int line_no;
   int linelen;
   struct stat stat_buf;
 
-  if ((argc < 2) || (argc > 3)) {
+  if ((argc < 2) || (argc > 4)) {
     printf(usage);
     return 1;
   }
 
   bSuppressErrors = false;
+  bReverse = false;
 
   for (n = 1; n < argc; n++) {
     if (!strcmp(argv[n],"-suppress_errors"))
       bSuppressErrors = true;
+    else if (!strcmp(argv[n],"-reverse"))
+      bReverse = true;
     else
       break;
   }
@@ -55,11 +59,21 @@ int main(int argc,char **argv)
 
     line_no++;
 
-    if (stat(line,&stat_buf) != -1)
-      printf("%s\n",line);
+    if (!bReverse) {
+      if (stat(line,&stat_buf) != -1)
+        printf("%s\n",line);
+      else {
+        if (!bSuppressErrors)
+          printf("stat() failed on %s\n",line);
+      }
+    }
     else {
-      if (!bSuppressErrors)
-        printf("stat() failed on %s\n",line);
+      if (stat(line,&stat_buf) == -1)
+        printf("%s\n",line);
+      else {
+        if (!bSuppressErrors)
+          printf("stat() succeeded on %s\n",line);
+      }
     }
   }
 
