@@ -6,11 +6,19 @@
 #include <time.h>
 #include <ctype.h>
 
+enum enumUnit {
+  UNIT_SECS,
+  UNIT_DAYS,
+  UNIT_WEEKS,
+  UNIT_YEARS
+};
+
 #define MONTH_IX 0
 #define DAY_IX   1
 #define YEAR_IX  2
 
-static char usage[] = "usage: datediff (-debug) (-weeks) (-years) date date\n";
+static char usage[] =
+"usage: datediff (-debug) [secs | days | weeks | years] date date\n";
 
 static char *months[] = {
   "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
@@ -18,10 +26,14 @@ static char *months[] = {
 };
 #define NUM_MONTHS (sizeof months / sizeof (char *))
 
-#define SECS_PER_MIN  60
-#define MINS_PER_HOUR 60
-#define HOURS_PER_DAY 24
+#define SECS_PER_MIN  (double)60
+#define MINS_PER_HOUR (double)60
+#define HOURS_PER_DAY (double)24
+#define DAYS_PER_WEEK (double)7
+#define DAYS_PER_YEAR (double)365.25
 #define SECS_PER_DAY (SECS_PER_MIN * MINS_PER_HOUR * HOURS_PER_DAY)
+#define SECS_PER_WEEK (SECS_PER_MIN * MINS_PER_HOUR * HOURS_PER_DAY * DAYS_PER_WEEK)
+#define SECS_PER_YEAR (SECS_PER_MIN * MINS_PER_HOUR * HOURS_PER_DAY * DAYS_PER_YEAR)
 
 static char couldnt_get_status[] = "couldn't get status of %s\n";
 
@@ -44,8 +56,7 @@ int main(int argc,char **argv)
 {
   int curr_arg;
   bool bDebug;
-  bool bWeeks;
-  bool bYears;
+  enumUnit un;
   int retval;
   time_t today;
   time_t date1;
@@ -54,35 +65,39 @@ int main(int argc,char **argv)
   double dwork;
   char *cpt;
 
-  if ((argc < 3) || (argc > 6)) {
+  if ((argc < 4) || (argc > 5)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
-  bWeeks = false;
-  bYears = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
-    else if (!strcmp(argv[curr_arg],"-weeks"))
-      bWeeks = true;
-    else if (!strcmp(argv[curr_arg],"-years"))
-      bYears = true;
     else
       break;
   }
 
-  if (argc - curr_arg != 2) {
+  if (argc - curr_arg != 3) {
     printf(usage);
     return 2;
   }
 
-  if (bWeeks && bYears) {
-    printf("can't specify both -weeks and -years\n");
+  if (!strcmp(argv[curr_arg],"secs"))
+    un = UNIT_SECS;
+  else if (!strcmp(argv[curr_arg],"days"))
+    un = UNIT_DAYS;
+  else if (!strcmp(argv[curr_arg],"weeks"))
+    un = UNIT_WEEKS;
+  else if (!strcmp(argv[curr_arg],"years"))
+    un = UNIT_YEARS;
+  else {
+    printf("invalid unit\n");
     return 3;
   }
+
+  curr_arg++;
 
   retval = get_today(&today);
 
@@ -125,19 +140,22 @@ int main(int argc,char **argv)
   else
     datediff = date2 - date1;
 
-  datediff /= (SECS_PER_DAY);
-
-  if (!bWeeks) {
-    if (!bYears)
-      printf("%d days\n",datediff);
-    else {
-      dwork = (double)datediff / 365.25;
+  switch(un) {
+    case UNIT_SECS:
+      printf("%ld seconds\n",datediff);
+      break;
+    case UNIT_DAYS:
+      dwork = (double)datediff / (double)SECS_PER_DAY;
+      printf("%lf days\n",dwork);
+      break;
+    case UNIT_WEEKS:
+      dwork = (double)datediff / (double)SECS_PER_WEEK;
+      printf("%lf weeks\n",dwork);
+      break;
+    case UNIT_YEARS:
+      dwork = (double)datediff / (double)SECS_PER_YEAR;
       printf("%lf years\n",dwork);
-    }
-  }
-  else {
-    dwork = (double)datediff / (double)7;
-    printf("%lf weeks\n",dwork);
+      break;
   }
 
   return 0;
