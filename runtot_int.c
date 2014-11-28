@@ -6,7 +6,7 @@ static char line[MAX_LINE_LEN];
 
 static char usage[] =
 "usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-start_and_end)\n"
-"  (-offsetoffset) (-gain_loss) (-gain_only) (-loss_only) filename\n";
+"  (-offsetoffset) (-gain_loss) (-gain_only) (-loss_only) (-abs_value) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
@@ -19,6 +19,7 @@ int main(int argc,char **argv)
   bool bGainLoss;
   bool bGainOnly;
   bool bLossOnly;
+  bool bAbsValue;
   int offset;
   FILE *fptr;
   int line_len;
@@ -30,7 +31,7 @@ int main(int argc,char **argv)
   int num_gains;
   int num_losses;
 
-  if ((argc < 2) || (argc > 10)) {
+  if ((argc < 2) || (argc > 11)) {
     printf(usage);
     return 1;
   }
@@ -42,6 +43,7 @@ int main(int argc,char **argv)
   bGainLoss = false;
   bGainOnly = false;
   bLossOnly = false;
+  bAbsValue = false;
   offset = 0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
@@ -61,6 +63,8 @@ int main(int argc,char **argv)
       bGainOnly = true;
     else if (!strcmp(argv[curr_arg],"-loss_only"))
       bLossOnly = true;
+    else if (!strcmp(argv[curr_arg],"-abs_value"))
+      bAbsValue = true;
     else
       break;
   }
@@ -117,6 +121,11 @@ int main(int argc,char **argv)
       break;
 
     sscanf(&line[offset],"%d",&work);
+
+    if (bAbsValue) {
+      if (work < 0)
+        work *= -1;
+    }
 
     if (!bStartBal && !bStartAndEnd) {
       if (!bGainOnly && !bLossOnly)
