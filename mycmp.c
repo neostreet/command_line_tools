@@ -12,7 +12,8 @@
 #include <unistd.h>
 #endif
 
-static char usage[] = "usage: mycmp (-equal) (-verbose) file1 file2\n";
+static char usage[] =
+"usage: mycmp (-equal) (-verbose) (-quiet) file1 file2\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char couldnt_get_status[] = "couldn't get status of %s\n";
 static char file_differs[] = "%s differs\n";
@@ -22,28 +23,32 @@ static char file_equal_verbose[] = "%s\\%s equal\n";
 
 static char save_dir[_MAX_PATH];
 
-static int comp_files(char *file1,char *file2);
+static int comp_files(char *file1,char *file2,bool bQuiet);
 
 int main(int argc,char **argv)
 {
   int curr_arg;
   bool bEqual;
   bool bVerbose;
+  bool bQuiet;
   int retval;
 
-  if ((argc < 3) || (argc > 5)) {
+  if ((argc < 3) || (argc > 6)) {
     printf(usage);
     return 1;
   }
 
   bEqual = false;
   bVerbose = false;
+  bQuiet = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-equal"))
       bEqual = true;
     else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
+    else if (!strcmp(argv[curr_arg],"-quiet"))
+      bQuiet = true;
     else
       break;
   }
@@ -56,7 +61,7 @@ int main(int argc,char **argv)
   if (bVerbose)
     getcwd(save_dir,_MAX_PATH);
 
-  retval = comp_files(argv[curr_arg],argv[curr_arg+1]);
+  retval = comp_files(argv[curr_arg],argv[curr_arg+1],bQuiet);
 
   if (!bEqual) {
     if ((retval == 3) || (retval == 7)) {
@@ -78,7 +83,7 @@ int main(int argc,char **argv)
   return 0;
 }
 
-static int comp_files(char *file1,char *file2)
+static int comp_files(char *file1,char *file2,bool bQuiet)
 {
   int m;
   int n;
@@ -94,8 +99,12 @@ static int comp_files(char *file1,char *file2)
 
   for (n = 0; n < 2; n++) {
     if (stat(files[n],&statbuf[n]) == -1) {
-      printf(couldnt_get_status,files[n]);
-      return 1;
+      if (!bQuiet) {
+        printf(couldnt_get_status,files[n]);
+        return 1;
+      }
+      else
+        return 0;
     }
   }
 
