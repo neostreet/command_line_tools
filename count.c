@@ -97,7 +97,7 @@ int main(int argc,char **argv)
     GetLine(fptr,line,&linelen,MAX_LINE_LEN);
 
     if (feof(fptr)) {
-      if (!bByLine && count) {
+      if (!bByLine) {
         if (!bStdin) {
           if (bMultiple)
             printf(fmt_str,count,argv[curr_arg]);
