@@ -19,7 +19,8 @@ static char exp_title[TITLELEN];
 static char line[MAX_LINE_LEN];
 
 static char usage[] = "\
-usage: fgrep (-c) (-nl) (-nt) (-special_charhhc) (-file_maxn) string filename\n";
+usage: fgrep (-c) (-nl) (-nt) (-nd) (-special_charhhc) (-file_maxn) (-anchor)\n"
+"  string filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char couldnt_get_status[] = "couldn't get status of %s\n";
 
@@ -44,6 +45,8 @@ int main(int argc,char **argv)
   int case_sens;
   int line_numbers;
   bool bTitle;
+  bool bDate;
+  bool bAnchor;
   int string_arg;
   int put_search_string;
   int put_line;
@@ -61,8 +64,10 @@ int main(int argc,char **argv)
   case_sens = 0;
   line_numbers = 1;
   bTitle = true;
+  bDate = true;
   num_special_chars = 0;
   file_max = -1;
+  bAnchor = false;
 
   for (curr_arg = 1; ; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-c"))
@@ -71,6 +76,8 @@ int main(int argc,char **argv)
       line_numbers = 0;
     else if (!strcmp(argv[curr_arg],"-nt"))
       bTitle = false;
+    else if (!strcmp(argv[curr_arg],"-nd"))
+      bDate = false;
     else if (!strncmp(argv[curr_arg],"-special_char",13)) {
       if (num_special_chars == MAX_SPECIAL_CHARS) {
         printf("num_special_chars may not exceed %d\n",MAX_SPECIAL_CHARS);
@@ -86,6 +93,8 @@ int main(int argc,char **argv)
     }
     else if (!strncmp(argv[curr_arg],"-file_max",9))
       sscanf(&argv[curr_arg][9],"%d",&file_max);
+    else if (!strcmp(argv[curr_arg],"-anchor"))
+      bAnchor = true;
     else
       break;
   }
@@ -155,9 +164,17 @@ int main(int argc,char **argv)
       continue;
     }
 
-    cpt = ctime(&statbuf.st_mtime);
-    cpt[strlen(cpt) - 1] = 0;
-    sprintf(exp_title,"%s %s",cpt,title);
+    if (bDate) {
+      cpt = ctime(&statbuf.st_mtime);
+
+      if (cpt[8] == ' ')
+        cpt[8] = '0';
+
+      cpt[strlen(cpt) - 1] = 0;
+      sprintf(exp_title,"%s %s",cpt,title);
+    }
+    else
+      strcpy(exp_title,title);
 
     if (bTitle)
       put_title = 0;
@@ -177,7 +194,10 @@ int main(int argc,char **argv)
       put_line = 0;
 
       if (linelen >= searchlen) {
-        tries = linelen - searchlen + 1;
+        if (!bAnchor)
+          tries = linelen - searchlen + 1;
+        else
+          tries = 1;
 
         for (m = 0; m < tries; m++) {
           for (n = 0; n < searchlen; n++) {
