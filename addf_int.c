@@ -15,7 +15,7 @@ char line[MAX_LINE_LEN];
 
 static char usage[] = "usage: addf (-debug) (-verbose) (-offsetoffset)\n"
 "  (-datedatestring) (-get_date_from_cwd) (-pos_neg) (-counts) (-abs)\n"
-"  (-neg_only) (-pos_only) filename\n";
+"  (-neg_only) (-pos_only) (-last_is_lowest) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -34,6 +34,7 @@ int main(int argc,char **argv)
   bool bAbs;
   bool bNegOnly;
   bool bPosOnly;
+  bool bLastIsLowest;
   int retval;
   int offset;
   FILE *fptr;
@@ -41,13 +42,14 @@ int main(int argc,char **argv)
   int line_no;
   int work;
   int total;
+  int min_total;
   int count;
   int positive_total;
   int positive_count;
   int negative_total;
   int negative_count;
 
-  if ((argc < 2) || (argc > 12)) {
+  if ((argc < 2) || (argc > 13)) {
     printf(usage);
     return 1;
   }
@@ -61,6 +63,7 @@ int main(int argc,char **argv)
   bAbs = false;
   bNegOnly = false;
   bPosOnly = false;
+  bLastIsLowest = false;
   offset = 0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
@@ -86,6 +89,8 @@ int main(int argc,char **argv)
       bNegOnly = true;
     else if (!strcmp(argv[curr_arg],"-pos_only"))
       bPosOnly = true;
+    else if (!strcmp(argv[curr_arg],"-last_is_lowest"))
+      bLastIsLowest = true;
     else
       break;
   }
@@ -160,8 +165,12 @@ int main(int argc,char **argv)
         if (work > 0)
           total += work;
       }
-      else
+      else {
         total += work;
+
+        if (bLastIsLowest && ((line_no == 1) || (total < min_total)))
+          min_total = total;
+      }
     }
     else {
       if (work < 0)
@@ -202,8 +211,10 @@ int main(int argc,char **argv)
     if (!bPosNeg) {
       if (!bDebug) {
         if (!bHaveDateString) {
-          if (!bCounts)
-            printf("%d\n",total);
+          if (!bCounts) {
+            if (!bLastIsLowest || (total == min_total))
+              printf("%d\n",total);
+          }
           else
             printf("%d (%d)\n",total,count);
         }
@@ -216,8 +227,10 @@ int main(int argc,char **argv)
       }
       else {
         if (!bHaveDateString) {
-          if (!bCounts)
-            printf("%d %s/%s\n",total,save_dir,argv[curr_arg]);
+          if (!bCounts) {
+            if (!bLastIsLowest || (total == min_total))
+              printf("%d %s/%s\n",total,save_dir,argv[curr_arg]);
+          }
           else
             printf("%d (%d) %s/%s\n",total,count,save_dir,argv[curr_arg]);
         }
