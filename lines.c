@@ -4,9 +4,9 @@
 
 #define NEWLINE 0x0a
 
-#define MAX_LINE_LEN 1024
-#define MAX_FILENAME_LEN MAX_LINE_LEN
-char line[MAX_LINE_LEN];
+#define MAX_LINE_LEN 32768
+#define MAX_FILENAME_LEN 1024
+static char line[MAX_LINE_LEN];
 
 static char couldnt_open[] = "couldn't open %s\n";
 
@@ -38,10 +38,13 @@ int main(int argc,char **argv)
   bool bStdinIsList;
   bool bStdin;
   bool bNoSort;
+  bool bModulo;
+  int modulo;
 
   bTotalOnly = false;
   bStdinIsList = false;
   bNoSort = false;
+  bModulo = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-totalonly"))
@@ -50,6 +53,10 @@ int main(int argc,char **argv)
       bStdinIsList = true;
     else if (!strcmp(argv[curr_arg],"-no_sort"))
       bNoSort = true;
+    else if (!strncmp(argv[curr_arg],"-modulomodulo",7)) {
+      bModulo = true;
+      sscanf(&argv[curr_arg][7],"%d",&modulo);
+    }
     else
       break;
   }
@@ -122,7 +129,9 @@ int main(int argc,char **argv)
   finfo[m].lines = lines;
   m++;
 
-  tot_lines += lines;
+  if (!bModulo || !(lines % modulo))
+    tot_lines += lines;
+
   curr_arg++;
 
   if (curr_arg == argc)
@@ -144,9 +153,11 @@ int main(int argc,char **argv)
         qsort(ixs,num_files,sizeof (int),compare);
 
       for (n = 0; n < num_files; n++) {
-        printf(fmt_str,
-          finfo[ixs[n]].lines,
-          finfo[ixs[n]].name);
+        if (!bModulo || !(finfo[ixs[n]].lines % modulo)) {
+          printf(fmt_str,
+            finfo[ixs[n]].lines,
+            finfo[ixs[n]].name);
+        }
       }
 
       putchar(NEWLINE);
