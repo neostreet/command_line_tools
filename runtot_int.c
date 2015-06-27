@@ -6,7 +6,8 @@ static char line[MAX_LINE_LEN];
 
 static char usage[] =
 "usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-start_and_end)\n"
-"  (-offsetoffset) (-gain_loss) (-gain_only) (-loss_only) (-abs_value) filename\n";
+"  (-offsetoffset) (-gain_loss) (-gain_only) (-loss_only) (-abs_value)\n"
+"  (-line_numbers) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
@@ -20,6 +21,7 @@ int main(int argc,char **argv)
   bool bGainOnly;
   bool bLossOnly;
   bool bAbsValue;
+  bool bLineNumbers;
   int offset;
   FILE *fptr;
   int line_len;
@@ -31,7 +33,7 @@ int main(int argc,char **argv)
   int num_gains;
   int num_losses;
 
-  if ((argc < 2) || (argc > 11)) {
+  if ((argc < 2) || (argc > 12)) {
     printf(usage);
     return 1;
   }
@@ -44,6 +46,7 @@ int main(int argc,char **argv)
   bGainOnly = false;
   bLossOnly = false;
   bAbsValue = false;
+  bLineNumbers = false;
   offset = 0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
@@ -65,6 +68,8 @@ int main(int argc,char **argv)
       bLossOnly = true;
     else if (!strcmp(argv[curr_arg],"-abs_value"))
       bAbsValue = true;
+    else if (!strcmp(argv[curr_arg],"-line_numbers"))
+      bLineNumbers = true;
     else
       break;
   }
@@ -114,11 +119,15 @@ int main(int argc,char **argv)
     num_losses = 0;
   }
 
+  line_no = 0;
+
   for ( ; ; ) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
 
     if (feof(fptr))
       break;
+
+    line_no++;
 
     sscanf(&line[offset],"%d",&work);
 
@@ -157,39 +166,44 @@ int main(int argc,char **argv)
 
     if (!bVerbose) {
       if (!bGainLoss && !bGainOnly && !bLossOnly)
-        printf("%d\n",runtot);
+        printf("%d",runtot);
       else if (bGainOnly) {
         if (work > 0)
-          printf("%d (%d)\n",runtot_gain,num_gains);
+          printf("%d (%d)",runtot_gain,num_gains);
       }
       else if (bLossOnly) {
         if (work < 0)
-        printf("%d (%d)\n",runtot_loss,num_losses);
+        printf("%d (%d)",runtot_loss,num_losses);
       }
       else {
-        printf("%d (%d %d %d %d)\n",runtot,
+        printf("%d (%d %d %d %d)",runtot,
           runtot_gain,num_gains,
           runtot_loss,num_losses);
       }
     }
     else {
       if (!bGainLoss && !bGainOnly && !bLossOnly)
-        printf("%10d %s\n",runtot,line);
+        printf("%10d %s",runtot,line);
       else if (bGainOnly) {
         if (work > 0)
-          printf("%10d (%5d) %s\n",runtot_gain,num_gains,line);
+          printf("%10d (%5d) %s",runtot_gain,num_gains,line);
       }
       else if (bLossOnly) {
         if (work < 0)
-          printf("%10d (%5d) %s\n",runtot_loss,num_losses,line);
+          printf("%10d (%5d) %s",runtot_loss,num_losses,line);
       }
       else {
-        printf("%10d (%10d %5d %10d %5d) %s\n",runtot,
+        printf("%10d (%10d %5d %10d %5d) %s",runtot,
           runtot_gain,num_gains,
           runtot_loss,num_losses,
           line);
       }
     }
+
+    if (!bLineNumbers)
+      putchar(0x0a);
+    else
+      printf(" %d\n",line_no);
 
     if (bStartBal || bStartAndEnd) {
       if (!bGainOnly && !bLossOnly)
@@ -217,39 +231,44 @@ int main(int argc,char **argv)
   if (bStartAndEnd) {
     if (!bVerbose) {
       if (!bGainLoss && !bGainOnly && !bLossOnly)
-        printf("%d\n",runtot);
+        printf("%d",runtot);
       else if (bGainOnly) {
         if (work > 0)
-          printf("%d (%d)\n",runtot_gain,num_gains);
+          printf("%d (%d)",runtot_gain,num_gains);
       }
       else if (bLossOnly) {
         if (work < 0)
-        printf("%d (%d)\n",runtot_loss,num_losses);
+        printf("%d (%d)",runtot_loss,num_losses);
       }
       else {
-        printf("%d (%d %d %d %d)\n",runtot,
+        printf("%d (%d %d %d %d)",runtot,
           runtot_gain,num_gains,
           runtot_loss,num_losses);
       }
     }
     else {
       if (!bGainLoss && !bGainOnly && !bLossOnly)
-        printf("%10d %s\n",runtot,line);
+        printf("%10d %s",runtot,line);
       else if (bGainOnly) {
         if (work > 0)
-          printf("%10d (%5d) %s\n",runtot_gain,num_gains,line);
+          printf("%10d (%5d) %s",runtot_gain,num_gains,line);
       }
       else if (bLossOnly) {
         if (work < 0)
-          printf("%10d (%5d) %s\n",runtot_loss,num_losses,line);
+          printf("%10d (%5d) %s",runtot_loss,num_losses,line);
       }
       else {
-        printf("%10d (%10d %5d %10d %5d) %s\n",runtot,
+        printf("%10d (%10d %5d %10d %5d) %s",runtot,
           runtot_gain,num_gains,
           runtot_loss,num_losses,
           line);
       }
     }
+
+    if (!bLineNumbers)
+      putchar(0x0a);
+    else
+      printf(" %d\n",line_no);
   }
 
   return 0;
