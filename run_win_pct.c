@@ -68,7 +68,7 @@ int main(int argc,char **argv)
     if (!bVerbose)
       printf("%8.4lf\n",win_pct);
     else
-      printf("%8.4lf %s\n",win_pct,line);
+      printf("%8.4lf (%d %d) %s\n",win_pct,wins,nobs,line);
   }
 
   fclose(fptr);
