@@ -60,6 +60,11 @@ int main(int argc,char **argv)
     line_no++;
   }
 
+  if (curr_nonzero_streak > max_nonzero_streak) {
+    max_nonzero_streak = curr_nonzero_streak;
+    max_nonzero_streak_start_ix = curr_nonzero_streak_start_ix;
+  }
+
   fclose(fptr);
 
   printf("%d (%d)\n",max_nonzero_streak,max_nonzero_streak_start_ix+1);

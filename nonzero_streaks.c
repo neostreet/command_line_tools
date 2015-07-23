@@ -38,9 +38,11 @@ int main(int argc,char **argv)
 
     sscanf(line,"%d",&val);
 
+    line_no++;
+
     if (!val) {
       if (curr_nonzero_streak > 0)
-        printf("%d (%d)\n",curr_nonzero_streak,curr_nonzero_streak_start_ix+1);
+        printf("%d (%d)\n",curr_nonzero_streak,curr_nonzero_streak_start_ix);
 
       curr_nonzero_streak = 0;
     }
@@ -50,9 +52,10 @@ int main(int argc,char **argv)
 
       curr_nonzero_streak++;
     }
-
-    line_no++;
   }
+
+  if (curr_nonzero_streak > 0)
+    printf("%d (%d)\n",curr_nonzero_streak,curr_nonzero_streak_start_ix);
 
   fclose(fptr);
 
