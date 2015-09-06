@@ -8,7 +8,7 @@ static char line[MAX_LINE_LEN];
 #define MAX_BUF_LEN 4096
 static char buf[MAX_BUF_LEN];
 
-static char usage[] = "usage: grabvers (-debug) (-only_list) filename\n";
+static char usage[] = "usage: grabhist (-debug) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 #define MAX_LOG_NAME_LEN 4096
@@ -30,25 +30,21 @@ int main(int argc,char **argv)
 {
   int curr_arg;
   bool bDebug;
-  bool bOnlyList;
   FILE *fptr;
   FILE *lst_fptr;
   int line_len;
   int line_no;
 
-  if ((argc < 2) || (argc > 4)) {
+  if ((argc < 2) || (argc > 3)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
-  bOnlyList = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
-    else if (!strcmp(argv[curr_arg],"-only_list"))
-      bOnlyList = true;
     else
       break;
   }
@@ -90,9 +86,6 @@ int main(int argc,char **argv)
     if (!strncmp(line,commit,COMMIT_LEN)) {
       sprintf(treeish_name,"%s:%s",&line[COMMIT_LEN],argv[curr_arg]);
 
-      if (!bDebug && !bOnlyList)
-        sprintf(buf,"git show %s > ",treeish_name);
-
       if (bDebug)
         printf("treeish_name before: %s\n",treeish_name);
 
@@ -102,11 +95,6 @@ int main(int argc,char **argv)
         printf("treeish_name after: %s\n",treeish_name);
 
       fprintf(lst_fptr,"%s\n",treeish_name);
-
-      if (!bDebug && !bOnlyList) {
-        strcat(buf,treeish_name);
-        system(buf);
-      }
     }
   }
 
