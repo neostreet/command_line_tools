@@ -15,7 +15,7 @@ char line[MAX_LINE_LEN];
 
 static char usage[] =
 "usage: min_int (-verbose) (-offsetoffset) (-lastn) (-didnt_hit_felt)\n"
-"  (-min_less_than_zero) filename\n";
+"  (-min_less_than_zero) (-losing_session) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int minllen);
@@ -28,15 +28,17 @@ int main(int argc,char **argv)
   int lastn;
   bool bDidntHitFelt;
   bool bMinLessThanZero;
+  bool bLosingSession;
   FILE *fptr;
   int linelen;
   int line_no;
   int delta;
+  int session_balance;
   int ending_balance;
   int min;
   int min_ix;
 
-  if ((argc < 2) || (argc > 7)) {
+  if ((argc < 2) || (argc > 8)) {
     printf(usage);
     return 1;
   }
@@ -46,6 +48,7 @@ int main(int argc,char **argv)
   lastn = 0;
   bDidntHitFelt = false;
   bMinLessThanZero = false;
+  bLosingSession = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose")) {
@@ -60,6 +63,8 @@ int main(int argc,char **argv)
       bDidntHitFelt = true;
     else if (!strcmp(argv[curr_arg],"-min_less_than_zero"))
       bMinLessThanZero = true;
+    else if (!strcmp(argv[curr_arg],"-losing_session"))
+      bLosingSession = true;
     else
       break;
   }
@@ -76,6 +81,7 @@ int main(int argc,char **argv)
 
   line_no = 0;
   min = 0;
+  session_balance = 0;
 
   for ( ; ; ) {
     GetLine(fptr,line,&linelen,MAX_LINE_LEN);
@@ -90,6 +96,8 @@ int main(int argc,char **argv)
     else
       sscanf(&line[offset],"%d %d",&delta,&ending_balance);
 
+    session_balance += delta;
+
     if ((line_no == 1) || (delta < min)) {
       min = delta;
       min_ix = line_no;
@@ -101,10 +109,12 @@ int main(int argc,char **argv)
   if (!bMinLessThanZero || (min < 0)) {
     if (!lastn || (line_no - min_ix + 1 <= lastn)) {
       if (!bDidntHitFelt || (ending_balance > 0)) {
-        if (!bVerbose)
-          printf("%d\n",min);
-        else
-          printf("%d %d %d %s\n",min,min_ix,line_no,save_dir);
+        if (!bLosingSession || (session_balance < 0)) {
+          if (!bVerbose)
+            printf("%d\n",min);
+          else
+            printf("%d %d %d %s\n",min,min_ix,line_no,save_dir);
+        }
       }
     }
   }
