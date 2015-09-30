@@ -18,7 +18,7 @@ static char usage[] =
 "  (-min_less_than_zero) (-losing_session) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
-static void GetLine(FILE *fptr,char *line,int *line_len,int minllen);
+static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
 int main(int argc,char **argv)
 {
@@ -122,7 +122,7 @@ int main(int argc,char **argv)
   return 0;
 }
 
-static void GetLine(FILE *fptr,char *line,int *line_len,int minllen)
+static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
 {
   int chara;
   int local_line_len;
@@ -138,7 +138,7 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int minllen)
     if (chara == '\n')
       break;
 
-    if (local_line_len < minllen - 1)
+    if (local_line_len < maxllen - 1)
       line[local_line_len++] = (char)chara;
   }
 

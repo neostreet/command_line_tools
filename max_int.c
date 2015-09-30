@@ -14,7 +14,8 @@ static char save_dir[_MAX_PATH];
 char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: max_int (-debug) (-verbose) (-offsetoffset) filename\n";
+"usage: max_int (-verbose) (-offsetoffset) (-lastn) (-didnt_hit_felt)\n"
+"  (-max_greater_than_zero) (-winning_session) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -22,32 +23,48 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 int main(int argc,char **argv)
 {
   int curr_arg;
-  bool bDebug;
   bool bVerbose;
   int offset;
+  int lastn;
+  bool bDidntHitFelt;
+  bool bMaxGreaterThanZero;
+  bool bWinningSession;
   FILE *fptr;
   int linelen;
   int line_no;
-  int work;
+  int delta;
+  int session_balance;
+  int ending_balance;
   int max;
+  int max_ix;
 
-  if ((argc < 2) || (argc > 5)) {
+  if ((argc < 2) || (argc > 8)) {
     printf(usage);
     return 1;
   }
 
-  bDebug = false;
   bVerbose = false;
   offset = 0;
-  max = 0;
+  lastn = 0;
+  bDidntHitFelt = false;
+  bMaxGreaterThanZero = false;
+  bWinningSession = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmp(argv[curr_arg],"-debug"))
-      bDebug = true;
-    else if (!strcmp(argv[curr_arg],"-verbose"))
+    if (!strcmp(argv[curr_arg],"-verbose")) {
       bVerbose = true;
+      getcwd(save_dir,_MAX_PATH);
+    }
     else if (!strncmp(argv[curr_arg],"-offset",7))
       sscanf(&argv[curr_arg][7],"%d",&offset);
+    else if (!strncmp(argv[curr_arg],"-last",5))
+      sscanf(&argv[curr_arg][5],"%d",&lastn);
+    else if (!strcmp(argv[curr_arg],"-didnt_hit_felt"))
+      bDidntHitFelt = true;
+    else if (!strcmp(argv[curr_arg],"-max_greater_than_zero"))
+      bMaxGreaterThanZero = true;
+    else if (!strcmp(argv[curr_arg],"-winning_session"))
+      bWinningSession = true;
     else
       break;
   }
@@ -57,15 +74,14 @@ int main(int argc,char **argv)
     return 2;
   }
 
-  if (bDebug)
-    getcwd(save_dir,_MAX_PATH);
-
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf(couldnt_open,argv[curr_arg]);
     return 3;
   }
 
   line_no = 0;
+  max = 0;
+  session_balance = 0;
 
   for ( ; ; ) {
     GetLine(fptr,line,&linelen,MAX_LINE_LEN);
@@ -75,18 +91,33 @@ int main(int argc,char **argv)
 
     line_no++;
 
-    sscanf(&line[offset],"%d",&work);
+    if (!bDidntHitFelt)
+      sscanf(&line[offset],"%d",&delta);
+    else
+      sscanf(&line[offset],"%d %d",&delta,&ending_balance);
 
-    if ((line_no == 1) || (work > max))
-      max = work;
+    session_balance += delta;
+
+    if ((line_no == 1) || (delta > max)) {
+      max = delta;
+      max_ix = line_no;
+    }
   }
 
   fclose(fptr);
 
-  if (!bDebug)
-    printf("%d\n",max);
-  else
-    printf("%d %s\n",max,save_dir);
+  if (!bMaxGreaterThanZero || (max > 0)) {
+    if (!lastn || (line_no - max_ix + 1 <= lastn)) {
+      if (!bDidntHitFelt || (ending_balance > 0)) {
+        if (!bWinningSession || (session_balance > 0)) {
+          if (!bVerbose)
+            printf("%d\n",max);
+          else
+            printf("%d %d %d %s\n",max,max_ix,line_no,save_dir);
+        }
+      }
+    }
+  }
 
   return 0;
 }
