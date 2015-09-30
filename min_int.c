@@ -14,7 +14,8 @@ static char save_dir[_MAX_PATH];
 char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: min_int (-verbose) (-offsetoffset) (-lastn) filename\n";
+"usage: min_int (-verbose) (-offsetoffset) (-lastn) (-didnt_hit_felt)\n"
+"  (-min_less_than_zero) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int minllen);
@@ -25,14 +26,17 @@ int main(int argc,char **argv)
   bool bVerbose;
   int offset;
   int lastn;
+  bool bDidntHitFelt;
+  bool bMinLessThanZero;
   FILE *fptr;
   int linelen;
   int line_no;
-  int work;
+  int delta;
+  int ending_balance;
   int min;
   int min_ix;
 
-  if ((argc < 2) || (argc > 5)) {
+  if ((argc < 2) || (argc > 7)) {
     printf(usage);
     return 1;
   }
@@ -40,6 +44,8 @@ int main(int argc,char **argv)
   bVerbose = false;
   offset = 0;
   lastn = 0;
+  bDidntHitFelt = false;
+  bMinLessThanZero = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose")) {
@@ -50,6 +56,10 @@ int main(int argc,char **argv)
       sscanf(&argv[curr_arg][7],"%d",&offset);
     else if (!strncmp(argv[curr_arg],"-last",5))
       sscanf(&argv[curr_arg][5],"%d",&lastn);
+    else if (!strcmp(argv[curr_arg],"-didnt_hit_felt"))
+      bDidntHitFelt = true;
+    else if (!strcmp(argv[curr_arg],"-min_less_than_zero"))
+      bMinLessThanZero = true;
     else
       break;
   }
@@ -75,21 +85,28 @@ int main(int argc,char **argv)
 
     line_no++;
 
-    sscanf(&line[offset],"%d",&work);
+    if (!bDidntHitFelt)
+      sscanf(&line[offset],"%d",&delta);
+    else
+      sscanf(&line[offset],"%d %d",&delta,&ending_balance);
 
-    if ((line_no == 1) || (work < min)) {
-      min = work;
+    if ((line_no == 1) || (delta < min)) {
+      min = delta;
       min_ix = line_no;
     }
   }
 
   fclose(fptr);
 
-  if (!lastn || (line_no - min_ix + 1 <= lastn)) {
-    if (!bVerbose)
-      printf("%d\n",min);
-    else
-      printf("%d %d %d %s\n",min,min_ix,line_no,save_dir);
+  if (!bMinLessThanZero || (min < 0)) {
+    if (!lastn || (line_no - min_ix + 1 <= lastn)) {
+      if (!bDidntHitFelt || (ending_balance > 0)) {
+        if (!bVerbose)
+          printf("%d\n",min);
+        else
+          printf("%d %d %d %s\n",min,min_ix,line_no,save_dir);
+      }
+    }
   }
 
   return 0;
