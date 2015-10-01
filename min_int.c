@@ -34,6 +34,7 @@ int main(int argc,char **argv)
   int line_no;
   int delta;
   int session_balance;
+  int starting_balance;
   int ending_balance;
   int min;
   int min_ix;
@@ -94,7 +95,7 @@ int main(int argc,char **argv)
     if (!bDidntHitFelt)
       sscanf(&line[offset],"%d",&delta);
     else
-      sscanf(&line[offset],"%d %d",&delta,&ending_balance);
+      sscanf(&line[offset],"%d %d %d",&delta,&starting_balance,&ending_balance);
 
     session_balance += delta;
 
