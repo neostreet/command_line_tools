@@ -14,7 +14,7 @@ static char save_dir[_MAX_PATH];
 char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: max_int (-verbose) (-offsetoffset) (-lastn) (-didnt_hit_felt)\n"
+"usage: max_int (-verbose) (-offsetoffset) (-lastn) (-dolphin_leap)\n"
 "  (-max_greater_than_zero) (-winning_session) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   bool bVerbose;
   int offset;
   int lastn;
-  bool bDidntHitFelt;
+  bool bDolphinLeap;
   bool bMaxGreaterThanZero;
   bool bWinningSession;
   FILE *fptr;
@@ -34,9 +34,10 @@ int main(int argc,char **argv)
   int line_no;
   int delta;
   int session_balance;
-  int ending_balance;
+  int runtot;
   int max;
   int max_ix;
+  int max_runtot;
 
   if ((argc < 2) || (argc > 8)) {
     printf(usage);
@@ -46,7 +47,7 @@ int main(int argc,char **argv)
   bVerbose = false;
   offset = 0;
   lastn = 0;
-  bDidntHitFelt = false;
+  bDolphinLeap = false;
   bMaxGreaterThanZero = false;
   bWinningSession = false;
 
@@ -59,8 +60,8 @@ int main(int argc,char **argv)
       sscanf(&argv[curr_arg][7],"%d",&offset);
     else if (!strncmp(argv[curr_arg],"-last",5))
       sscanf(&argv[curr_arg][5],"%d",&lastn);
-    else if (!strcmp(argv[curr_arg],"-didnt_hit_felt"))
-      bDidntHitFelt = true;
+    else if (!strcmp(argv[curr_arg],"-dolphin_leap"))
+      bDolphinLeap = true;
     else if (!strcmp(argv[curr_arg],"-max_greater_than_zero"))
       bMaxGreaterThanZero = true;
     else if (!strcmp(argv[curr_arg],"-winning_session"))
@@ -83,6 +84,9 @@ int main(int argc,char **argv)
   max = 0;
   session_balance = 0;
 
+  if (bDolphinLeap)
+    runtot = 0;
+
   for ( ; ; ) {
     GetLine(fptr,line,&linelen,MAX_LINE_LEN);
 
@@ -91,24 +95,25 @@ int main(int argc,char **argv)
 
     line_no++;
 
-    if (!bDidntHitFelt)
-      sscanf(&line[offset],"%d",&delta);
-    else
-      sscanf(&line[offset],"%d %d",&delta,&ending_balance);
+    sscanf(&line[offset],"%d",&delta);
 
     session_balance += delta;
 
     if ((line_no == 1) || (delta > max)) {
       max = delta;
       max_ix = line_no;
+      max_runtot = runtot;
     }
+
+    if (bDolphinLeap)
+      runtot += delta;
   }
 
   fclose(fptr);
 
   if (!bMaxGreaterThanZero || (max > 0)) {
     if (!lastn || (line_no - max_ix + 1 <= lastn)) {
-      if (!bDidntHitFelt || (ending_balance > 0)) {
+      if (!bDolphinLeap || ((max_runtot < 0) && (max_runtot + max > 0))) {
         if (!bWinningSession || (session_balance > 0)) {
           if (!bVerbose)
             printf("%d\n",max);
