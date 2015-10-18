@@ -4,19 +4,20 @@
 #define MAX_STR_LEN 256
 
 static char usage[] =
-"runtot_int6 (-initial_balbal) (-verbose) (-no_tabs) filename\n";
+"runtot_int6 (-initial_balbal) (-verbose) (-no_tabs) (-only_ending) filename\n";
 
 int main(int argc,char **argv)
 {
   int curr_arg;
   bool bVerbose;
   bool bNoTabs;
+  bool bOnlyEnding;
   FILE *fptr;
   int runtot;
   int work;
   char str[MAX_STR_LEN];
 
-  if ((argc < 2) || (argc > 5)) {
+  if ((argc < 2) || (argc > 6)) {
     printf(usage);
     return 1;
   }
@@ -24,6 +25,7 @@ int main(int argc,char **argv)
   runtot = 0;
   bVerbose = false;
   bNoTabs = false;
+  bOnlyEnding = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strncmp(argv[curr_arg],"-initial_bal",12))
@@ -32,6 +34,8 @@ int main(int argc,char **argv)
       bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-no_tabs"))
       bNoTabs = true;
+    else if (!strcmp(argv[curr_arg],"-only_ending"))
+      bOnlyEnding = true;
     else
       break;
   }
@@ -52,14 +56,16 @@ int main(int argc,char **argv)
     if (feof(fptr))
       break;
 
-    if (!bVerbose) {
-      if (!bNoTabs)
-        printf("%s\t%d\t",str,runtot);
+    if (!bOnlyEnding) {
+      if (!bVerbose) {
+        if (!bNoTabs)
+          printf("%s\t%d\t",str,runtot);
+        else
+          printf("%s %10d ",str,runtot);
+      }
       else
-        printf("%s %10d ",str,runtot);
+        printf("%s\t%d\t%d\t",str,work,runtot);
     }
-    else
-      printf("%s\t%d\t%d\t",str,work,runtot);
 
     runtot += work;
 
