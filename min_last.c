@@ -78,9 +78,9 @@ int main(int argc,char **argv)
   fclose(fptr);
 
   if (!bVerbose)
-    printf("%d %s\n",runtot - min,save_dir);
+    printf("%d %s/%s\n",runtot - min,save_dir,argv[curr_arg]);
   else
-    printf("%10d (%10d %10d) %s\n",runtot - min,runtot,min,save_dir);
+    printf("%10d (%10d %10d) %s/%s\n",runtot - min,runtot,min,save_dir,argv[curr_arg]);
 
   return 0;
 }
