@@ -1,0 +1,129 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define NUM_FILES 4
+
+#define MAX_LINE_LEN 1024
+static char line[MAX_LINE_LEN];
+
+static char usage[] = "usage: compare_4 file1 file2 file3 file4\n";
+static char couldnt_open[] = "couldn't open %s\n";
+
+static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
+
+int main(int argc,char **argv)
+{
+  int m;
+  int n;
+  int p;
+  int q;
+  int r;
+  int s;
+  FILE *fptr[NUM_FILES];
+  int left[NUM_FILES];
+  int top[NUM_FILES];
+  int image_width[NUM_FILES];
+  int image_height[NUM_FILES];
+  int line_len;
+  int bytes_to_io;
+  int bytes_read;
+  int *images[NUM_FILES];
+
+  if (argc != 5) {
+    printf(usage);
+    return 1;
+  }
+
+  for (n = 0; n < NUM_FILES; n++) {
+    if ((fptr[n] = fopen(argv[1+n],"r")) == NULL) {
+      printf(couldnt_open,argv[1+n]);
+      return 2;
+    }
+
+    fscanf(fptr[n],"%d\n",&left[n]);
+    fscanf(fptr[n],"%d\n",&top[n]);
+    fscanf(fptr[n],"%d\n",&image_width[n]);
+    fscanf(fptr[n],"%d\n",&image_height[n]);
+
+    if ((n) && ((image_width[n] != image_width[0]) || (image_height[n] != image_height[0]))) {
+      printf("different widths and/or different heights\n");
+      return 3;
+    }
+  }
+
+  bytes_to_io = sizeof (int) * image_width[0] * image_height[0];
+
+  for (n = 0; n < NUM_FILES; n++) {
+    if ((images[n] = (int *)malloc(bytes_to_io)) == NULL) {
+      printf("malloc of %d bytes failed\n",bytes_to_io);
+      return 4;
+    }
+  }
+
+  for (n = 0; n < NUM_FILES; n++) {
+    q = 0;
+
+    for (p = 0; p < image_height[0]; p++) {
+      for (m = 0; m < image_width[0]; m++) {
+        GetLine(fptr[n],line,&line_len,MAX_LINE_LEN);
+
+        if (feof(fptr[n]))
+          break;
+
+        sscanf(line,"%x",&images[n][q++]);
+      }
+    }
+  }
+
+  q = 0;
+
+  for (p = 0; p < image_height[0]; p++) {
+    for (m = 0; m < image_width[0]; m++) {
+      for (r = 0; r < NUM_FILES - 1; r++) {
+        for (s = r + 1; s < NUM_FILES; s++) {
+          if (images[r][q] == images[s][q])
+            break;
+        }
+
+        if (s < NUM_FILES)
+          break;
+      }
+
+      if (r == NUM_FILES - 1)
+        printf("%d %d %x %x %x %x\n",m,p,images[0][q],images[1][q],images[2][q],images[3][q]);
+
+      q++;
+    }
+  }
+
+  for (n = 0; n < NUM_FILES; n++) {
+    free(images[n]);
+    fclose(fptr[n]);
+  }
+
+  return 0;
+}
+
+static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
+{
+  int chara;
+  int local_line_len;
+
+  local_line_len = 0;
+
+  for ( ; ; ) {
+    chara = fgetc(fptr);
+
+    if (feof(fptr))
+      break;
+
+    if (chara == '\n')
+      break;
+
+    if (local_line_len < maxllen - 1)
+      line[local_line_len++] = (char)chara;
+  }
+
+  line[local_line_len] = 0;
+  *line_len = local_line_len;
+}
