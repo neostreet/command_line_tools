@@ -4,27 +4,38 @@
 
 #define LEFT      0
 #define TOP       1
-#define WIDTH     2
-#define HEIGHT    3
-#define NUM_PARMS 4
+#define NUM_PARMS 2
 
-static char usage[] = "usage: scr_grab (-debug) left top width height outfile\n";
+static char usage[] = "usage: scr_grab_suit (-debug) left top\n";
+
+static char *suits[] = {
+  "clubs",
+  "diamonds",
+  "hearts",
+  "spades"
+};
+#define NUM_SUITS (sizeof suits / sizeof (char *))
+
+static int suit_colors[] = {
+  0x90909,
+  0xfafafe,
+  0xffffff,
+  0xe8e8e8
+};
 
 static char couldnt_open[] = "couldn't open %s\n";
 static char fmt[] = "%08x\n";
 
 int main(int argc,char **argv)
 {
-  int m;
   int n;
   int curr_arg;
   bool bDebug;
   int parms[NUM_PARMS];
   HDC hDC;
   COLORREF color;
-  FILE *fptr;
 
-  if ((argc < 6) || (argc > 7)) {
+  if ((argc < 3) || (argc > 4)) {
     printf(usage);
     return 1;
   }
@@ -38,7 +49,7 @@ int main(int argc,char **argv)
       break;
   }
 
-  if (argc - curr_arg != 5) {
+  if (argc - curr_arg != 2) {
     printf(usage);
     return 2;
   }
@@ -53,33 +64,28 @@ int main(int argc,char **argv)
   for (n = 0; n < NUM_PARMS; n++)
     sscanf(argv[curr_arg + n],"%d",&parms[n]);
 
-  if ((fptr = fopen(argv[argc - 1],"w")) == NULL) {
-    printf(couldnt_open,argv[5]);
-    return 4;
-  }
-
   if (bDebug) {
     printf("parms[LEFT]   = %d\n",parms[LEFT]);
     printf("parms[TOP]    = %d\n",parms[TOP]);
-    printf("parms[WIDTH]  = %d\n",parms[WIDTH]);
-    printf("parms[HEIGHT] = %d\n",parms[HEIGHT]);
   }
 
-  for (m = 0; m < NUM_PARMS; m++)
-    fprintf(fptr,"%d\n",parms[m]);
+  color = GetPixel(hDC,parms[LEFT],parms[TOP]);
 
-  for (m = 0; m < parms[HEIGHT]; m++) {
-    for (n = 0; n < parms[WIDTH]; n++) {
-      color = GetPixel(hDC,parms[LEFT] + n,parms[TOP] + m);
+  if (bDebug)
+    printf("color = %x\n",color);
 
-      if (bDebug)
-        printf("color = %x\n",color);
-
-      fprintf(fptr,fmt,color);
-    }
+  for (n = 0; n < NUM_SUITS; n++) {
+    if (color == suit_colors[n])
+      break;
   }
 
-  fclose(fptr);
+  if (n == NUM_SUITS) {
+    printf("couldn't determine suit\n");
+
+    return 4;
+  }
+
+  printf("%s\n",suits[n]);
 
   return 0;
 }
