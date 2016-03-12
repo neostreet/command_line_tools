@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define NUM_FILES 4
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
 
-static char usage[] = "usage: compare_4 file1 file2 file3 file4\n";
+static char usage[] = "usage: compare_4 (-verbose) file1 file2 file3 file4\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -19,6 +20,8 @@ int main(int argc,char **argv)
   int q;
   int r;
   int s;
+  int curr_arg;
+  bool bVerbose;
   FILE *fptr[NUM_FILES];
   int left[NUM_FILES];
   int top[NUM_FILES];
@@ -30,15 +33,29 @@ int main(int argc,char **argv)
   int *images[NUM_FILES];
   int matches;
 
-  if (argc != 5) {
+  if ((argc < 5) || (argc > 6)) {
     printf(usage);
     return 1;
   }
 
+  bVerbose = false;
+
+  for (curr_arg = 1; curr_arg < argc; curr_arg++) {
+    if (!strcmp(argv[curr_arg],"-verbose"))
+      bVerbose = true;
+    else
+      break;
+  }
+
+  if (argc - curr_arg != 4) {
+    printf(usage);
+    return 2;
+  }
+
   for (n = 0; n < NUM_FILES; n++) {
-    if ((fptr[n] = fopen(argv[1+n],"r")) == NULL) {
-      printf(couldnt_open,argv[1+n]);
-      return 2;
+    if ((fptr[n] = fopen(argv[curr_arg+n],"r")) == NULL) {
+      printf(couldnt_open,argv[curr_arg+n]);
+      return 3;
     }
 
     fscanf(fptr[n],"%d\n",&left[n]);
@@ -48,7 +65,7 @@ int main(int argc,char **argv)
 
     if ((n) && ((image_width[n] != image_width[0]) || (image_height[n] != image_height[0]))) {
       printf("different widths and/or different heights\n");
-      return 3;
+      return 4;
     }
   }
 
@@ -57,7 +74,7 @@ int main(int argc,char **argv)
   for (n = 0; n < NUM_FILES; n++) {
     if ((images[n] = (int *)malloc(bytes_to_io)) == NULL) {
       printf("malloc of %d bytes failed\n",bytes_to_io);
-      return 4;
+      return 5;
     }
   }
 
@@ -89,8 +106,12 @@ int main(int argc,char **argv)
         }
       }
 
-      if (!matches)
-        printf("%d %d %x %x %x %x\n",m,p,images[0][q],images[1][q],images[2][q],images[3][q]);
+      if (!bVerbose) {
+        if (!matches)
+          printf("%d %d %x %x %x %x\n",m,p,images[0][q],images[1][q],images[2][q],images[3][q]);
+      }
+      else
+        printf("%d %d %d\n",matches,m,p);
 
       q++;
     }
