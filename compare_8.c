@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NUM_FILES 4
+#define NUM_FILES 8
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
 
-static char usage[] = "usage: compare_4 file1 file2 file3 file4\n";
+static char usage[] =
+"usage: compare_8 file1 file2 file3 file4 file5 file6 file7 file8\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -30,7 +31,7 @@ int main(int argc,char **argv)
   int *images[NUM_FILES];
   int matches;
 
-  if (argc != 5) {
+  if (argc != 9) {
     printf(usage);
     return 1;
   }
@@ -90,7 +91,9 @@ int main(int argc,char **argv)
       }
 
       if (!matches)
-        printf("%d %d %x %x %x %x\n",m,p,images[0][q],images[1][q],images[2][q],images[3][q]);
+        printf("%d %d %x %x %x %x %x %x %x %x\n",m,p,
+            images[0][q],images[1][q],images[2][q],images[3][q],
+            images[4][q],images[5][q],images[6][q],images[7][q]);
 
       q++;
     }
