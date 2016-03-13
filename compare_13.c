@@ -8,7 +8,7 @@
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: compare_8 (-verbose) f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13\n";
+"usage: compare_13 (-verbose) f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
