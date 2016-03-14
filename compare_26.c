@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NUM_FILES 13
+#define NUM_FILES 26
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: compare_13_2 (-debug) (-verbose) f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13\n"
-"  left2_1 top2_1 left2_2 top2_2";
+"usage: compare_26 (-verbose) f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13\n"
+"  f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -23,14 +23,10 @@ int main(int argc,char **argv)
   int r;
   int s;
   int curr_arg;
-  bool bDebug;
   bool bVerbose;
   FILE *fptr[NUM_FILES];
   int left[NUM_FILES];
   int top[NUM_FILES];
-  int left2[2];
-  int top2[2];
-  int offset[2];
   int image_width[NUM_FILES];
   int image_height[NUM_FILES];
   int line_len;
@@ -39,24 +35,21 @@ int main(int argc,char **argv)
   int *images[NUM_FILES];
   int matches;
 
-  if ((argc < 18) || (argc > 20)) {
+  if ((argc < 27) || (argc > 28)) {
     printf(usage);
     return 1;
   }
 
-  bDebug = false;
   bVerbose = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmp(argv[curr_arg],"-debug"))
-      bDebug = true;
-    else if (!strcmp(argv[curr_arg],"-verbose"))
+    if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
     else
       break;
   }
 
-  if (argc - curr_arg != 17) {
+  if (argc - curr_arg != 26) {
     printf(usage);
     return 2;
   }
@@ -77,11 +70,6 @@ int main(int argc,char **argv)
       return 4;
     }
   }
-
-  sscanf(argv[curr_arg+13],"%d",&left2[0]);
-  sscanf(argv[curr_arg+14],"%d",&top2[0]);
-  sscanf(argv[curr_arg+15],"%d",&left2[1]);
-  sscanf(argv[curr_arg+16],"%d",&top2[1]);
 
   bytes_to_io = sizeof (int) * image_width[0] * image_height[0];
 
@@ -107,26 +95,35 @@ int main(int argc,char **argv)
     }
   }
 
-  for (p = 0; p < 2; p++)
-    offset[p] = top2[p] * image_width[0] + left2[p];
+  q = 0;
 
-  matches = 0;
+  for (p = 0; p < image_height[0]; p++) {
+    for (m = 0; m < image_width[0]; m++) {
+      matches = 0;
 
-  for (r = 0; r < NUM_FILES - 1; r++) {
-    for (s = r + 1; s < NUM_FILES; s++) {
-      if ((images[r][offset[0]] == images[s][offset[0]]) &&
-          (images[r][offset[1]] == images[s][offset[1]])) {
-        matches++;
-
-        if (bDebug)
-          printf("match: %d %d %x %x\n",r,s,images[r][offset[0]],images[r][offset[1]]);
+      for (r = 0; r < NUM_FILES - 1; r++) {
+        for (s = r + 1; s < NUM_FILES; s++) {
+          if (images[r][q] == images[s][q])
+            matches++;
+        }
       }
-    }
-  }
 
-  if (bVerbose) {
-    for (r = 0; r < NUM_FILES; r++)
-      printf("%d %x %x\n",r,images[r][offset[0]],images[r][offset[1]]);
+      if (!bVerbose) {
+        if (!matches)
+          printf("%d %d %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x\n",m,p,
+            images[0][q],images[1][q],images[2][q],images[3][q],
+            images[4][q],images[5][q],images[6][q],images[7][q],
+            images[8][q],images[9][q],images[10][q],images[11][q],
+            images[12][q],images[13][q],images[14][q],images[15][q],
+            images[16][q],images[17][q],images[18][q],images[19][q],
+            images[20][q],images[21][q],images[22][q],images[23][q],
+            images[24][q],images[25][q]);
+      }
+      else
+        printf("%d %d %d\n",matches,m,p);
+
+      q++;
+    }
   }
 
   for (n = 0; n < NUM_FILES; n++) {

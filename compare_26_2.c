@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NUM_FILES 13
+#define NUM_FILES 26
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: compare_13_2 (-debug) (-verbose) f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13\n"
+"usage: compare_26_2 (-debug) (-verbose) f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13\n"
+"  f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26\n"
 "  left2_1 top2_1 left2_2 top2_2";
 static char couldnt_open[] = "couldn't open %s\n";
 
@@ -39,7 +40,7 @@ int main(int argc,char **argv)
   int *images[NUM_FILES];
   int matches;
 
-  if ((argc < 18) || (argc > 20)) {
+  if ((argc < 31) || (argc > 33)) {
     printf(usage);
     return 1;
   }
@@ -56,7 +57,7 @@ int main(int argc,char **argv)
       break;
   }
 
-  if (argc - curr_arg != 17) {
+  if (argc - curr_arg != 30) {
     printf(usage);
     return 2;
   }
@@ -78,10 +79,10 @@ int main(int argc,char **argv)
     }
   }
 
-  sscanf(argv[curr_arg+13],"%d",&left2[0]);
-  sscanf(argv[curr_arg+14],"%d",&top2[0]);
-  sscanf(argv[curr_arg+15],"%d",&left2[1]);
-  sscanf(argv[curr_arg+16],"%d",&top2[1]);
+  sscanf(argv[curr_arg+26],"%d",&left2[0]);
+  sscanf(argv[curr_arg+27],"%d",&top2[0]);
+  sscanf(argv[curr_arg+28],"%d",&left2[1]);
+  sscanf(argv[curr_arg+29],"%d",&top2[1]);
 
   bytes_to_io = sizeof (int) * image_width[0] * image_height[0];
 
