@@ -6,7 +6,8 @@
 #define TOP       1
 #define NUM_PARMS 2
 
-static char usage[] = "usage: scr_grab_suit (-debug) left top\n";
+static char usage[] =
+"usage: scr_grab_suit (-debug) (-abbrev) left top\n";
 
 static char *suits[] = {
   "clubs",
@@ -15,6 +16,8 @@ static char *suits[] = {
   "spades"
 };
 #define NUM_SUITS (sizeof suits / sizeof (char *))
+
+static char *suit_abbrevs = "cdhs";
 
 static int suit_colors[] = {
   0x90909,
@@ -31,20 +34,24 @@ int main(int argc,char **argv)
   int n;
   int curr_arg;
   bool bDebug;
+  bool bAbbrev;
   int parms[NUM_PARMS];
   HDC hDC;
   COLORREF color;
 
-  if ((argc < 3) || (argc > 4)) {
+  if ((argc < 3) || (argc > 5)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
+  bAbbrev = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
+    else if (!strcmp(argv[curr_arg],"-abbrev"))
+      bAbbrev = true;
     else
       break;
   }
@@ -85,7 +92,10 @@ int main(int argc,char **argv)
     return 4;
   }
 
-  printf("%s\n",suits[n]);
+  if (bAbbrev)
+    printf("%c\n",suit_abbrevs[n]);
+  else
+    printf("%s\n",suits[n]);
 
   return 0;
 }
