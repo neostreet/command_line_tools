@@ -14,9 +14,6 @@ static char couldnt_open[] = "couldn't open %s\n";
 #define MAX_LOG_NAME_LEN 4096
 static char log_name[MAX_LOG_NAME_LEN];
 
-#define MAX_LST_NAME_LEN 4096
-static char lst_name[MAX_LST_NAME_LEN];
-
 #define MAX_TREEISH_NAME 4096
 static char treeish_name[MAX_TREEISH_NAME];
 
@@ -31,7 +28,6 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bDebug;
   FILE *fptr;
-  FILE *lst_fptr;
   int line_len;
   int line_no;
 
@@ -57,20 +53,12 @@ int main(int argc,char **argv)
   sprintf(log_name,"%s.log",argv[curr_arg]);
   fixup_filename(log_name,strlen(log_name));
 
-  sprintf(lst_name,"%s.lst",argv[curr_arg]);
-  fixup_filename(lst_name,strlen(lst_name));
-
   sprintf(buf,"git log %s > %s",argv[curr_arg],log_name);
   system(buf);
 
   if ((fptr = fopen(log_name,"r")) == NULL) {
     printf(couldnt_open,log_name);
     return 3;
-  }
-
-  if ((lst_fptr = fopen(lst_name,"w")) == NULL) {
-    printf(couldnt_open,log_name);
-    return 4;
   }
 
   line_no = 0;
@@ -93,12 +81,9 @@ int main(int argc,char **argv)
 
       if (bDebug)
         printf("treeish_name after: %s\n",treeish_name);
-
-      fprintf(lst_fptr,"%s\n",treeish_name);
     }
   }
 
-  fclose(lst_fptr);
   fclose(fptr);
 
   return 0;
