@@ -8,7 +8,7 @@
 #define TRUE  1
 
 static char usage[] =
-"usage: aggreg2 (-no_sort) offset length filename\n";
+"usage: aggreg2 (-no_sort) (-total) offset length filename\n";
 
 static struct info_list aggreg;
 static struct info_list_elem **elems;
@@ -24,6 +24,7 @@ int main(int argc,char **argv)
   int n;
   int curr_arg;
   bool bNoSort;
+  bool bTotal;
   int offset;
   int length;
   FILE *fptr;
@@ -37,16 +38,19 @@ int main(int argc,char **argv)
   int *sort_ixs;
   int tot_lines;
 
-  if ((argc < 4) || (argc > 5)) {
+  if ((argc < 4) || (argc > 6)) {
     printf(usage);
     return 1;
   }
 
   bNoSort = false;
+  bTotal = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-no_sort"))
       bNoSort = true;
+    else if (!strcmp(argv[curr_arg],"-total"))
+      bTotal = true;
     else
       break;
   }
@@ -114,15 +118,18 @@ int main(int argc,char **argv)
   if (!bNoSort)
     qsort(sort_ixs,num_elems,sizeof (int),elem_compare);
 
-  tot_lines = 0;
+  if (bTotal)
+    tot_lines = 0;
 
   for (n = 0; n < num_elems; n++) {
     printf("%10d %s\n",elems[sort_ixs[n]]->int1,elems[sort_ixs[n]]->str);
     tot_lines += elems[sort_ixs[n]]->int1;
   }
 
-  printf("==========\n");
-  printf("%10d\n",tot_lines);
+  if (bTotal) {
+    printf("==========\n");
+    printf("%10d\n",tot_lines);
+  }
 
   free(elems);
   free(sort_ixs);
