@@ -15,7 +15,7 @@ char line[MAX_LINE_LEN];
 
 static char usage[] =
 "usage: max_int (-verbose) (-offsetoffset) (-lastn) (-dolphin_leap)\n"
-"  (-max_greater_than_zero) (-winning_session) filename\n";
+"  (-max_greater_than_zero) (-winning_session) (-running) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -29,6 +29,7 @@ int main(int argc,char **argv)
   bool bDolphinLeap;
   bool bMaxGreaterThanZero;
   bool bWinningSession;
+  bool bRunning;
   FILE *fptr;
   int linelen;
   int line_no;
@@ -39,7 +40,7 @@ int main(int argc,char **argv)
   int max_ix;
   int max_runtot;
 
-  if ((argc < 2) || (argc > 8)) {
+  if ((argc < 2) || (argc > 9)) {
     printf(usage);
     return 1;
   }
@@ -50,6 +51,7 @@ int main(int argc,char **argv)
   bDolphinLeap = false;
   bMaxGreaterThanZero = false;
   bWinningSession = false;
+  bRunning = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose")) {
@@ -66,6 +68,8 @@ int main(int argc,char **argv)
       bMaxGreaterThanZero = true;
     else if (!strcmp(argv[curr_arg],"-winning_session"))
       bWinningSession = true;
+    else if (!strcmp(argv[curr_arg],"-running"))
+      bRunning = true;
     else
       break;
   }
@@ -103,6 +107,21 @@ int main(int argc,char **argv)
       max = delta;
       max_ix = line_no;
       max_runtot = runtot;
+
+      if (bRunning) {
+        if (!bMaxGreaterThanZero || (max > 0)) {
+          if (!lastn || (line_no - max_ix + 1 <= lastn)) {
+            if (!bDolphinLeap || ((max_runtot < 0) && (max_runtot + max > 0))) {
+              if (!bWinningSession || (session_balance > 0)) {
+                if (!bVerbose)
+                  printf("%d\n",max);
+                else
+                  printf("%d %d %d %s\n",max,max_ix,line_no,save_dir);
+              }
+            }
+          }
+        }
+      }
     }
 
     if (bDolphinLeap)
@@ -111,14 +130,16 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
-  if (!bMaxGreaterThanZero || (max > 0)) {
-    if (!lastn || (line_no - max_ix + 1 <= lastn)) {
-      if (!bDolphinLeap || ((max_runtot < 0) && (max_runtot + max > 0))) {
-        if (!bWinningSession || (session_balance > 0)) {
-          if (!bVerbose)
-            printf("%d\n",max);
-          else
-            printf("%d %d %d %s\n",max,max_ix,line_no,save_dir);
+  if (!bRunning) {
+    if (!bMaxGreaterThanZero || (max > 0)) {
+      if (!lastn || (line_no - max_ix + 1 <= lastn)) {
+        if (!bDolphinLeap || ((max_runtot < 0) && (max_runtot + max > 0))) {
+          if (!bWinningSession || (session_balance > 0)) {
+            if (!bVerbose)
+              printf("%d\n",max);
+            else
+              printf("%d %d %d %s\n",max,max_ix,line_no,save_dir);
+          }
         }
       }
     }
