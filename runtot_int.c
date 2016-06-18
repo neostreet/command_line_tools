@@ -7,7 +7,7 @@ static char line[MAX_LINE_LEN];
 static char usage[] =
 "usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-start_and_end)\n"
 "  (-offsetoffset) (-gain_loss) (-gain_only) (-loss_only) (-abs_value)\n"
-"  (-line_numbers) filename\n";
+"  (-line_numbers) (-tot_at_end) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
@@ -22,6 +22,7 @@ int main(int argc,char **argv)
   bool bLossOnly;
   bool bAbsValue;
   bool bLineNumbers;
+  bool bTotAtEnd;
   int offset;
   FILE *fptr;
   int line_len;
@@ -33,7 +34,7 @@ int main(int argc,char **argv)
   int num_gains;
   int num_losses;
 
-  if ((argc < 2) || (argc > 12)) {
+  if ((argc < 2) || (argc > 13)) {
     printf(usage);
     return 1;
   }
@@ -47,6 +48,7 @@ int main(int argc,char **argv)
   bLossOnly = false;
   bAbsValue = false;
   bLineNumbers = false;
+  bTotAtEnd = false;
   offset = 0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
@@ -70,6 +72,8 @@ int main(int argc,char **argv)
       bAbsValue = true;
     else if (!strcmp(argv[curr_arg],"-line_numbers"))
       bLineNumbers = true;
+    else if (!strcmp(argv[curr_arg],"-tot_at_end"))
+      bTotAtEnd = true;
     else
       break;
   }
@@ -182,8 +186,12 @@ int main(int argc,char **argv)
       }
     }
     else {
-      if (!bGainLoss && !bGainOnly && !bLossOnly)
-        printf("%10d %s",runtot,line);
+      if (!bGainLoss && !bGainOnly && !bLossOnly) {
+        if (!bTotAtEnd)
+          printf("%10d %s",runtot,line);
+        else
+          printf("%s %10d",line,runtot);
+      }
       else if (bGainOnly) {
         if (work > 0)
           printf("%10d (%5d) %s",runtot_gain,num_gains,line);
