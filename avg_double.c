@@ -1,21 +1,38 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#ifdef WIN32
+#include <direct.h>
+#else
+#define _MAX_PATH 4096
+#include <unistd.h>
+#endif
+
+static char save_dir[_MAX_PATH];
 
 #define MAX_LINE_LEN 1024
 char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: avg_double (-verbose) (-runtot) (-abs) filename (filename ...)\n";
+"usage: avg_double (-debug) (-verbose) (-abs) (-date_string)\n"
+"  filename (filename ...)\n";
 static char couldnt_open[] = "couldn't open %s\n";
+static char fmt1[] = "%6.4lf";
+static char fmt2[] = "%6.4lf (%6.4lf %d)";
+static char fmt3[] = " %s\n";
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
+static int get_date_from_path(char *path,char slash_char,int num_slashes,char **date_string_ptr);
 
 int main(int argc,char **argv)
 {
   int curr_arg;
+  bool bDebug;
   bool bVerbose;
-  bool bRunTot;
   bool bAbs;
+  bool bDateString;
+  int retval;
+  char *date_string;
   FILE *fptr;
   int linelen;
   int line_no;
@@ -28,17 +45,20 @@ int main(int argc,char **argv)
     return 1;
   }
 
+  bDebug = false;
   bVerbose = false;
-  bRunTot = false;
   bAbs = false;
+  bDateString = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmp(argv[curr_arg],"-verbose"))
+    if (!strcmp(argv[curr_arg],"-debug"))
+      bDebug = true;
+    else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
-    else if (!strcmp(argv[curr_arg],"-runtot"))
-      bRunTot = true;
     else if (!strcmp(argv[curr_arg],"-abs"))
       bAbs = true;
+    else if (!strcmp(argv[curr_arg],"-date_string"))
+      bDateString = true;
     else
       break;
   }
@@ -46,6 +66,17 @@ int main(int argc,char **argv)
   if (argc - curr_arg < 1) {
     printf(usage);
     return 2;
+  }
+
+  if (bDateString) {
+    getcwd(save_dir,_MAX_PATH);
+
+    retval = get_date_from_path(save_dir,'/',2,&date_string);
+
+    if (retval) {
+      printf("get_date_from_path() failed: %d\n",retval);
+      return 3;
+    }
   }
 
   for ( ; curr_arg < argc; curr_arg++) {
@@ -70,8 +101,8 @@ int main(int argc,char **argv)
       sscanf(line,"%lf",&work);
 
       if (bAbs) {
-        if (work < (double)0)
-          work *= (double)-1;
+        if (work < 0)
+          work *= -1;
       }
 
       tot += work;
@@ -79,10 +110,15 @@ int main(int argc,char **argv)
       if (bVerbose) {
         dwork = tot / (double)line_no;
 
-        if (!bRunTot)
-          printf("  %lf %lf\n",work,dwork);
+        if (!bDebug)
+          printf(fmt1,dwork);
         else
-          printf("  %lf %lf %lf\n",work,tot,dwork);
+          printf(fmt2,dwork,tot,line_no);
+
+        if (!bDateString)
+          putchar(0x0a);
+        else
+          printf(fmt3,date_string);
       }
     }
 
@@ -91,10 +127,15 @@ int main(int argc,char **argv)
     if (!bVerbose) {
       dwork = tot / (double)line_no;
 
-      if (!bRunTot)
-        printf("%s: %lf\n",argv[curr_arg],dwork);
+      if (!bDebug)
+        printf(fmt1,dwork);
       else
-        printf("%s: %lf %lf\n",argv[curr_arg],tot,dwork);
+        printf(fmt2,dwork,tot,line_no);
+
+      if (!bDateString)
+        putchar(0x0a);
+      else
+        printf(fmt3,date_string);
     }
   }
 
@@ -123,4 +164,42 @@ void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
 
   line[local_line_len] = 0;
   *line_len = local_line_len;
+}
+
+static char sql_date_string[11];
+
+static int get_date_from_path(char *path,char slash_char,int num_slashes,char **date_string_ptr)
+{
+  int n;
+  int len;
+  int slash_count;
+
+  len = strlen(path);
+  slash_count = 0;
+
+  for (n = len - 1; (n >= 0); n--) {
+    if (path[n] == slash_char) {
+      slash_count++;
+
+      if (slash_count == num_slashes)
+        break;
+    }
+  }
+
+  if (slash_count != num_slashes)
+    return 1;
+
+  if (path[n+5] != slash_char)
+    return 2;
+
+  strncpy(sql_date_string,&path[n+1],4);
+  sql_date_string[4] = '-';
+  strncpy(&sql_date_string[5],&path[n+6],2);
+  sql_date_string[7] = '-';
+  strncpy(&sql_date_string[8],&path[n+8],2);
+  sql_date_string[10] = 0;
+
+  *date_string_ptr = sql_date_string;
+
+  return 0;
 }
