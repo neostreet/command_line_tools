@@ -101,8 +101,8 @@ int main(int argc,char **argv)
       sscanf(line,"%lf",&work);
 
       if (bAbs) {
-        if (work < 0)
-          work *= -1;
+        if (work < (double)0)
+          work *= (double)-1;
       }
 
       tot += work;
