@@ -96,7 +96,12 @@ int main(int argc,char **argv)
     return 4;
   }
 
-  sprintf(command_line,"git diff %s %s %s",commits[1],commits[0],argv[curr_arg]);
+#ifdef WNT
+  if (bDebug)
+    sprintf(command_line,"git difftool %s %s %s",commits[1],commits[0],argv[curr_arg]);
+  else
+#endif
+    sprintf(command_line,"git diff %s %s %s",commits[1],commits[0],argv[curr_arg]);
 
   if (bDebug)
     printf("%s\n",command_line);
