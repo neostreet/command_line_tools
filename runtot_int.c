@@ -3,11 +3,12 @@
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
+static char save_line[MAX_LINE_LEN];
 
 static char usage[] =
 "usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-start_and_end)\n"
 "  (-offsetoffset) (-gain_loss) (-gain_only) (-loss_only) (-abs_value)\n"
-"  (-line_numbers) (-tot_at_end) filename\n";
+"  (-line_numbers) (-tot_at_end) (-final_negative) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
@@ -23,6 +24,7 @@ int main(int argc,char **argv)
   bool bAbsValue;
   bool bLineNumbers;
   bool bTotAtEnd;
+  bool bFinalNegative;
   int offset;
   FILE *fptr;
   int line_len;
@@ -33,8 +35,9 @@ int main(int argc,char **argv)
   int runtot_loss;
   int num_gains;
   int num_losses;
+  int final_negative;
 
-  if ((argc < 2) || (argc > 13)) {
+  if ((argc < 2) || (argc > 14)) {
     printf(usage);
     return 1;
   }
@@ -49,6 +52,7 @@ int main(int argc,char **argv)
   bAbsValue = false;
   bLineNumbers = false;
   bTotAtEnd = false;
+  bFinalNegative = false;
   offset = 0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
@@ -74,6 +78,10 @@ int main(int argc,char **argv)
       bLineNumbers = true;
     else if (!strcmp(argv[curr_arg],"-tot_at_end"))
       bTotAtEnd = true;
+    else if (!strcmp(argv[curr_arg],"-final_negative")) {
+      bFinalNegative = true;
+      final_negative = 0;
+    }
     else
       break;
   }
@@ -168,7 +176,15 @@ int main(int argc,char **argv)
       }
     }
 
-    if (!bVerbose) {
+    if (bFinalNegative) {
+      if (runtot < 0) {
+        final_negative = runtot;
+        strcpy(save_line,line);
+      }
+
+      continue;
+    }
+    else if (!bVerbose) {
       if (!bGainLoss && !bGainOnly && !bLossOnly)
         printf("%d",runtot);
       else if (bGainOnly) {
@@ -236,7 +252,12 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
-  if (bStartAndEnd) {
+  if (bFinalNegative) {
+    if (final_negative < 0) {
+      printf("%d %s\n",final_negative,save_line);
+    }
+  }
+  else if (bStartAndEnd) {
     if (!bVerbose) {
       if (!bGainLoss && !bGainOnly && !bLossOnly)
         printf("%d",runtot);
