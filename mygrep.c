@@ -17,8 +17,8 @@ char *line;
 
 static char usage[] =
 "usage: mygrep (-c) (-ss) (-t) (-l) (-nss) (-nt) (-nl) (-rev) (-hex) (-chopn)\n"
-"  (-off) (-special_charhhc) (-no_datetime) (-windown) (-dbg) str\n"
-"  file (file ...)\n";
+"  (-off) (-special_charhhc) (-no_datetime) (-windown) (-dbg) (-non_blank_first_char)\n"
+"  str file (file ...)\n";
 
 static char couldnt_open[] = "couldn't open %s\n";
 static char couldnt_get_status[] = "couldn't get status of %s\n";
@@ -55,6 +55,8 @@ int main(int argc,char **argv)
   unsigned int linelen;
   unsigned int searchlen;
   unsigned int line_no;
+  static unsigned int dbg_line_no;
+  unsigned int dbg;
   int first_line_no;
   unsigned int put_title;
   unsigned int tries;
@@ -78,6 +80,7 @@ int main(int argc,char **argv)
   unsigned int bChop;
   unsigned int chop;
   unsigned int bOffset;
+  unsigned int bNonBlankFirstChar;
   int nibbles[2];
   int which_nib;
   unsigned int num_special_chars;
@@ -97,6 +100,7 @@ int main(int argc,char **argv)
   bHex = false;
   bChop = false;
   bOffset = false;
+  bNonBlankFirstChar = false;
   num_special_chars = 0;
   bDateTime = true;
   bWindow = false;
@@ -145,6 +149,8 @@ int main(int argc,char **argv)
       line_numbers = false;
       l_specified = true;
     }
+    else if (!strcmp(argv[curr_arg],"-non_blank_first_char"))
+      bNonBlankFirstChar = true;
     else if (!strncmp(argv[curr_arg],"-special_char",13)) {
       if (num_special_chars == MAX_SPECIAL_CHARS) {
         printf("num_special_chars may not exceed %d\n",MAX_SPECIAL_CHARS);
@@ -328,40 +334,51 @@ int main(int argc,char **argv)
 
     line_no++;
 
+    if (line_no == dbg_line_no)
+      dbg = 1;
+
     if (bDebug)
       printf(dbg_fmt_str,line_no,line);
 
     put_line = false;
 
-    if (linelen < searchlen) {
-      if (reverse)
-        put_line = true;
+    if (bNonBlankFirstChar) {
+      if (linelen >= 1)
+        if (line[0] != ' ')
+          put_line = true;
     }
-    else {
-      tries = linelen - searchlen + 1;
 
-      for (m = 0; m < tries; m++) {
-        for (n = 0; n < searchlen; n++) {
-          chara = line[m+n];
+    if (!put_line) {
+      if (linelen < searchlen) {
+        if (reverse)
+          put_line = true;
+      }
+      else {
+        tries = linelen - searchlen + 1;
 
-          if (!case_sens)
-            if ((chara >= 'A') && (chara <= 'Z'))
-              chara -= 'A' - 'a';
+        for (m = 0; m < tries; m++) {
+          for (n = 0; n < searchlen; n++) {
+            chara = line[m+n];
 
-          if (chara != argv[string_arg][n])
+            if (!case_sens)
+              if ((chara >= 'A') && (chara <= 'Z'))
+                chara -= 'A' - 'a';
+
+            if (chara != argv[string_arg][n])
+              break;
+          }
+
+          if (n == searchlen)
             break;
         }
 
-        if (n == searchlen)
-          break;
-      }
-
-      if (n == searchlen) {
-        if (!reverse)
+        if (n == searchlen) {
+          if (!reverse)
+            put_line = true;
+        }
+        else if (reverse)
           put_line = true;
       }
-      else if (reverse)
-        put_line = true;
     }
 
     if (put_line && bWindow)
