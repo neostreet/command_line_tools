@@ -56,15 +56,20 @@ int main(int argc,char **argv)
     if (feof(fptr))
       break;
 
+    if (bVerbose || !bNoTabs)
+      printf("%s\t",str);
+    else
+      printf("%s ",str);
+
     if (!bOnlyEnding) {
       if (!bVerbose) {
         if (!bNoTabs)
-          printf("%s\t%d\t",str,runtot);
+          printf("%d\t",runtot);
         else
-          printf("%s %10d ",str,runtot);
+          printf("%10d ",runtot);
       }
       else
-        printf("%s\t%d\t%d\t",str,work,runtot);
+        printf("%d\t%d\t",work,runtot);
     }
 
     runtot += work;
