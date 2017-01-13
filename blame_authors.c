@@ -7,7 +7,7 @@
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: blame_authors (-no_sort) filename\n";
+"usage: blame_authors (-no_sort) (filename)\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static struct info_list authors;
@@ -28,6 +28,7 @@ int main(int argc,char **argv)
   int n;
   int curr_arg;
   bool bNoSort;
+  bool bStdin;
   FILE *fptr;
   int line_len;
   int ix;
@@ -37,12 +38,13 @@ int main(int argc,char **argv)
   int *ixs;
   int tot_lines;
 
-  if ((argc < 2) || (argc > 3)) {
+  if (argc > 3) {
     printf(usage);
     return 1;
   }
 
   bNoSort = false;
+  bStdin = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-no_sort"))
@@ -51,15 +53,17 @@ int main(int argc,char **argv)
       break;
   }
 
-  if (argc - curr_arg != 1) {
-    printf(usage);
-    return 2;
-  }
+  if (curr_arg == argc)
+    bStdin = true;
 
-  if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
-    printf(couldnt_open,argv[curr_arg]);
-    return 3;
+  if (!bStdin) {
+    if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
+      printf(couldnt_open,argv[curr_arg]);
+      return 2;
+    }
   }
+  else
+    fptr = stdin;
 
   for ( ; ; ) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
@@ -77,14 +81,15 @@ int main(int argc,char **argv)
     }
   }
 
-  fclose(fptr);
+  if (!bStdin)
+    fclose(fptr);
 
   num_elems = authors.num_elems;
   contig_elems = (struct info_list_elem_contig *)malloc(num_elems * sizeof (struct info_list_elem_contig));
 
   if (contig_elems == NULL) {
     printf("couldn't malloc %d info_list_elem_contig structs\n",num_elems);
-    return 4;
+    return 3;
   }
 
   work_elem = authors.first_elem;
@@ -101,7 +106,7 @@ int main(int argc,char **argv)
 
   if (ixs == NULL) {
     printf("couldn't malloc %d ints\n",num_elems);
-    return 5;
+    return 4;
   }
 
   for (n = 0; n < num_elems; n++)
