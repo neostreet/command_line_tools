@@ -11,12 +11,12 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  sscanf(argv[1],"%d",&place);
-  sscanf(argv[2],"%d",&entries);
+  sscanf(argv[1],"%d",&entries);
+  sscanf(argv[2],"%d",&place);
 
   percentile = (double)(entries - place) / (double)entries;
 
-  printf("%d %d %lf\n",place,entries,percentile);
+  printf("%lf %d %d\n",percentile,entries,place);
 
   return 0;
 }
