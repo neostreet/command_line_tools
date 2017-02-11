@@ -14,7 +14,7 @@ static char command_line[MAX_COMMAND_LINE_LEN];
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: gitdifflast (-debug) (-backn) filename\n";
+"usage: gitdifflast (-debug) (-backn) (-difftool) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char temp_log[] = "tem.log";
 
@@ -23,8 +23,9 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 int main(int argc,char **argv)
 {
   int curr_arg;
-  int bDebug;
+  bool bDebug;
   int back;
+  bool bDifftool;
   int n;
   int len;
   FILE *fptr;
@@ -33,19 +34,22 @@ int main(int argc,char **argv)
   int commit_num;
   int commit_count;
 
-  if ((argc < 2) || (argc > 4)) {
+  if ((argc < 2) || (argc > 5)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
   back = 1;
+  bDifftool = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
     else if (!strncmp(argv[curr_arg],"-back",5))
       sscanf(&argv[curr_arg][5],"%d",&back);
+    if (!strcmp(argv[curr_arg],"-difftool"))
+      bDifftool = true;
     else
       break;
   }
@@ -97,7 +101,7 @@ int main(int argc,char **argv)
   }
 
 #ifdef WNT
-  if (bDebug)
+  if (bDifftool)
     sprintf(command_line,"git difftool %s %s %s",commits[1],commits[0],argv[curr_arg]);
   else
 #endif
