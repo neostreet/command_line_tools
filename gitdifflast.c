@@ -48,7 +48,7 @@ int main(int argc,char **argv)
       bDebug = true;
     else if (!strncmp(argv[curr_arg],"-back",5))
       sscanf(&argv[curr_arg][5],"%d",&back);
-    if (!strcmp(argv[curr_arg],"-difftool"))
+    else if (!strcmp(argv[curr_arg],"-difftool"))
       bDifftool = true;
     else
       break;
