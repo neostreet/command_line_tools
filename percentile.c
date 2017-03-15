@@ -7,7 +7,7 @@ int main(int argc,char **argv)
   double percentile;
 
   if (argc != 3) {
-    printf("usage: percentile place entries\n");
+    printf("usage: percentile entries place\n");
     return 1;
   }
 
