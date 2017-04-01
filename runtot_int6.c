@@ -5,7 +5,7 @@
 
 static char usage[] =
 "runtot_int6 (-initial_balbal) (-verbose) (-no_tabs) (-only_ending)\n"
-"  (-ony_starting) filename\n";
+"  (-only_starting) filename\n";
 
 int main(int argc,char **argv)
 {
