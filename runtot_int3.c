@@ -4,7 +4,8 @@
 #define MAX_STR_LEN 256
 
 static char usage[] =
-"usage: runtot_int3 (-initial_balbal) (-verbose) (-terse) (-star_blue) (-no_runtot) filename\n";
+"usage: runtot_int3 (-initial_balbal) (-verbose) (-terse) (-star_blue)\n"
+"  (-no_runtot) (-balance_first) filename\n";
 
 int main(int argc,char **argv)
 {
@@ -13,6 +14,7 @@ int main(int argc,char **argv)
   bool bTerse;
   bool bStarBlue;
   bool bNoRuntot;
+  bool bBalanceFirst;
   FILE *fptr;
   int runtot;
   int max;
@@ -20,7 +22,7 @@ int main(int argc,char **argv)
   int work;
   char str[MAX_STR_LEN];
 
-  if ((argc < 2) || (argc > 6)) {
+  if ((argc < 2) || (argc > 8)) {
     printf(usage);
     return 1;
   }
@@ -31,6 +33,7 @@ int main(int argc,char **argv)
   bTerse = false;
   bStarBlue = false;
   bNoRuntot = false;
+  bBalanceFirst = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strncmp(argv[curr_arg],"-initial_bal",12)) {
@@ -45,6 +48,8 @@ int main(int argc,char **argv)
       bStarBlue = true;
     else if (!strcmp(argv[curr_arg],"-no_runtot"))
       bNoRuntot = true;
+    else if (!strcmp(argv[curr_arg],"-balance_first"))
+      bBalanceFirst = true;
     else
       break;
   }
@@ -77,8 +82,12 @@ int main(int argc,char **argv)
     if (!bVerbose) {
       if (!bTerse) {
         if (!bStarBlue || !blue) {
-          if (!bNoRuntot)
-            printf("%s\t%d\n",str,runtot);
+          if (!bNoRuntot) {
+            if (!bBalanceFirst)
+              printf("%s\t%d\n",str,runtot);
+            else
+              printf("%d\t%s\n",runtot,str);
+          }
           else
             printf("%s\n",str);
         }
