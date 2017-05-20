@@ -11,7 +11,8 @@ struct left_top {
 static struct left_top left_tops[NUM_LEFT_TOPS];
 
 static char usage[] =
-"usage: scr_grab_board (-debug) (-abbrev) left1 top1 left2 top2 left3 top3 width\n";
+"usage: scr_grab_board (-debug) (-abbrev) (-skip_suit)\n"
+"  left1 top1 left2 top2 left3 top3 width\n";
 
 static char *denoms[] = {
   "two",
@@ -87,23 +88,27 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bDebug;
   bool bAbbrev;
+  bool bSkipSuit;
   int width;
   HDC hDC;
   COLORREF colors[NUM_LEFT_TOPS];
 
-  if ((argc < 8) || (argc > 10)) {
+  if ((argc < 8) || (argc > 11)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
   bAbbrev = false;
+  bSkipSuit = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
     else if (!strcmp(argv[curr_arg],"-abbrev"))
       bAbbrev = true;
+    else if (!strcmp(argv[curr_arg],"-skip_suit"))
+      bSkipSuit = true;
     else
       break;
   }
@@ -153,18 +158,19 @@ int main(int argc,char **argv)
     else
       printf("%s",denoms[n]);
 
-    for (n = 0; n < NUM_SUITS; n++) {
-      if (colors[2] == suit_colors[n])
-        break;
+    if (!bSkipSuit) {
+      for (n = 0; n < NUM_SUITS; n++) {
+        if (colors[2] == suit_colors[n])
+          break;
+      }
+
+      if (n == NUM_SUITS)
+        printf("?");
+      else if (bAbbrev)
+        printf("%c",suit_abbrevs[n]);
+      else
+        printf("%s",suits[n]);
     }
-
-    if (n == NUM_SUITS)
-      break;
-
-    if (bAbbrev)
-      printf("%c",suit_abbrevs[n]);
-    else
-      printf("%s",suits[n]);
   }
 
   if (m)
