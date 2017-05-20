@@ -12,7 +12,7 @@ static struct left_top left_tops[NUM_LEFT_TOPS];
 
 static char usage[] =
 "usage: scr_grab_board (-debug) (-abbrev) (-skip_suit)\n"
-"  left1 top1 left2 top2 left3 top3 width\n";
+"  num_cards left1 top1 left2 top2 left3 top3 width\n";
 
 static char *denoms[] = {
   "two",
@@ -89,11 +89,12 @@ int main(int argc,char **argv)
   bool bDebug;
   bool bAbbrev;
   bool bSkipSuit;
+  int num_cards;
   int width;
   HDC hDC;
   COLORREF colors[NUM_LEFT_TOPS];
 
-  if ((argc < 8) || (argc > 11)) {
+  if ((argc < 9) || (argc > 12)) {
     printf(usage);
     return 1;
   }
@@ -113,16 +114,23 @@ int main(int argc,char **argv)
       break;
   }
 
-  if (argc - curr_arg != 7) {
+  if (argc - curr_arg != 8) {
     printf(usage);
     return 2;
+  }
+
+  sscanf(argv[curr_arg++],"%d",&num_cards);
+
+  if ((num_cards < 1) || (num_cards > 5)) {
+    printf("invalid value %d for num_cards; must be >= 1 and <= 5\n",num_cards);
+    return 3;
   }
 
   hDC = GetDC(NULL);
 
   if (!hDC) {
     printf("GetDC failed for screen\n");
-    return 3;
+    return 4;
   }
 
   for (n = 0; n < NUM_LEFT_TOPS; n++) {
@@ -132,7 +140,7 @@ int main(int argc,char **argv)
 
   sscanf(argv[argc-1],"%d",&width);
 
-  for (m = 0; m < 5; m++) {
+  for (m = 0; m < num_cards; m++) {
     for (n = 0; n < NUM_LEFT_TOPS; n++) {
       colors[n] = GetPixel(hDC,left_tops[n].left + m * width,left_tops[n].top);
 
