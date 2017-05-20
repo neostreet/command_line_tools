@@ -10,9 +10,14 @@ struct left_top {
 #define NUM_LEFT_TOPS 3
 static struct left_top left_tops[NUM_LEFT_TOPS];
 
+#define MAX_LINE_LEN 4096
+static char line[MAX_LINE_LEN];
+
+void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
+
 static char usage[] =
 "usage: scr_grab_board (-debug) (-abbrev) (-skip_suit)\n"
-"  num_cards left1 top1 left2 top2 left3 top3 width\n";
+"  suit_colors_file num_cards left1 top1 left2 top2 left3 top3 width\n";
 
 static char *denoms[] = {
   "two",
@@ -72,12 +77,7 @@ static char *suits[] = {
 
 static char *suit_abbrevs = "cdhs";
 
-static int suit_colors[] = {
-  0x90909,
-  0xfafafe,
-  0xffffff,
-  0xe8e8e8
-};
+static int suit_colors[NUM_SUITS];
 static char couldnt_open[] = "couldn't open %s\n";
 static char fmt[] = "%08x\n";
 
@@ -89,12 +89,15 @@ int main(int argc,char **argv)
   bool bDebug;
   bool bAbbrev;
   bool bSkipSuit;
+  FILE *fptr;
+  int line_len;
+  int line_no;
   int num_cards;
   int width;
   HDC hDC;
   COLORREF colors[NUM_LEFT_TOPS];
 
-  if ((argc < 9) || (argc > 12)) {
+  if ((argc < 10) || (argc > 13)) {
     printf(usage);
     return 1;
   }
@@ -114,23 +117,53 @@ int main(int argc,char **argv)
       break;
   }
 
-  if (argc - curr_arg != 8) {
+  if (argc - curr_arg != 9) {
     printf(usage);
     return 2;
   }
+
+  if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
+    printf("couldn't open %s\n",argv[curr_arg]);
+    return 3;
+  }
+
+  line_no = 0;
+
+  for ( ; ; ) {
+    GetLine(fptr,line,&line_len,MAX_LINE_LEN);
+
+    if (feof(fptr))
+      break;
+
+    sscanf(line,"%x",&suit_colors[line_no]);
+
+    line_no++;
+
+    if (line_no == NUM_SUITS)
+      break;
+  }
+
+  fclose(fptr);
+
+  if (line_no != NUM_SUITS) {
+    printf("wrong number of lines in suit colors file %s\n",argv[curr_arg]);
+    return 4;
+  }
+
+  curr_arg++;
 
   sscanf(argv[curr_arg++],"%d",&num_cards);
 
   if ((num_cards < 1) || (num_cards > 5)) {
     printf("invalid value %d for num_cards; must be >= 1 and <= 5\n",num_cards);
-    return 3;
+    return 5;
   }
 
   hDC = GetDC(NULL);
 
   if (!hDC) {
     printf("GetDC failed for screen\n");
-    return 4;
+    return 6;
   }
 
   for (n = 0; n < NUM_LEFT_TOPS; n++) {
@@ -185,4 +218,28 @@ int main(int argc,char **argv)
     putchar(0x0a);
 
   return 0;
+}
+
+void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
+{
+  int chara;
+  int local_line_len;
+
+  local_line_len = 0;
+
+  for ( ; ; ) {
+    chara = fgetc(fptr);
+
+    if (feof(fptr))
+      break;
+
+    if (chara == '\n')
+      break;
+
+    if (local_line_len < maxllen - 1)
+      line[local_line_len++] = (char)chara;
+  }
+
+  line[local_line_len] = 0;
+  *line_len = local_line_len;
 }
