@@ -17,8 +17,8 @@ static char usage[] =
 "usage: avg_double (-debug) (-verbose) (-abs) (-date_string)\n"
 "  filename (filename ...)\n";
 static char couldnt_open[] = "couldn't open %s\n";
-static char fmt1[] = "%6.4lf";
-static char fmt2[] = "%6.4lf (%6.4lf %d)";
+static char fmt1[] = "%11.4lf";
+static char fmt2[] = "%11.4lf (%11.4lf %d)";
 static char fmt3[] = " %s\n";
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
