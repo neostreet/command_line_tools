@@ -17,9 +17,11 @@ static char usage[] =
 "usage: avg_double (-debug) (-verbose) (-abs) (-date_string)\n"
 "  filename (filename ...)\n";
 static char couldnt_open[] = "couldn't open %s\n";
-static char fmt1[] = "%11.4lf";
-static char fmt2[] = "%11.4lf (%11.4lf %d)";
+static char fmt0[] = "%11.4lf";
+static char fmt1[] = "%11.4lf %s";
+static char fmt2[] = "%11.4lf (%11.4lf %d) %s";
 static char fmt3[] = " %s\n";
+static char fmt4[] = "%11.4lf (%11.4lf %d)";
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 static int get_date_from_path(char *path,char slash_char,int num_slashes,char **date_string_ptr);
@@ -111,9 +113,9 @@ int main(int argc,char **argv)
         dwork = tot / (double)line_no;
 
         if (!bDebug)
-          printf(fmt1,dwork);
+          printf(fmt1,dwork,line);
         else
-          printf(fmt2,dwork,tot,line_no);
+          printf(fmt2,dwork,tot,line_no,line);
 
         if (!bDateString)
           putchar(0x0a);
@@ -128,9 +130,9 @@ int main(int argc,char **argv)
       dwork = tot / (double)line_no;
 
       if (!bDebug)
-        printf(fmt1,dwork);
+        printf(fmt0,dwork);
       else
-        printf(fmt2,dwork,tot,line_no);
+        printf(fmt4,dwork,tot,line_no);
 
       if (!bDateString)
         putchar(0x0a);
