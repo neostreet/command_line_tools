@@ -22,6 +22,7 @@ static char couldnt_get_status[] = "couldn't get status of %s\n";
 int main(int argc,char **argv)
 {
   int n;
+  int to_do;
   off_t bytes_to_do;
   off_t bytes_per_chunk;
   off_t last_chunk_bytes;
@@ -35,7 +36,8 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  sscanf(argv[1],"%lu",&bytes_to_do);
+  sscanf(argv[1],"%d",&to_do);
+  bytes_to_do = to_do;
 
   if ((fhndl = open(argv[2],
     O_CREAT | O_EXCL | O_BINARY | O_WRONLY,
@@ -53,7 +55,7 @@ int main(int argc,char **argv)
   }
 
   for (n = 0; n < bytes_per_chunk; n++)
-    buf[n] = 0;
+    buf[n] = 'a' + (n % 26);
 
   num_chunks = (bytes_to_do + bytes_per_chunk - 1) / bytes_per_chunk;
   last_chunk_bytes = bytes_to_do - (num_chunks - 1) * bytes_per_chunk;
