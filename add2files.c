@@ -18,6 +18,7 @@ int main(int argc,char **argv)
   int linelen[2];
   int line_no;
   int val[2];
+  int sum;
 
   if ((argc < 3) || (argc > 4)) {
     printf(usage);
@@ -63,10 +64,12 @@ int main(int argc,char **argv)
     if (n < 2)
       break;
 
+    sum = val[0] + val[1];
+
     if (!bVerbose)
-      printf("%d\n",val[0] + val[1]);
+      printf("%d\n",sum);
     else
-      printf("%d %s\n",val[0] + val[1],line[1]);
+      printf("%d (%d) %s\n",sum,val[0],line[1]);
   }
 
   for (n = 0; n < 2; n++)
