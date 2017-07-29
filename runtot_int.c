@@ -8,7 +8,8 @@ static char save_line[MAX_LINE_LEN];
 static char usage[] =
 "usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-start_and_end)\n"
 "  (-offsetoffset) (-gain_loss) (-gain_only) (-loss_only) (-abs_value)\n"
-"  (-line_numbers) (-tot_at_end) (-final_negative) (-no_align) filename\n";
+"  (-line_numbers) (-tot_at_end) (-final_negative) (-no_align)\n"
+"  (-only_blue) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
@@ -26,6 +27,8 @@ int main(int argc,char **argv)
   bool bTotAtEnd;
   bool bFinalNegative;
   bool bNoAlign;
+  bool bOnlyBlue;
+  bool bHaveBlue;
   int offset;
   FILE *fptr;
   int line_len;
@@ -37,8 +40,9 @@ int main(int argc,char **argv)
   int num_gains;
   int num_losses;
   int final_negative;
+  int blue_val;
 
-  if ((argc < 2) || (argc > 15)) {
+  if ((argc < 2) || (argc > 16)) {
     printf(usage);
     return 1;
   }
@@ -55,6 +59,7 @@ int main(int argc,char **argv)
   bTotAtEnd = false;
   bFinalNegative = false;
   bNoAlign = false;
+  bOnlyBlue = false;
   offset = 0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
@@ -86,6 +91,8 @@ int main(int argc,char **argv)
     }
     else if (!strcmp(argv[curr_arg],"-no_align"))
       bNoAlign = true;
+    else if (!strcmp(argv[curr_arg],"-only_blue"))
+      bOnlyBlue = true;
     else
       break;
   }
@@ -137,6 +144,9 @@ int main(int argc,char **argv)
 
   line_no = 0;
 
+  if (bOnlyBlue)
+    blue_val = runtot;
+
   for ( ; ; ) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
 
@@ -153,8 +163,18 @@ int main(int argc,char **argv)
     }
 
     if (!bStartBal && !bStartAndEnd) {
-      if (!bGainOnly && !bLossOnly)
+      if (!bGainOnly && !bLossOnly) {
         runtot += work;
+
+        if (bOnlyBlue) {
+          if (runtot > blue_val) {
+            blue_val = runtot;
+            bHaveBlue = true;
+          }
+          else
+            bHaveBlue = false;
+        }
+      }
 
       if (bGainLoss) {
         if (work > 0) {
@@ -189,8 +209,10 @@ int main(int argc,char **argv)
       continue;
     }
     else if (!bVerbose) {
-      if (!bGainLoss && !bGainOnly && !bLossOnly)
-        printf("%d",runtot);
+      if (!bGainLoss && !bGainOnly && !bLossOnly) {
+        if (!bOnlyBlue || bHaveBlue)
+          printf("%d",runtot);
+      }
       else if (bGainOnly) {
         if (work > 0)
           printf("%d (%d)",runtot_gain,num_gains);
@@ -207,14 +229,16 @@ int main(int argc,char **argv)
     }
     else {
       if (!bGainLoss && !bGainOnly && !bLossOnly) {
-        if (!bTotAtEnd) {
-          if (!bNoAlign)
-            printf("%10d %s",runtot,line);
+        if (!bOnlyBlue || bHaveBlue) {
+          if (!bTotAtEnd) {
+            if (!bNoAlign)
+              printf("%10d %s",runtot,line);
+            else
+              printf("%d %s",runtot,line);
+          }
           else
-            printf("%d %s",runtot,line);
+            printf("%s %10d",line,runtot);
         }
-        else
-          printf("%s %10d",line,runtot);
       }
       else if (bGainOnly) {
         if (work > 0)
@@ -232,10 +256,12 @@ int main(int argc,char **argv)
       }
     }
 
-    if (!bLineNumbers)
-      putchar(0x0a);
-    else
-      printf(" %d\n",line_no);
+    if (!bOnlyBlue || bHaveBlue) {
+      if (!bLineNumbers)
+        putchar(0x0a);
+      else
+        printf(" %d\n",line_no);
+    }
 
     if (bStartBal || bStartAndEnd) {
       if (!bGainOnly && !bLossOnly)
