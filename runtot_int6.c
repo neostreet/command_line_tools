@@ -4,13 +4,14 @@
 #define MAX_STR_LEN 256
 
 static char usage[] =
-"runtot_int6 (-initial_balbal) (-verbose) (-no_tabs) (-only_ending)\n"
+"runtot_int6 (-initial_balbal) (-verbose) (-terse) (-no_tabs) (-only_ending)\n"
 "  (-only_starting) filename\n";
 
 int main(int argc,char **argv)
 {
   int curr_arg;
   bool bVerbose;
+  bool bTerse;
   bool bNoTabs;
   bool bOnlyEnding;
   bool bOnlyStarting;
@@ -19,13 +20,14 @@ int main(int argc,char **argv)
   int work;
   char str[MAX_STR_LEN];
 
-  if ((argc < 2) || (argc > 7)) {
+  if ((argc < 2) || (argc > 8)) {
     printf(usage);
     return 1;
   }
 
   runtot = 0;
   bVerbose = false;
+  bTerse = false;
   bNoTabs = false;
   bOnlyEnding = false;
   bOnlyStarting = false;
@@ -35,6 +37,8 @@ int main(int argc,char **argv)
       sscanf(&argv[curr_arg][12],"%d",&runtot);
     else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
+    else if (!strcmp(argv[curr_arg],"-terse"))
+      bTerse = true;
     else if (!strcmp(argv[curr_arg],"-no_tabs"))
       bNoTabs = true;
     else if (!strcmp(argv[curr_arg],"-only_ending"))
@@ -55,9 +59,14 @@ int main(int argc,char **argv)
     return 3;
   }
 
+  if (bVerbose && bTerse) {
+    printf("can specify at most one of -verbose and -terse\n");
+    return 4;
+  }
+
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf("couldn't open %s\n",argv[curr_arg]);
-    return 4;
+    return 5;
   }
 
   for ( ; ; ) {
@@ -66,20 +75,22 @@ int main(int argc,char **argv)
     if (feof(fptr))
       break;
 
-    if (bVerbose || !bNoTabs)
-      printf("%s\t",str);
-    else
-      printf("%s ",str);
+    if (!bTerse) {
+      if (bVerbose || !bNoTabs)
+        printf("%s\t",str);
+      else
+        printf("%s ",str);
+    }
 
     if (!bOnlyEnding) {
       if (!bVerbose) {
         if (!bNoTabs)
-          printf("%d",runtot);
+          printf("%d\t",runtot);
         else
-          printf("%10d",runtot);
+          printf("%10d ",runtot);
       }
       else
-        printf("%d\t%d",work,runtot);
+        printf("%d\t%d\t",work,runtot);
     }
 
     runtot += work;
@@ -87,10 +98,10 @@ int main(int argc,char **argv)
     if (bOnlyStarting)
       putchar(0x0a);
     else {
-      if (bVerbose || !bNoTabs)
-        printf("\t%d\n",runtot);
+      if (bTerse || bVerbose || !bNoTabs)
+        printf("%d\n",runtot);
       else
-        printf(" %10d\n",runtot);
+        printf("%10d\n",runtot);
     }
   }
 
