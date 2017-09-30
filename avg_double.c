@@ -14,12 +14,13 @@ static char save_dir[_MAX_PATH];
 char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: avg_double (-debug) (-verbose) (-abs) (-date_string)\n"
+"usage: avg_double (-debug) (-terse) (-verbose) (-abs) (-date_string)\n"
 "  filename (filename ...)\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char fmt0[] = "%11.4lf";
 static char fmt1[] = "%11.4lf %s";
 static char fmt2[] = "%11.4lf (%11.4lf %d) %s";
+static char fmt2b[] = "%11.4lf (%11.4lf %d)";
 static char fmt3[] = " %s\n";
 static char fmt4[] = "%11.4lf (%11.4lf %d)";
 
@@ -30,6 +31,7 @@ int main(int argc,char **argv)
 {
   int curr_arg;
   bool bDebug;
+  bool bTerse;
   bool bVerbose;
   bool bAbs;
   bool bDateString;
@@ -48,6 +50,7 @@ int main(int argc,char **argv)
   }
 
   bDebug = false;
+  bTerse = false;
   bVerbose = false;
   bAbs = false;
   bDateString = false;
@@ -55,6 +58,8 @@ int main(int argc,char **argv)
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
+    else if (!strcmp(argv[curr_arg],"-terse"))
+      bTerse = true;
     else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-abs"))
@@ -65,9 +70,14 @@ int main(int argc,char **argv)
       break;
   }
 
+  if (bTerse && bVerbose) {
+    printf("can't specify both -terse and -verbose\n");
+    return 2;
+  }
+
   if (argc - curr_arg < 1) {
     printf(usage);
-    return 2;
+    return 3;
   }
 
   if (bDateString) {
@@ -77,7 +87,7 @@ int main(int argc,char **argv)
 
     if (retval) {
       printf("get_date_from_path() failed: %d\n",retval);
-      return 3;
+      return 4;
     }
   }
 
@@ -87,7 +97,7 @@ int main(int argc,char **argv)
       continue;
     }
 
-    if (bVerbose)
+    if (bVerbose || !bTerse)
       printf("%s\n",argv[curr_arg]);
 
     line_no = 0;
@@ -109,13 +119,21 @@ int main(int argc,char **argv)
 
       tot += work;
 
-      if (bVerbose) {
+      if (bVerbose || !bTerse) {
         dwork = tot / (double)line_no;
 
-        if (!bDebug)
-          printf(fmt1,dwork,line);
-        else
-          printf(fmt2,dwork,tot,line_no,line);
+        if (!bDebug) {
+          if (bVerbose)
+            printf(fmt1,dwork,line);
+          else
+            printf(fmt0,dwork);
+        }
+        else {
+          if (bVerbose)
+            printf(fmt2,dwork,tot,line_no,line);
+          else
+            printf(fmt2b,dwork,tot,line_no);
+        }
 
         if (!bDateString)
           putchar(0x0a);
@@ -126,7 +144,7 @@ int main(int argc,char **argv)
 
     fclose(fptr);
 
-    if (!bVerbose) {
+    if (bTerse) {
       dwork = tot / (double)line_no;
 
       if (!bDebug)
