@@ -17,7 +17,7 @@ static char usage[] =
 "usage: avg_double (-debug) (-terse) (-verbose) (-abs) (-date_string)\n"
 "  filename (filename ...)\n";
 static char couldnt_open[] = "couldn't open %s\n";
-static char fmt0[] = "%11.4lf";
+static char fmt0[] = "%lf";
 static char fmt1[] = "%11.4lf %s";
 static char fmt2[] = "%11.4lf (%11.4lf %d) %s";
 static char fmt2b[] = "%11.4lf (%11.4lf %d)";
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
       continue;
     }
 
-    if (bVerbose || !bTerse)
+    if (bVerbose)
       printf("%s\n",argv[curr_arg]);
 
     line_no = 0;
