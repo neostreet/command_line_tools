@@ -41,7 +41,7 @@ int main(int argc,char **argv)
 
     sscanf(line,"%d",&work);
 
-    if ((work < 0) || (work > MAX_COUNTS)) {
+    if ((work <= 0) || (work > MAX_COUNTS)) {
       printf("invalid int at line %d: %d\n",line_no,work);
       return 3;
     }
