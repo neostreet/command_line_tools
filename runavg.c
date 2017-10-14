@@ -4,7 +4,8 @@
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
 
-static char usage[] = "usage: runavg (-verbose) filename\n";
+static char usage[] =
+"usage: runavg (-verbose) (-terse) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -13,6 +14,7 @@ int main(int argc,char **argv)
 {
   int curr_arg;
   bool bVerbose;
+  bool bTerse;
   FILE *fptr;
   int line_len;
   int nobs;
@@ -20,16 +22,19 @@ int main(int argc,char **argv)
   double dwork;
   double avg;
 
-  if ((argc < 2) || (argc > 3)) {
+  if ((argc < 2) || (argc > 4)) {
     printf(usage);
     return 1;
   }
 
   bVerbose = false;
+  bTerse = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
+    else if (!strcmp(argv[curr_arg],"-terse"))
+      bTerse = true;
     else
       break;
   }
@@ -39,9 +44,14 @@ int main(int argc,char **argv)
     return 2;
   }
 
+  if (bVerbose && bTerse) {
+    printf("can't specify both -verbose and -terse\n");
+    return 3;
+  }
+
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf(couldnt_open,argv[curr_arg]);
-    return 3;
+    return 4;
   }
 
   nobs = 0;
@@ -60,7 +70,9 @@ int main(int argc,char **argv)
 
     avg = runtot / (double)nobs;
 
-    if (!bVerbose)
+    if (bTerse)
+      printf("%lf\n",avg);
+    else if (!bVerbose)
       printf("%10.2lf %10.2lf\n",avg,dwork);
     else
       printf("%10.2lf %s\n",avg,line);
