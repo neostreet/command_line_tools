@@ -40,11 +40,13 @@ int main(int argc,char **argv)
   bool bNoSort;
   bool bModulo;
   int modulo;
+  int bTerse;
 
   bTotalOnly = false;
   bStdinIsList = false;
   bNoSort = false;
   bModulo = false;
+  bTerse = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-totalonly"))
@@ -57,6 +59,8 @@ int main(int argc,char **argv)
       bModulo = true;
       sscanf(&argv[curr_arg][7],"%d",&modulo);
     }
+    else if (!strcmp(argv[curr_arg],"-terse"))
+      bTerse = true;
     else
       break;
   }
@@ -160,11 +164,12 @@ int main(int argc,char **argv)
         }
       }
 
-      putchar(NEWLINE);
+      if (!bTerse)
+        putchar(NEWLINE);
     }
   }
 
-  if (!bStdin)
+  if (!bStdin && !bTerse)
     printf(fmt_str,tot_lines,total_str);
 
   free(finfo);
