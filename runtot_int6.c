@@ -75,7 +75,7 @@ int main(int argc,char **argv)
     if (feof(fptr))
       break;
 
-    if (!bTerse) {
+    if (!bTerse && !bOnlyEnding) {
       if (bVerbose || !bNoTabs)
         printf("%s\t",str);
       else
@@ -97,6 +97,8 @@ int main(int argc,char **argv)
 
     if (bOnlyStarting)
       putchar(0x0a);
+    else if (bOnlyEnding)
+      printf("%d %s\n",runtot,str);
     else {
       if (bTerse || bVerbose || !bNoTabs)
         printf("%d\n",runtot);
