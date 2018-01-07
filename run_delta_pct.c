@@ -61,9 +61,9 @@ int main(int argc,char **argv)
     delta_pct = (double)work / (double)balance;
 
     if (!bVerbose)
-      printf("%8.4lf\n",delta_pct);
+      printf("%lf\n",delta_pct);
     else
-      printf("%8.4lf (%d) %s\n",delta_pct,balance,line);
+      printf("%lf (%d) %s\n",delta_pct,balance,line);
 
     balance += work;
   }
