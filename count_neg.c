@@ -13,7 +13,7 @@ static char save_dir[_MAX_PATH];
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: count_pos (-debug) (-exact_countcount) filename\n";
+"usage: count_neg (-debug) (-exact_countcount) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   FILE *fptr;
   int line_len;
   int line_no;
-  int count_pos;
+  int count_neg;
   int work;
 
   if ((argc < 2) || (argc > 4)) {
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   if (bDebug)
     getcwd(save_dir,_MAX_PATH);
 
-  count_pos = 0;
+  count_neg = 0;
   line_no = 0;
 
   for ( ; ; ) {
@@ -71,17 +71,17 @@ int main(int argc,char **argv)
     line_no++;
     sscanf(line,"%d",&work);
 
-    if (work > 0)
-      count_pos++;
+    if (work < 0)
+      count_neg++;
   }
 
   fclose(fptr);
 
-  if ((exact_count == -1) || (count_pos == exact_count)) {
+  if ((exact_count == -1) || (count_neg == exact_count)) {
     if (!bDebug)
-      printf("%d\n",count_pos);
+      printf("%d\n",count_neg);
     else
-      printf("%d %s\n",count_pos,save_dir);
+      printf("%d %s\n",count_neg,save_dir);
   }
 
   return 0;
