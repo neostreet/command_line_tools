@@ -13,7 +13,7 @@ static char save_dir[_MAX_PATH];
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: count_neg (-debug) (-exact_countcount) filename\n";
+"usage: count_neg (-debug) (-exact_countcount) (-on_last) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -23,25 +23,30 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bDebug;
   int exact_count;
+  bool bOnLast;
+  bool bNeg;
   FILE *fptr;
   int line_len;
   int line_no;
   int count_neg;
   int work;
 
-  if ((argc < 2) || (argc > 4)) {
+  if ((argc < 2) || (argc > 5)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
   exact_count = -1;
+  bOnLast = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
     else if (!strncmp(argv[curr_arg],"-exact_count",12))
       sscanf(&argv[curr_arg][12],"%d",&exact_count);
+    else if (!strcmp(argv[curr_arg],"-on_last"))
+      bOnLast = true;
     else
       break;
   }
@@ -71,17 +76,23 @@ int main(int argc,char **argv)
     line_no++;
     sscanf(line,"%d",&work);
 
-    if (work < 0)
+    if (work < 0) {
       count_neg++;
+      bNeg = true;
+    }
+    else
+      bNeg = false;
   }
 
   fclose(fptr);
 
   if ((exact_count == -1) || (count_neg == exact_count)) {
-    if (!bDebug)
-      printf("%d\n",count_neg);
-    else
-      printf("%d %s\n",count_neg,save_dir);
+    if (!bOnLast || bNeg) {
+      if (!bDebug)
+        printf("%d\n",count_neg);
+      else
+        printf("%d %s\n",count_neg,save_dir);
+    }
   }
 
   return 0;
