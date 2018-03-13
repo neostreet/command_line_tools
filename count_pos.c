@@ -13,7 +13,8 @@ static char save_dir[_MAX_PATH];
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: count_pos (-debug) (-exact_countcount) (-on_last) (-percent) filename\n";
+"usage: count_pos (-debug) (-exact_countcount) (-on_last) (-percent)\n"
+"  (-only_zero) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -26,6 +27,7 @@ int main(int argc,char **argv)
   bool bOnLast;
   bool bPos;
   bool bPercent;
+  bool bOnlyZero;
   FILE *fptr;
   int line_len;
   int line_no;
@@ -33,7 +35,7 @@ int main(int argc,char **argv)
   int work;
   double dwork;
 
-  if ((argc < 2) || (argc > 6)) {
+  if ((argc < 2) || (argc > 7)) {
     printf(usage);
     return 1;
   }
@@ -42,6 +44,7 @@ int main(int argc,char **argv)
   exact_count = -1;
   bOnLast = false;
   bPercent = false;
+  bOnlyZero = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
@@ -52,6 +55,8 @@ int main(int argc,char **argv)
       bOnLast = true;
     else if (!strcmp(argv[curr_arg],"-percent"))
       bPercent = true;
+    else if (!strcmp(argv[curr_arg],"-only_zero"))
+      bOnlyZero = true;
     else
       break;
   }
@@ -93,14 +98,16 @@ int main(int argc,char **argv)
 
   if ((exact_count == -1) || (count_pos == exact_count)) {
     if (!bOnLast || bPos) {
-      if (!bDebug)
-        printf("%d\n",count_pos);
-      else {
-        if (!bPercent)
-          printf("%d %s\n",count_pos,save_dir);
+      if (!bOnlyZero || (count_pos == 0)) {
+        if (!bDebug)
+          printf("%d\n",count_pos);
         else {
-          dwork = (double)count_pos / (double)line_no;
-          printf("%lf (%d %d) %s\n",dwork,count_pos,line_no,save_dir);
+          if (!bPercent)
+            printf("%d (%d) %s\n",count_pos,line_no,save_dir);
+          else {
+            dwork = (double)count_pos / (double)line_no;
+            printf("%lf (%d %d) %s\n",dwork,count_pos,line_no,save_dir);
+          }
         }
       }
     }
