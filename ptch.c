@@ -8,6 +8,9 @@
 #include <io.h>
 #else
 #include <unistd.h>
+#ifdef FREEBSD
+#define O_BINARY 0
+#endif
 #endif
 
 static char usage[] = "usage: ptch infile1 infile2 offset outfile\n";
