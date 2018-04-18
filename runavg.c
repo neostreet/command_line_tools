@@ -75,7 +75,7 @@ int main(int argc,char **argv)
     else if (!bVerbose)
       printf("%10.2lf %10.2lf\n",avg,dwork);
     else
-      printf("%10.2lf %s\n",avg,line);
+      printf("%lf (%lf) (%d) %s\n",avg,runtot,nobs,line);
   }
 
   fclose(fptr);
