@@ -14,7 +14,7 @@ static char line[MAX_LINE_LEN];
 
 static char usage[] =
 "usage: count_pos (-debug) (-exact_countcount) (-on_last) (-percent)\n"
-"  (-only_zero) filename\n";
+"  (-only_zero) (-sum_ixs) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -28,6 +28,7 @@ int main(int argc,char **argv)
   bool bPos;
   bool bPercent;
   bool bOnlyZero;
+  bool bSumIxs;
   FILE *fptr;
   int line_len;
   int line_no;
@@ -35,7 +36,7 @@ int main(int argc,char **argv)
   int work;
   double dwork;
 
-  if ((argc < 2) || (argc > 7)) {
+  if ((argc < 2) || (argc > 8)) {
     printf(usage);
     return 1;
   }
@@ -45,6 +46,7 @@ int main(int argc,char **argv)
   bOnLast = false;
   bPercent = false;
   bOnlyZero = false;
+  bSumIxs = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
@@ -57,6 +59,8 @@ int main(int argc,char **argv)
       bPercent = true;
     else if (!strcmp(argv[curr_arg],"-only_zero"))
       bOnlyZero = true;
+    else if (!strcmp(argv[curr_arg],"-sum_ixs"))
+      bSumIxs = true;
     else
       break;
   }
@@ -82,16 +86,20 @@ int main(int argc,char **argv)
 
     if (feof(fptr))
       break;
-
-    line_no++;
     sscanf(line,"%d",&work);
 
     if (work > 0) {
-      count_pos++;
+      if (!bSumIxs)
+        count_pos++;
+      else
+        count_pos += line_no;
+
       bPos = true;
     }
     else
       bPos = false;
+
+    line_no++;
   }
 
   fclose(fptr);
