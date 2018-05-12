@@ -13,7 +13,8 @@ static char save_dir[_MAX_PATH];
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: count_neg (-debug) (-exact_countcount) (-on_last) filename\n";
+"usage: count_neg (-debug) (-exact_countcount) (-on_last) (-percent)\n"
+"  (-only_zero) (-sum_ixs) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -25,13 +26,17 @@ int main(int argc,char **argv)
   int exact_count;
   bool bOnLast;
   bool bNeg;
+  bool bPercent;
+  bool bOnlyZero;
+  bool bSumIxs;
   FILE *fptr;
   int line_len;
   int line_no;
   int count_neg;
   int work;
+  double dwork;
 
-  if ((argc < 2) || (argc > 5)) {
+  if ((argc < 2) || (argc > 8)) {
     printf(usage);
     return 1;
   }
@@ -39,6 +44,9 @@ int main(int argc,char **argv)
   bDebug = false;
   exact_count = -1;
   bOnLast = false;
+  bPercent = false;
+  bOnlyZero = false;
+  bSumIxs = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
@@ -47,6 +55,12 @@ int main(int argc,char **argv)
       sscanf(&argv[curr_arg][12],"%d",&exact_count);
     else if (!strcmp(argv[curr_arg],"-on_last"))
       bOnLast = true;
+    else if (!strcmp(argv[curr_arg],"-percent"))
+      bPercent = true;
+    else if (!strcmp(argv[curr_arg],"-only_zero"))
+      bOnlyZero = true;
+    else if (!strcmp(argv[curr_arg],"-sum_ixs"))
+      bSumIxs = true;
     else
       break;
   }
@@ -72,26 +86,38 @@ int main(int argc,char **argv)
 
     if (feof(fptr))
       break;
-
-    line_no++;
     sscanf(line,"%d",&work);
 
     if (work < 0) {
-      count_neg++;
+      if (!bSumIxs)
+        count_neg++;
+      else
+        count_neg += line_no;
+
       bNeg = true;
     }
     else
       bNeg = false;
+
+    line_no++;
   }
 
   fclose(fptr);
 
   if ((exact_count == -1) || (count_neg == exact_count)) {
     if (!bOnLast || bNeg) {
-      if (!bDebug)
-        printf("%d\n",count_neg);
-      else
-        printf("%d %s\n",count_neg,save_dir);
+      if (!bOnlyZero || (count_neg == 0)) {
+        if (!bDebug)
+          printf("%d\n",count_neg);
+        else {
+          if (!bPercent)
+            printf("%d (%d) %s\n",count_neg,line_no,save_dir);
+          else {
+            dwork = (double)count_neg / (double)line_no;
+            printf("%lf (%d %d) %s\n",dwork,count_neg,line_no,save_dir);
+          }
+        }
+      }
     }
   }
 
