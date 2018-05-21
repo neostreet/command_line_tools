@@ -14,7 +14,8 @@ static char save_dir[_MAX_PATH];
 char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: freefall_from_the_peak (-debug) (-verbose) (-boolean) filename\n";
+"usage: freefall_from_the_peak (-debug) (-verbose) (-boolean)\n"
+"  (-pct_first) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -26,6 +27,7 @@ int main(int argc,char **argv)
   bool bDebug;
   bool bVerbose;
   bool bBoolean;
+  bool bPctFirst;
   FILE *fptr;
   int linelen;
   int line_no;
@@ -34,8 +36,9 @@ int main(int argc,char **argv)
   int max;
   int max_ix;
   int last_pos_ix;
+  double dwork;
 
-  if ((argc < 2) || (argc > 5)) {
+  if ((argc < 2) || (argc > 6)) {
     printf(usage);
     return 1;
   }
@@ -43,6 +46,7 @@ int main(int argc,char **argv)
   bDebug = false;
   bVerbose = false;
   bBoolean = false;
+  bPctFirst = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
@@ -51,6 +55,8 @@ int main(int argc,char **argv)
       bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-boolean"))
       bBoolean = true;
+    else if (!strcmp(argv[curr_arg],"-pct_first"))
+      bPctFirst = true;
     else
       break;
   }
@@ -96,10 +102,19 @@ int main(int argc,char **argv)
 
   if (!bBoolean) {
     if (last_pos_ix == max_ix) {
-      if (!bVerbose)
-        printf("%d (%d)\n",max,max_ix);
-      else
-        printf("%d (%d) %s\n",max,max_ix,save_dir);
+      dwork = (double)(line_no - max_ix) / (double)line_no;
+      if (!bVerbose) {
+        if (!bPctFirst)
+          printf("%d (%d %d %lf)\n",max,max_ix,line_no - max_ix,dwork);
+        else
+          printf("%lf %d (%d %d)\n",dwork,max,max_ix,line_no - max_ix);
+      }
+      else {
+        if (!bPctFirst)
+          printf("%d (%d %d %lf) %s\n",max,max_ix,line_no - max_ix,dwork,save_dir);
+        else
+          printf("%lf %d (%d %d) %s\n",dwork,max,max_ix,line_no - max_ix,save_dir);
+      }
     }
   }
   else {
