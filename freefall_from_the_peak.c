@@ -102,18 +102,18 @@ int main(int argc,char **argv)
 
   if (!bBoolean) {
     if (last_pos_ix == max_ix) {
-      dwork = (double)(line_no - max_ix) / (double)line_no;
+      dwork = (double)(line_no - (max_ix + 1)) / (double)line_no;
       if (!bVerbose) {
         if (!bPctFirst)
-          printf("%d (%d %d %lf)\n",max,max_ix,line_no - max_ix,dwork);
+          printf("%d (%d %d %lf)\n",max,line_no - (max_ix + 1),line_no,dwork);
         else
-          printf("%lf %d (%d %d)\n",dwork,max,max_ix,line_no - max_ix);
+          printf("%lf %d (%d %d)\n",dwork,max,line_no - (max_ix + 1),line_no);
       }
       else {
         if (!bPctFirst)
-          printf("%d (%d %d %lf) %s\n",max,max_ix,line_no - max_ix,dwork,save_dir);
+          printf("%d (%d %d %lf) %s\n",max,line_no - (max_ix + 1),line_no,dwork,save_dir);
         else
-          printf("%lf %d (%d %d) %s\n",dwork,max,max_ix,line_no - max_ix,save_dir);
+          printf("%lf %d (%d %d) %s\n",dwork,max,line_no - (max_ix + 1),line_no,save_dir);
       }
     }
   }
