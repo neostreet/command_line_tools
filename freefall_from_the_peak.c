@@ -14,7 +14,7 @@ static char save_dir[_MAX_PATH];
 char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: freefall_from_the_peak (-debug) (-verbose) (-boolean)\n"
+"usage: freefall_from_the_peak (-debug) (-terse) (-verbose) (-boolean)\n"
 "  (-pct_first) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
@@ -25,6 +25,7 @@ int main(int argc,char **argv)
 {
   int curr_arg;
   bool bDebug;
+  bool bTerse;
   bool bVerbose;
   bool bBoolean;
   bool bPctFirst;
@@ -38,12 +39,13 @@ int main(int argc,char **argv)
   int last_pos_ix;
   double dwork;
 
-  if ((argc < 2) || (argc > 6)) {
+  if ((argc < 2) || (argc > 7)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
+  bTerse = false;
   bVerbose = false;
   bBoolean = false;
   bPctFirst = false;
@@ -51,6 +53,8 @@ int main(int argc,char **argv)
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
+    else if (!strcmp(argv[curr_arg],"-terse"))
+      bTerse = true;
     else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-boolean"))
@@ -66,12 +70,16 @@ int main(int argc,char **argv)
     return 2;
   }
 
-  if (bVerbose)
-    getcwd(save_dir,_MAX_PATH);
+  if (bTerse && bVerbose) {
+    printf("can't specify both -terse and -verbose\n");
+    return 3;
+  }
+
+  getcwd(save_dir,_MAX_PATH);
 
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf(couldnt_open,argv[curr_arg]);
-    return 3;
+    return 4;
   }
 
   line_no = 0;
@@ -103,7 +111,10 @@ int main(int argc,char **argv)
   if (!bBoolean) {
     if (last_pos_ix == max_ix) {
       dwork = (double)(line_no - (max_ix + 1)) / (double)line_no;
-      if (!bVerbose) {
+
+      if (bTerse)
+        printf("%s\n",save_dir);
+      else if (!bVerbose) {
         if (!bPctFirst)
           printf("%d (%d %d %lf)\n",max,line_no - (max_ix + 1),line_no,dwork);
         else
