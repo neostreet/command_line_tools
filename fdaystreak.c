@@ -10,9 +10,9 @@
 static char line[MAX_LINE_LEN];
 static char save_line[MAX_LINE_LEN];
 
-#define MONTH_IX 0
-#define DAY_IX   1
-#define YEAR_IX  2
+#define YEAR_IX  0
+#define MONTH_IX 1
+#define DAY_IX   2
 
 static char usage[] =
 "usage: fdaystreak (-debug) filename\n";
@@ -40,9 +40,9 @@ struct digit_range {
 };
 
 static struct digit_range date_checks[3] = {
+  80, 2095,  /* year */
   1, 12,     /* month */
-  1, 31,     /* day */
-  80, 2095   /* year */
+  1, 31      /* day */
 };
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
