@@ -45,6 +45,7 @@ int main(int argc,char **argv)
   }
 
   line_no = 0;
+  last_val = -1;
 
   for ( ; ; ) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
@@ -52,11 +53,14 @@ int main(int argc,char **argv)
     if (feof(fptr))
       break;
 
-    sscanf(line,"%d",&val);
-
     line_no++;
 
-    if (line_no > 1) {
+    if ((line[0] < '0') || (line[0] > '9'))
+      continue;
+
+    sscanf(line,"%d",&val);
+
+    if (last_val != -1) {
       if (!bVerbose)
         printf("%d\n",val - last_val);
       else
