@@ -127,7 +127,10 @@ int main(int argc,char **argv)
   }
 
   if (plus_streak >= 1) {
-    printf("+%d\n",plus_streak);
+    if (!bVerbose)
+      printf("+%d\n",plus_streak);
+    else
+      printf("+%d %s\n",plus_streak,save_line);
 
     if (plus_streak > max_plus_streak)
       max_plus_streak = plus_streak;
