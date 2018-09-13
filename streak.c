@@ -5,7 +5,8 @@
 static char line[MAX_LINE_LEN];
 static char save_line[MAX_LINE_LEN];
 
-static char usage[] = "usage: streak (-debug) (-verbose) filename\n";
+static char usage[] =
+"usage: streak (-debug) (-verbose) (-only_winning) (-only_losing) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -15,6 +16,8 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bDebug;
   bool bVerbose;
+  bool bOnlyWinning;
+  bool bOnlyLosing;
   FILE *fptr;
   int line_len;
   int line_no;
@@ -25,19 +28,25 @@ int main(int argc,char **argv)
   int work;
   int chara;
 
-  if ((argc < 2) || (argc > 4)) {
+  if ((argc < 2) || (argc > 6)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
   bVerbose = false;
+  bOnlyWinning = false;
+  bOnlyLosing = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
     else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
+    else if (!strcmp(argv[curr_arg],"-only_winning"))
+      bOnlyWinning = true;
+    else if (!strcmp(argv[curr_arg],"-only_losing"))
+      bOnlyLosing = true;
     else
       break;
   }
@@ -47,9 +56,14 @@ int main(int argc,char **argv)
     return 2;
   }
 
+  if (bOnlyWinning && bOnlyLosing) {
+    printf("can't specify both -only_winning and -only_losing\n");
+    return 3;
+  }
+
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf(couldnt_open,argv[curr_arg]);
-    return 3;
+    return 4;
   }
 
   line_no = 0;
@@ -95,10 +109,12 @@ int main(int argc,char **argv)
         if (minus_streak)
           minus_streak++;
         else {
-          if (!bVerbose)
-            printf("+%d\n",plus_streak);
-          else
-            printf("+%d %s\n",plus_streak,save_line);
+          if (!bOnlyLosing) {
+            if (!bVerbose)
+              printf("+%d\n",plus_streak);
+            else
+              printf("+%d %s\n",plus_streak,save_line);
+          }
 
           if (plus_streak > max_plus_streak)
             max_plus_streak = plus_streak;
@@ -111,10 +127,12 @@ int main(int argc,char **argv)
         if (plus_streak)
           plus_streak++;
         else {
-          printf("-%d\n",minus_streak);
+          if (!bOnlyWinning) {
+            printf("-%d\n",minus_streak);
 
-          if (minus_streak > max_minus_streak)
-            max_minus_streak = minus_streak;
+            if (minus_streak > max_minus_streak)
+              max_minus_streak = minus_streak;
+          }
 
           minus_streak = 0;
           plus_streak = 1;
