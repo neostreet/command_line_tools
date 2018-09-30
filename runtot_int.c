@@ -8,7 +8,7 @@ static char save_line[MAX_LINE_LEN];
 static char usage[] =
 "usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-start_and_end)\n"
 "  (-offsetoffset) (-gain_loss) (-gain_only) (-loss_only) (-abs_value)\n"
-"  (-line_numbers) (-tot_at_end) (-final_negative) (-no_align)\n"
+"  (-line_numbers) (-tot_at_end) (-final_negative)\n"
 "  (-only_blue) (-underwater_only) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -26,7 +26,6 @@ int main(int argc,char **argv)
   bool bLineNumbers;
   bool bTotAtEnd;
   bool bFinalNegative;
-  bool bNoAlign;
   bool bOnlyBlue;
   bool bUnderwaterOnly;
   bool bHaveBlue;
@@ -44,7 +43,7 @@ int main(int argc,char **argv)
   int final_negative;
   int blue_val;
 
-  if ((argc < 2) || (argc > 17)) {
+  if ((argc < 2) || (argc > 16)) {
     printf(usage);
     return 1;
   }
@@ -60,7 +59,6 @@ int main(int argc,char **argv)
   bLineNumbers = false;
   bTotAtEnd = false;
   bFinalNegative = false;
-  bNoAlign = false;
   bOnlyBlue = false;
   bUnderwaterOnly = false;
   offset = 0;
@@ -92,8 +90,6 @@ int main(int argc,char **argv)
       bFinalNegative = true;
       final_negative = 0;
     }
-    else if (!strcmp(argv[curr_arg],"-no_align"))
-      bNoAlign = true;
     else if (!strcmp(argv[curr_arg],"-only_blue"))
       bOnlyBlue = true;
     else if (!strcmp(argv[curr_arg],"-underwater_only"))
@@ -251,29 +247,29 @@ int main(int argc,char **argv)
     else {
       if (!bGainLoss && !bGainOnly && !bLossOnly && !bUnderwaterOnly) {
         if (!bOnlyBlue || bHaveBlue) {
-          if (!bTotAtEnd) {
-            if (!bNoAlign)
-              printf("%10d %s",runtot,line);
-            else
-              printf("%d %s",runtot,line);
-          }
+          if (!bTotAtEnd)
+            printf("%d %s",runtot,line);
           else
-            printf("%s %10d",line,runtot);
+            printf("%s %d",line,runtot);
         }
+        bPrinted = true;
       }
       else if (bGainOnly) {
         if (work > 0)
-          printf("%10d (%5d) %s",runtot_gain,num_gains,line);
+          printf("%d %s",runtot_gain,line);
+        bPrinted = true;
       }
       else if (bLossOnly) {
         if (work < 0)
-          printf("%10d (%5d) %s",runtot_loss,num_losses,line);
+          printf("%d %s",runtot_loss,line);
+        bPrinted = true;
       }
       else if (bGainLoss) {
-        printf("%10d (%10d %5d %10d %5d) %s",runtot,
+        printf("%d (%d %d %d %d) %s",runtot,
           runtot_gain,num_gains,
           runtot_loss,num_losses,
           line);
+        bPrinted = true;
       }
       else {
         if (runtot < 0) {
@@ -342,17 +338,17 @@ int main(int argc,char **argv)
     }
     else {
       if (!bGainLoss && !bGainOnly && !bLossOnly)
-        printf("%10d %s",runtot,line);
+        printf("%d %s",runtot,line);
       else if (bGainOnly) {
         if (work > 0)
-          printf("%10d (%5d) %s",runtot_gain,num_gains,line);
+          printf("%d (%d) %s",runtot_gain,num_gains,line);
       }
       else if (bLossOnly) {
         if (work < 0)
-          printf("%10d (%5d) %s",runtot_loss,num_losses,line);
+          printf("%d (%d) %s",runtot_loss,num_losses,line);
       }
       else {
-        printf("%10d (%10d %5d %10d %5d) %s",runtot,
+        printf("%d (%d %d %d %d) %s",runtot,
           runtot_gain,num_gains,
           runtot_loss,num_losses,
           line);
