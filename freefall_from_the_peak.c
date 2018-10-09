@@ -97,7 +97,7 @@ int main(int argc,char **argv)
 
     total += work;
 
-    if ((line_no == 1) || (total >= max)) {
+    if ((line_no == 1) || (total > max)) {
       max = total;
       max_ix = line_no -1;
     }
