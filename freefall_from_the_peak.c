@@ -15,7 +15,7 @@ char line[MAX_LINE_LEN];
 
 static char usage[] =
 "usage: freefall_from_the_peak (-debug) (-terse) (-verbose) (-boolean)\n"
-"  (-pct_first) filename\n";
+"  (-pct_first) (-num_first) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -29,6 +29,7 @@ int main(int argc,char **argv)
   bool bVerbose;
   bool bBoolean;
   bool bPctFirst;
+  bool bNumFirst;
   FILE *fptr;
   int linelen;
   int line_no;
@@ -39,7 +40,7 @@ int main(int argc,char **argv)
   int last_pos_ix;
   double dwork;
 
-  if ((argc < 2) || (argc > 7)) {
+  if ((argc < 2) || (argc > 8)) {
     printf(usage);
     return 1;
   }
@@ -49,6 +50,7 @@ int main(int argc,char **argv)
   bVerbose = false;
   bBoolean = false;
   bPctFirst = false;
+  bNumFirst = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
@@ -61,6 +63,8 @@ int main(int argc,char **argv)
       bBoolean = true;
     else if (!strcmp(argv[curr_arg],"-pct_first"))
       bPctFirst = true;
+    else if (!strcmp(argv[curr_arg],"-num_first"))
+      bNumFirst = true;
     else
       break;
   }
@@ -75,11 +79,16 @@ int main(int argc,char **argv)
     return 3;
   }
 
+  if (bPctFirst && bNumFirst) {
+    printf("can't specify both -pct_first and -num_first\n");
+    return 4;
+  }
+
   getcwd(save_dir,_MAX_PATH);
 
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf(couldnt_open,argv[curr_arg]);
-    return 4;
+    return 5;
   }
 
   line_no = 0;
@@ -99,7 +108,7 @@ int main(int argc,char **argv)
 
     if ((line_no == 1) || (total > max)) {
       max = total;
-      max_ix = line_no -1;
+      max_ix = line_no - 1;
     }
 
     if (work > 0)
@@ -115,16 +124,20 @@ int main(int argc,char **argv)
       if (bTerse)
         printf("%s\n",save_dir);
       else if (!bVerbose) {
-        if (!bPctFirst)
-          printf("%d (%d %d %lf)\n",max,line_no - (max_ix + 1),line_no,dwork);
-        else
+        if (bPctFirst)
           printf("%lf %d (%d %d)\n",dwork,max,line_no - (max_ix + 1),line_no);
+        else if (bNumFirst)
+          printf("%d %lf %d (%d)\n",line_no - (max_ix + 1),dwork,max,line_no);
+        else
+          printf("%d (%d %d %lf)\n",max,line_no - (max_ix + 1),line_no,dwork);
       }
       else {
-        if (!bPctFirst)
-          printf("%d (%d %d %lf) %s\n",max,line_no - (max_ix + 1),line_no,dwork,save_dir);
-        else
+        if (bPctFirst)
           printf("%lf %d (%d %d) %s\n",dwork,max,line_no - (max_ix + 1),line_no,save_dir);
+        else if (bNumFirst)
+          printf("%d %lf %d (%d) %s\n",line_no - (max_ix + 1),dwork,max,line_no,save_dir);
+        else
+          printf("%d (%d %d %lf) %s\n",max,line_no - (max_ix + 1),line_no,dwork,save_dir);
       }
     }
   }
