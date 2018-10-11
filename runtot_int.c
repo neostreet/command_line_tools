@@ -9,7 +9,7 @@ static char usage[] =
 "usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-start_and_end)\n"
 "  (-offsetoffset) (-gain_loss) (-gain_only) (-loss_only) (-abs_value)\n"
 "  (-line_numbers) (-tot_at_end) (-final_negative)\n"
-"  (-only_blue) (-underwater_only) filename\n";
+"  (-only_blue) (-underwater_only) (-coalesce) (-debug) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
@@ -28,6 +28,8 @@ int main(int argc,char **argv)
   bool bFinalNegative;
   bool bOnlyBlue;
   bool bUnderwaterOnly;
+  bool bCoalesce;
+  bool bDebug;
   bool bHaveBlue;
   bool bPrinted;
   int offset;
@@ -36,6 +38,9 @@ int main(int argc,char **argv)
   int line_no;
   int runtot;
   int work;
+  int last_work;
+  int dbg_work;
+  int dbg;
   int runtot_gain;
   int runtot_loss;
   int num_gains;
@@ -43,7 +48,7 @@ int main(int argc,char **argv)
   int final_negative;
   int blue_val;
 
-  if ((argc < 2) || (argc > 16)) {
+  if ((argc < 2) || (argc > 18)) {
     printf(usage);
     return 1;
   }
@@ -61,6 +66,8 @@ int main(int argc,char **argv)
   bFinalNegative = false;
   bOnlyBlue = false;
   bUnderwaterOnly = false;
+  bCoalesce = false;
+  bDebug = false;
   offset = 0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
@@ -94,6 +101,10 @@ int main(int argc,char **argv)
       bOnlyBlue = true;
     else if (!strcmp(argv[curr_arg],"-underwater_only"))
       bUnderwaterOnly = true;
+    else if (!strcmp(argv[curr_arg],"-coalesce"))
+      bCoalesce = true;
+    else if (!strcmp(argv[curr_arg],"-debug"))
+      bDebug = true;
     else
       break;
   }
@@ -155,9 +166,41 @@ int main(int argc,char **argv)
       break;
 
     line_no++;
+
+    if (bDebug)
+      printf("%s\n",line);
+
     bPrinted = false;
 
     sscanf(&line[offset],"%d",&work);
+
+    if (work == dbg_work)
+      dbg = 1;
+
+    if (bCoalesce) {
+      if (line_no == 1) {
+        runtot = work;
+        last_work = work;
+        continue;
+      }
+
+      if (((last_work <= 0) && (work <= 0)) ||
+          ((last_work >= 0) && (work >= 0))) {
+        runtot += work;
+      }
+      else {
+        if (!bVerbose)
+          printf("%s%d\n",(bDebug ? "  " : ""),runtot);
+        else
+          printf("%d %s\n",runtot,line);
+
+        runtot = work;
+      }
+
+      last_work = work;
+
+      continue;
+    }
 
     if (bAbsValue) {
       if (work < 0)
@@ -312,6 +355,9 @@ int main(int argc,char **argv)
   }
 
   fclose(fptr);
+
+  if (bCoalesce)
+    printf("%s%d\n",(bDebug ? "  " : ""),runtot);
 
   if (bFinalNegative) {
     if (final_negative < 0) {
