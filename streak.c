@@ -97,76 +97,113 @@ int main(int argc,char **argv)
     if (line_no == 1) {
       if (work <= 0)
         minus_streak = 1;
-      else {
+      else
         plus_streak = 1;
 
-        if (bVerbose)
-          strcpy(save_line,line);
+      if (bVerbose)
+        strcpy(save_line,line);
+
+      continue;
+    }
+
+    if (work <= 0) {
+      if (minus_streak)
+        minus_streak++;
+      else {
+        if (!bOnlyLosing) {
+          if (!bVerbose) {
+            if (!bOnlyWinning)
+              printf("+%d\n",plus_streak);
+            else
+              printf("%d\n",plus_streak);
+          }
+          else {
+            if (!bOnlyWinning)
+              printf("+%d %s\n",plus_streak,save_line);
+            else
+              printf("%d %s\n",plus_streak,save_line);
+          }
+        }
+
+        if (plus_streak > max_plus_streak)
+          max_plus_streak = plus_streak;
+
+        plus_streak = 0;
+        minus_streak = 1;
       }
     }
     else {
-      if (work <= 0) {
-        if (minus_streak)
-          minus_streak++;
-        else {
-          if (!bOnlyLosing) {
-            if (!bVerbose)
-              printf("+%d\n",plus_streak);
-            else
-              printf("+%d %s\n",plus_streak,save_line);
-          }
-
-          if (plus_streak > max_plus_streak)
-            max_plus_streak = plus_streak;
-
-          plus_streak = 0;
-          minus_streak = 1;
-        }
-      }
+      if (plus_streak)
+        plus_streak++;
       else {
-        if (plus_streak)
-          plus_streak++;
-        else {
-          if (!bOnlyWinning) {
-            printf("-%d\n",minus_streak);
-
-            if (minus_streak > max_minus_streak)
-              max_minus_streak = minus_streak;
+        if (!bOnlyWinning) {
+          if (!bVerbose) {
+            if (!bOnlyLosing)
+              printf("-%d\n",minus_streak);
+            else
+              printf("%d\n",minus_streak);
           }
-
-          minus_streak = 0;
-          plus_streak = 1;
-
-          if (bVerbose)
-            strcpy(save_line,line);
+          else {
+            if (!bOnlyLosing)
+              printf("-%d %s\n",minus_streak,save_line);
+            else
+              printf("%d %s\n",minus_streak,save_line);
+          }
         }
+
+        if (minus_streak > max_minus_streak)
+          max_minus_streak = minus_streak;
+
+        minus_streak = 0;
+        plus_streak = 1;
       }
     }
+
+    if (bVerbose)
+      strcpy(save_line,line);
   }
 
   if (plus_streak >= 1) {
-    if (!bVerbose)
-      printf("+%d\n",plus_streak);
-    else
-      printf("+%d %s\n",plus_streak,save_line);
-
-    if (plus_streak > max_plus_streak)
-      max_plus_streak = plus_streak;
+    if (!bOnlyLosing) {
+      if (!bVerbose) {
+        if (!bOnlyWinning)
+          printf("+%d\n",plus_streak);
+        else
+          printf("%d\n",plus_streak);
+      }
+      else {
+        if (!bOnlyWinning)
+          printf("+%d %s\n",plus_streak,save_line);
+        else
+          printf("%d %s\n",plus_streak,save_line);
+      }
+    }
   }
   else if (minus_streak >= 1) {
-    printf("-%d\n",minus_streak);
-
-    if (minus_streak > max_minus_streak)
-      max_minus_streak = minus_streak;
+    if (!bOnlyWinning) {
+      if (!bVerbose) {
+        if (!bOnlyLosing)
+          printf("-%d\n",minus_streak);
+        else
+          printf("%d\n",minus_streak);
+      }
+      else {
+        if (!bOnlyLosing)
+          printf("-%d %s\n",minus_streak,save_line);
+        else
+          printf("%d %s\n",minus_streak,save_line);
+      }
+    }
   }
 
   fclose(fptr);
 
-  putchar(0x0a);
-
-  printf("nobs:             %6d\n",line_no);
-  printf("max_plus_streak:  %6d\n",max_plus_streak);
-  printf("max_minus_streak: %6d\n",max_minus_streak);
+  if (bVerbose) {
+    putchar(0x0a);
+    printf("nobs:             %6d\n",line_no);
+    printf("max_plus_streak:  %6d\n",max_plus_streak);
+    printf("max_minus_streak: %6d\n",max_minus_streak);
+  }
 
   return 0;
 }
