@@ -15,7 +15,7 @@ char line[MAX_LINE_LEN];
 
 static char usage[] =
 "usage: freefall_from_the_peak (-debug) (-terse) (-verbose) (-boolean)\n"
-"  (-pct_first) (-num_first) filename\n";
+"  (-pct_first) (-num_first) (-is_fftp) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -30,6 +30,7 @@ int main(int argc,char **argv)
   bool bBoolean;
   bool bPctFirst;
   bool bNumFirst;
+  bool bIsFftp;
   FILE *fptr;
   int linelen;
   int line_no;
@@ -40,7 +41,7 @@ int main(int argc,char **argv)
   int last_pos_ix;
   double dwork;
 
-  if ((argc < 2) || (argc > 8)) {
+  if ((argc < 2) || (argc > 9)) {
     printf(usage);
     return 1;
   }
@@ -51,6 +52,7 @@ int main(int argc,char **argv)
   bBoolean = false;
   bPctFirst = false;
   bNumFirst = false;
+  bIsFftp = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
@@ -65,6 +67,8 @@ int main(int argc,char **argv)
       bPctFirst = true;
     else if (!strcmp(argv[curr_arg],"-num_first"))
       bNumFirst = true;
+    else if (!strcmp(argv[curr_arg],"-is_fftp"))
+      bIsFftp = true;
     else
       break;
   }
@@ -118,7 +122,18 @@ int main(int argc,char **argv)
   fclose(fptr);
 
   if (!bBoolean) {
-    if (last_pos_ix == max_ix) {
+    if (bIsFftp) {
+      if (last_pos_ix == max_ix)
+        work = 1;
+      else
+        work = 0;
+
+      if (!bVerbose)
+        printf("%d\n",work);
+      else
+        printf("%d %s\n",work,save_dir);
+    }
+    else if (last_pos_ix == max_ix) {
       dwork = (double)(line_no - (max_ix + 1)) / (double)line_no;
 
       if (bTerse)
