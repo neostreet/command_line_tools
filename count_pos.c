@@ -14,7 +14,7 @@ static char line[MAX_LINE_LEN];
 
 static char usage[] =
 "usage: count_pos (-verbose) (-exact_countcount) (-on_last) (-percent)\n"
-"  (-only_zero) (-sum_ixs) filename\n";
+"  (-only_zero) (-sum_ixs) (-is_exact_countcount) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -29,6 +29,7 @@ int main(int argc,char **argv)
   bool bPercent;
   bool bOnlyZero;
   bool bSumIxs;
+  bool bIsExactCount;
   FILE *fptr;
   int line_len;
   int line_no;
@@ -36,7 +37,7 @@ int main(int argc,char **argv)
   int work;
   double dwork;
 
-  if ((argc < 2) || (argc > 8)) {
+  if ((argc < 2) || (argc > 9)) {
     printf(usage);
     return 1;
   }
@@ -47,6 +48,7 @@ int main(int argc,char **argv)
   bPercent = false;
   bOnlyZero = false;
   bSumIxs = false;
+  bIsExactCount = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
@@ -61,6 +63,10 @@ int main(int argc,char **argv)
       bOnlyZero = true;
     else if (!strcmp(argv[curr_arg],"-sum_ixs"))
       bSumIxs = true;
+    else if (!strncmp(argv[curr_arg],"-is_exact_count",15)) {
+      sscanf(&argv[curr_arg][15],"%d",&exact_count);
+      bIsExactCount = true;
+    }
     else
       break;
   }
@@ -104,7 +110,21 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
-  if ((exact_count == -1) || (count_pos == exact_count)) {
+  if (bIsExactCount) {
+    if (count_pos == exact_count) {
+      if (!bVerbose)
+        printf("1\n");
+      else
+        printf("1 (%d) %s\n",line_no,save_dir);
+    }
+    else {
+      if (!bVerbose)
+        printf("0\n");
+      else
+        printf("0 (%d) %s\n",line_no,save_dir);
+    }
+  }
+  else if ((exact_count == -1) || (count_pos == exact_count)) {
     if (!bOnLast || bPos) {
       if (!bOnlyZero || (count_pos == 0)) {
         if (!bVerbose)
