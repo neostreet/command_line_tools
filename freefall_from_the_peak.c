@@ -161,11 +161,11 @@ int main(int argc,char **argv)
       }
     }
   }
-  else if (freefall_len) {
+  else {
     if (!bVerbose)
-      printf("%d\n",(last_pos_ix == max_ix));
+      printf("%d\n",(freefall_len && (last_pos_ix == max_ix)));
     else
-      printf("%d %s\n",(last_pos_ix == max_ix),save_dir);
+      printf("%d %s\n",(freefall_len && (last_pos_ix == max_ix)),save_dir);
   }
 
   return 0;
