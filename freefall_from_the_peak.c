@@ -39,6 +39,7 @@ int main(int argc,char **argv)
   int max;
   int max_ix;
   int last_pos_ix;
+  int freefall_len;
   double dwork;
 
   if ((argc < 2) || (argc > 9)) {
@@ -121,9 +122,11 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
+  freefall_len = line_no - (max_ix + 1);
+
   if (!bBoolean) {
     if (bIsFftp) {
-      if (last_pos_ix == max_ix)
+      if (freefall_len && (last_pos_ix == max_ix))
         work = 1;
       else
         work = 0;
@@ -133,30 +136,32 @@ int main(int argc,char **argv)
       else
         printf("%d %s\n",work,save_dir);
     }
-    else if (last_pos_ix == max_ix) {
-      dwork = (double)(line_no - (max_ix + 1)) / (double)line_no;
-
+    else if (freefall_len && (last_pos_ix == max_ix)) {
       if (bTerse)
         printf("%s\n",save_dir);
-      else if (!bVerbose) {
-        if (bPctFirst)
-          printf("%lf %d (%d %d)\n",dwork,max,line_no - (max_ix + 1),line_no);
-        else if (bNumFirst)
-          printf("%d %lf %d (%d)\n",line_no - (max_ix + 1),dwork,max,line_no);
-        else
-          printf("%d (%d %d %lf)\n",max,line_no - (max_ix + 1),line_no,dwork);
-      }
       else {
-        if (bPctFirst)
-          printf("%lf %d (%d %d) %s\n",dwork,max,line_no - (max_ix + 1),line_no,save_dir);
-        else if (bNumFirst)
-          printf("%d %lf %d (%d) %s\n",line_no - (max_ix + 1),dwork,max,line_no,save_dir);
-        else
-          printf("%d (%d %d %lf) %s\n",max,line_no - (max_ix + 1),line_no,dwork,save_dir);
+        dwork = (double)freefall_len / (double)line_no;
+
+        if (!bVerbose) {
+          if (bPctFirst)
+            printf("%lf %d (%d %d)\n",dwork,max,freefall_len,line_no);
+          else if (bNumFirst)
+            printf("%d %lf %d (%d)\n",freefall_len,dwork,max,line_no);
+          else
+            printf("%d (%d %d %lf)\n",max,freefall_len,line_no,dwork);
+        }
+        else {
+          if (bPctFirst)
+            printf("%lf %d (%d %d) %s\n",dwork,max,freefall_len,line_no,save_dir);
+          else if (bNumFirst)
+            printf("%d %lf %d (%d) %s\n",freefall_len,dwork,max,line_no,save_dir);
+          else
+            printf("%d (%d %d %lf) %s\n",max,freefall_len,line_no,dwork,save_dir);
+        }
       }
     }
   }
-  else {
+  else if (freefall_len) {
     if (!bVerbose)
       printf("%d\n",(last_pos_ix == max_ix));
     else
