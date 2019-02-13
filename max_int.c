@@ -8,6 +8,8 @@
 #include <unistd.h>
 #endif
 
+static char save_dir[_MAX_PATH];
+
 #define MAX_LINE_LEN 1024
 char line[MAX_LINE_LEN];
 
@@ -52,8 +54,10 @@ int main(int argc,char **argv)
   bRunning = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmp(argv[curr_arg],"-verbose"))
+    if (!strcmp(argv[curr_arg],"-verbose")) {
       bVerbose = true;
+      getcwd(save_dir,_MAX_PATH);
+    }
     else if (!strncmp(argv[curr_arg],"-offset",7))
       sscanf(&argv[curr_arg][7],"%d",&offset);
     else if (!strncmp(argv[curr_arg],"-last",5))
@@ -112,7 +116,7 @@ int main(int argc,char **argv)
                 if (!bVerbose)
                   printf("%d\n",max);
                 else
-                  printf("%s (%d)\n",line,line_no);
+                  printf("%d %s\n",max,save_dir);
               }
             }
           }
@@ -134,7 +138,7 @@ int main(int argc,char **argv)
             if (!bVerbose)
               printf("%d\n",max);
             else
-              printf("%s (%d)\n",line,line_no);
+              printf("%d %s\n",max,save_dir);
           }
         }
       }
