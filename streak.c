@@ -223,6 +223,11 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
+  if (plus_streak > max_plus_streak)
+    max_plus_streak = plus_streak;
+  else if (minus_streak > max_minus_streak)
+    max_minus_streak = minus_streak;
+
   if (!bMaxPlus && !bMaxMinus) {
     if (plus_streak >= 1) {
       if (!bOnlyLosing) {
