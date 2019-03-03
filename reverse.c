@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   }
 
   if (write(fhndl[1],out_buf,bytes_to_io) != bytes_to_io) {
-    printf(read_failed,argv[1],bytes_to_io);
+    printf(write_failed,argv[1],bytes_to_io);
     free(out_buf);
     free(in_buf);
     close(fhndl[0]);
