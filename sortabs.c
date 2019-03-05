@@ -1,19 +1,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #ifdef WIN32
+#include <io.h>
 #include <direct.h>
 #else
 #define _MAX_PATH 4096
 #include <unistd.h>
+#ifndef CYGWIN
+#define O_BINARY 0
 #endif
+#endif
+
+#define LINEFEED 0x0a
 
 static char save_dir[_MAX_PATH];
 
 static char usage[] =
 "usage: sortabs (-descending) (-line_numbers) (-pos_streak) (-neg_streak)\n"
 "  (-ends_with_a_bang) (-ends_with_a_big_bang) (-only_zero) (-only_nonzero)\n"
-"  (-get_date_from_path) filename\n";
+"  (-get_date_from_path) (-verbose) filename\n";
+static char couldnt_open[] = "couldn't open %s\n";
+static char couldnt_get_status[] = "couldn't get status of %s\n";
+
+static char malloc_failed[] = "malloc of %d bytes failed\n";
+static char read_failed[] = "%s: read of %d bytes failed\n";
 
 static bool bDescending;
 
@@ -34,18 +48,26 @@ int main(int argc,char **argv)
   bool bOnlyZero;
   bool bOnlyNonzero;
   bool bGetDateFromPath;
+  bool bVerbose;
   int last_winning_hand_ix;
   bool bBang;
   int ix;
-  FILE *fptr;
+  struct stat statbuf;
+  off_t mem_amount;
+  char *in_buf;
+  int in_buf_ix;
+  int fhndl;
+  int bytes_to_io;
+  int lines;
+  char **cppt;
+  int curr_line;
   int retval;
   char *date_string;
-  int num_vals;
   int work;
   int *ixs;
   int streak_count;
 
-  if ((argc < 2) || (argc > 11)) {
+  if ((argc < 2) || (argc > 12)) {
     printf(usage);
     return 1;
   }
@@ -58,6 +80,7 @@ int main(int argc,char **argv)
   bOnlyZero = false;
   bOnlyNonzero = false;
   bGetDateFromPath = false;
+  bVerbose = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-descending"))
@@ -95,6 +118,8 @@ int main(int argc,char **argv)
       bOnlyNonzero = true;
     else if (!strcmp(argv[curr_arg],"-get_date_from_path"))
       bGetDateFromPath = true;
+    else if (!strcmp(argv[curr_arg],"-verbose"))
+      bVerbose = true;
     else
       break;
   }
@@ -126,55 +151,79 @@ int main(int argc,char **argv)
     return 6;
   }
 
-  if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
-    printf("couldn't open %s\n",argv[curr_arg]);
+  if (stat(argv[curr_arg],&statbuf) == -1) {
+    printf(couldnt_get_status,argv[curr_arg]);
     return 7;
   }
 
-  num_vals = 0;
+  mem_amount = (size_t)statbuf.st_size;
 
-  for ( ; ; ) {
-    fscanf(fptr,"%d",&work);
-
-    if (feof(fptr))
-      break;
-
-    num_vals++;
-  }
-
-  if ((vals = (int *)malloc(num_vals * sizeof (int))) == NULL) {
-    printf("couldn't malloc %d structs\n",num_vals);
+  if ((in_buf = (char *)malloc(mem_amount)) == NULL) {
+    printf(malloc_failed,mem_amount);
     return 8;
   }
 
-  if ((ixs = (int *)malloc(num_vals * sizeof (int))) == NULL) {
-    printf("couldn't malloc %d ints\n",num_vals);
-    free(vals);
+  if ((fhndl = open(argv[curr_arg],O_BINARY | O_RDONLY,0)) == -1) {
+    printf(couldnt_open,argv[curr_arg]);
+    free(in_buf);
     return 9;
   }
 
-  fseek(fptr,0L,SEEK_SET);
+  bytes_to_io = (int)mem_amount;
+
+  if (read(fhndl,in_buf,bytes_to_io) != bytes_to_io) {
+    printf(read_failed,argv[curr_arg],bytes_to_io);
+    free(in_buf);
+    close(fhndl);
+    return 10;
+  }
+
+  lines = 0;
+
+  for (n = 0; n < bytes_to_io; n++) {
+    if (in_buf[n] == LINEFEED)
+      lines++;
+  }
+
+  if ((cppt = (char **)malloc(lines * sizeof (char *))) == NULL) {
+    printf(malloc_failed,lines * sizeof (char *));
+    return 11;
+  }
+
+  curr_line = 0;
+  cppt[curr_line++] = in_buf;
+
+  for (n = 0; n < bytes_to_io; n++) {
+    if (in_buf[n] == LINEFEED) {
+      in_buf[n] = 0;
+
+      if (curr_line < lines)
+        cppt[curr_line++] = &in_buf[n + 1];
+    }
+  }
+
+  if ((vals = (int *)malloc(lines * sizeof (int))) == NULL) {
+    printf("couldn't malloc %d structs\n",lines);
+    return 12;
+  }
+
+  if ((ixs = (int *)malloc(lines * sizeof (int))) == NULL) {
+    printf("couldn't malloc %d ints\n",lines);
+    free(vals);
+    return 13;
+  }
 
   ix = 0;
 
-  for ( ; ; ) {
-    fscanf(fptr,"%d",&work);
-
-    if (feof(fptr))
-      break;
-
-    vals[ix++] = work;
-  }
-
-  fclose(fptr);
-
-  for (n = 0; n < num_vals; n++)
+  for (n = 0; n < lines; n++) {
+    sscanf(cppt[n],"%d",&vals[n]);
     ixs[n] = n;
+  }
 
   if (bEndsWithABang || bEndsWithABigBang) {
     last_winning_hand_ix = -1;
 
-    for (n = num_vals - 1; n >= 0; n--) {
+    for (n = lines - 1; n >= 0; n--) {
       if (vals[n] > 0) {
         last_winning_hand_ix = n;
         break;
@@ -182,21 +231,29 @@ int main(int argc,char **argv)
     }
   }
 
-  qsort(ixs,num_vals,sizeof (int),compare);
+  qsort(ixs,lines,sizeof (int),compare);
 
   if (!bStreak) {
-    for (n = 0; n < num_vals; n++) {
-      if (!bLineNumbers)
-        printf("%d\n",vals[ixs[n]]);
-      else
-        printf("%d (%d)\n",vals[ixs[n]],ixs[n]+1);
+    for (n = 0; n < lines; n++) {
+      if (!bLineNumbers) {
+        if (!bVerbose)
+          printf("%d\n",vals[ixs[n]]);
+        else
+          printf("%s\n",cppt[ixs[n]]);
+      }
+      else {
+        if (!bVerbose)
+          printf("%d (%d)\n",vals[ixs[n]],ixs[n]+1);
+        else
+          printf("%s (%d)\n",cppt[ixs[n]],ixs[n]+1);
+      }
     }
   }
   else {
     if (!bEndsWithABang && !bEndsWithABigBang) {
       streak_count = 0;
 
-      for (n = 0; n < num_vals; n++) {
+      for (n = 0; n < lines; n++) {
         if (!bPosStreak) {
           if (vals[ixs[n]] < 0)
             streak_count++;
@@ -214,7 +271,7 @@ int main(int argc,char **argv)
     else {
       bBang = false;
 
-      for (n = 0; n < num_vals; n++) {
+      for (n = 0; n < lines; n++) {
         if (vals[ixs[n]] > 0) {
           if (bEndsWithABang) {
             if (ixs[n] == last_winning_hand_ix)
@@ -245,6 +302,9 @@ int main(int argc,char **argv)
 
   free(ixs);
   free(vals);
+
+  free(cppt);
+  free(in_buf);
 
   return 0;
 }
