@@ -14,7 +14,8 @@ static char save_dir[_MAX_PATH];
 char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: max_jump_ratio (-debug) (-verbose) (-offsetoffset) filename\n";
+"usage: max_jump_ratio (-debug) (-verbose) (-offsetoffset)\n"
+"  (-above_water) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -25,6 +26,7 @@ int main(int argc,char **argv)
   bool bDebug;
   bool bVerbose;
   int offset;
+  bool bAboveWater;
   FILE *fptr;
   int linelen;
   int line_no;
@@ -35,13 +37,14 @@ int main(int argc,char **argv)
   int max_num;
   int max_denom;
 
-  if ((argc < 2) || (argc > 5)) {
+  if ((argc < 2) || (argc > 6)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
   bVerbose = false;
+  bAboveWater = false;
   offset = 0;
   prev = 0;
   max_jump_ratio = (double)0;
@@ -53,6 +56,8 @@ int main(int argc,char **argv)
       bVerbose = true;
     else if (!strncmp(argv[curr_arg],"-offset",7))
       sscanf(&argv[curr_arg][7],"%d",&offset);
+    else if (!strcmp(argv[curr_arg],"-above_water"))
+      bAboveWater = true;
     else
       break;
   }
@@ -62,7 +67,7 @@ int main(int argc,char **argv)
     return 2;
   }
 
-  if (bDebug)
+  if (bVerbose)
     getcwd(save_dir,_MAX_PATH);
 
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
@@ -84,14 +89,16 @@ int main(int argc,char **argv)
 
     if (line_no > 1) {
       if (prev) {
-        jump_ratio = (double)work / (double)prev;
+        if (!bAboveWater || ((work > 0) && (prev > 0))) {
+          jump_ratio = (double)work / (double)prev;
 
-        if (jump_ratio > max_jump_ratio) {
-          max_jump_ratio = jump_ratio;
+          if (jump_ratio > max_jump_ratio) {
+            max_jump_ratio = jump_ratio;
 
-          if (bDebug) {
-            max_num = work;
-            max_denom = prev;
+            if (bVerbose) {
+              max_num = work;
+              max_denom = prev;
+            }
           }
         }
       }
@@ -102,7 +109,7 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
-  if (!bDebug)
+  if (!bVerbose)
     printf("%lf\n",max_jump_ratio);
   else
     printf("%lf (%d %d) %s\n",max_jump_ratio,max_num,max_denom,save_dir);
