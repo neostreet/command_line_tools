@@ -14,7 +14,7 @@ static char save_dir[_MAX_PATH];
 static char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: tailfall_count (-verbose) filename\n";
+"usage: tailfall_count (-verbose) (-pct) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -23,22 +23,27 @@ int main(int argc,char **argv)
 {
   int curr_arg;
   bool bVerbose;
+  bool bPct;
   FILE *fptr;
   int line_len;
   int line_no;
   int tailfall_count;
   int delta;
+  double dwork;
 
-  if ((argc < 2) || (argc > 3)) {
+  if ((argc < 2) || (argc > 4)) {
     printf(usage);
     return 1;
   }
 
   bVerbose = false;
+  bPct = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
+    else if (!strcmp(argv[curr_arg],"-pct"))
+      bPct = true;
     else
       break;
   }
@@ -79,10 +84,21 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
-  if (!bVerbose)
-    printf("%d\n",tailfall_count);
-  else
-    printf("%d %s\n",tailfall_count,save_dir);
+  if (bPct)
+    dwork = (double)tailfall_count / (double)line_no;
+
+  if (!bVerbose) {
+    if (!bPct)
+      printf("%d\n",tailfall_count);
+    else
+      printf("%lf\n",dwork);
+  }
+  else {
+    if (!bPct)
+      printf("%d %s\n",tailfall_count,save_dir);
+    else
+      printf("%lf (%d %d) %s\n",dwork,tailfall_count,line_no,save_dir);
+  }
 
   return 0;
 }
