@@ -76,9 +76,7 @@ int main(int argc,char **argv)
 
     if (delta > 0)
       tailfall_count = 0;
-    else if (delta < 0)
-      tailfall_count++;
-    else if (tailfall_count)
+    else
       tailfall_count++;
   }
 
