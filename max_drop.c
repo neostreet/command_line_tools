@@ -60,7 +60,7 @@ int main(int argc,char **argv)
     return 2;
   }
 
-  if (bDebug)
+  if (bVerbose)
     getcwd(save_dir,_MAX_PATH);
 
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
@@ -92,7 +92,7 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
-  if (!bDebug)
+  if (!bVerbose)
     printf("%d\n",max_drop);
   else
     printf("%d %s\n",max_drop,save_dir);
