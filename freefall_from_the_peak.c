@@ -19,7 +19,6 @@ static char usage[] =
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
-static int get_date_from_cwd(char *cwd,char **date_string_ptr);
 
 int main(int argc,char **argv)
 {
