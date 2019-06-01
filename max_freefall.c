@@ -15,7 +15,7 @@ char line[MAX_LINE_LEN];
 
 static char usage[] =
 "usage: max_freefall (-debug) (-terse) (-verbose)\n"
-"  (-pct_first) (-num_first) filename\n";
+"  (-pct_first) (-len_first) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   bool bTerse;
   bool bVerbose;
   bool bPctFirst;
-  bool bNumFirst;
+  bool bLenFirst;
   FILE *fptr;
   int linelen;
   int line_no;
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   bTerse = false;
   bVerbose = false;
   bPctFirst = false;
-  bNumFirst = false;
+  bLenFirst = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
@@ -61,8 +61,8 @@ int main(int argc,char **argv)
       bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-pct_first"))
       bPctFirst = true;
-    else if (!strcmp(argv[curr_arg],"-num_first"))
-      bNumFirst = true;
+    else if (!strcmp(argv[curr_arg],"-len_first"))
+      bLenFirst = true;
     else
       break;
   }
@@ -77,8 +77,8 @@ int main(int argc,char **argv)
     return 3;
   }
 
-  if (bPctFirst && bNumFirst) {
-    printf("can't specify both -pct_first and -num_first\n");
+  if (bPctFirst && bLenFirst) {
+    printf("can't specify both -pct_first and -len_first\n");
     return 4;
   }
 
@@ -130,11 +130,21 @@ int main(int argc,char **argv)
   if (max_freefall != -1) {
     max_freefall_len = max_freefall_end_ix - max_freefall_start_ix;
 
-    if (!bVerbose)
-      printf("%d %d\n",max_freefall,max_freefall_len);
+    if (!bVerbose) {
+      if (!bLenFirst)
+        printf("%d %d\n",max_freefall,max_freefall_len);
+      else
+        printf("%d %d\n",max_freefall_len,max_freefall);
+    }
     else {
-      printf("%d %d (%d %d) %s\n",max_freefall,max_freefall_len,
-        max_freefall_start_ix,max_freefall_end_ix - 1,save_dir);
+      if (!bLenFirst) {
+        printf("%d %d (%d %d) %s\n",max_freefall,max_freefall_len,
+          max_freefall_start_ix,max_freefall_end_ix - 1,save_dir);
+      }
+      else {
+        printf("%d (%d %d) %d %s\n",max_freefall_len,
+          max_freefall_start_ix,max_freefall_end_ix - 1,max_freefall,save_dir);
+      }
     }
   }
 
