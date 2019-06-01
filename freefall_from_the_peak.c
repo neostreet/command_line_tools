@@ -15,7 +15,7 @@ char line[MAX_LINE_LEN];
 
 static char usage[] =
 "usage: freefall_from_the_peak (-debug) (-terse) (-verbose) (-boolean)\n"
-"  (-pct_first) (-num_first) filename\n";
+"  (-pct_first) (-len_first) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   bool bVerbose;
   bool bBoolean;
   bool bPctFirst;
-  bool bNumFirst;
+  bool bLenFirst;
   FILE *fptr;
   int linelen;
   int line_no;
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   bVerbose = false;
   bBoolean = false;
   bPctFirst = false;
-  bNumFirst = false;
+  bLenFirst = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
@@ -63,8 +63,8 @@ int main(int argc,char **argv)
       bBoolean = true;
     else if (!strcmp(argv[curr_arg],"-pct_first"))
       bPctFirst = true;
-    else if (!strcmp(argv[curr_arg],"-num_first"))
-      bNumFirst = true;
+    else if (!strcmp(argv[curr_arg],"-len_first"))
+      bLenFirst = true;
     else
       break;
   }
@@ -79,8 +79,8 @@ int main(int argc,char **argv)
     return 3;
   }
 
-  if (bPctFirst && bNumFirst) {
-    printf("can't specify both -pct_first and -num_first\n");
+  if (bPctFirst && bLenFirst) {
+    printf("can't specify both -pct_first and -len_first\n");
     return 4;
   }
 
@@ -129,7 +129,7 @@ int main(int argc,char **argv)
         if (!bVerbose) {
           if (bPctFirst)
             printf("%lf %d (%d %d)\n",dwork,max,freefall_len,line_no);
-          else if (bNumFirst)
+          else if (bLenFirst)
             printf("%d %lf %d (%d)\n",freefall_len,dwork,max,line_no);
           else
             printf("%d (%d %d %lf)\n",max,freefall_len,line_no,dwork);
@@ -137,7 +137,7 @@ int main(int argc,char **argv)
         else {
           if (bPctFirst)
             printf("%lf %d (%d %d) %s\n",dwork,max,freefall_len,line_no,save_dir);
-          else if (bNumFirst)
+          else if (bLenFirst)
             printf("%d %lf %d (%d) %s\n",freefall_len,dwork,max,line_no,save_dir);
           else
             printf("%d (%d %d %lf) %s\n",max,freefall_len,line_no,dwork,save_dir);
