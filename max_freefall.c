@@ -138,12 +138,12 @@ int main(int argc,char **argv)
     }
     else {
       if (!bLenFirst) {
-        printf("%d %d (%d %d) %s\n",max_freefall,max_freefall_len,
-          max_freefall_start_ix,max_freefall_end_ix - 1,save_dir);
+        printf("%d %d (%d %d %d) %s\n",max_freefall,max_freefall_len,
+          max_freefall_start_ix,max_freefall_end_ix - 1,line_no,save_dir);
       }
       else {
-        printf("%d (%d %d) %d %s\n",max_freefall_len,
-          max_freefall_start_ix,max_freefall_end_ix - 1,max_freefall,save_dir);
+        printf("%d (%d %d %d) %d %s\n",max_freefall_len,
+          max_freefall_start_ix,max_freefall_end_ix - 1,line_no,max_freefall,save_dir);
       }
     }
   }
