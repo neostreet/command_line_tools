@@ -15,7 +15,7 @@ char line[MAX_LINE_LEN];
 
 static char usage[] =
 "usage: max_freefall (-debug) (-terse) (-verbose)\n"
-"  (-pct_first) (-len_first) filename\n";
+"  (-pct_first) (-len_first) (-by_len) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -28,6 +28,7 @@ int main(int argc,char **argv)
   bool bVerbose;
   bool bPctFirst;
   bool bLenFirst;
+  bool bByLen;
   FILE *fptr;
   int linelen;
   int line_no;
@@ -35,13 +36,15 @@ int main(int argc,char **argv)
   int curr_freefall;
   int curr_freefall_start_ix;
   int curr_freefall_end_ix;
+  int curr_freefall_len;
+  int new_max;
   int max_freefall;
   int max_freefall_start_ix;
   int max_freefall_end_ix;
   int max_freefall_len;
   double dwork;
 
-  if ((argc < 2) || (argc > 7)) {
+  if ((argc < 2) || (argc > 8)) {
     printf(usage);
     return 1;
   }
@@ -51,6 +54,7 @@ int main(int argc,char **argv)
   bVerbose = false;
   bPctFirst = false;
   bLenFirst = false;
+  bByLen = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
@@ -63,6 +67,8 @@ int main(int argc,char **argv)
       bPctFirst = true;
     else if (!strcmp(argv[curr_arg],"-len_first"))
       bLenFirst = true;
+    else if (!strcmp(argv[curr_arg],"-by_len"))
+      bByLen = true;
     else
       break;
   }
@@ -105,11 +111,28 @@ int main(int argc,char **argv)
     if (work > 0) {
       if (curr_freefall != -1) {
         curr_freefall_end_ix = line_no;
+        curr_freefall_len = curr_freefall_end_ix - curr_freefall_start_ix;
 
-        if ((max_freefall == -1) || (curr_freefall > max_freefall)) {
+        new_max = 0;
+
+        if (max_freefall == -1)
+          new_max = 1;
+        else {
+          if (!bByLen) {
+            if (curr_freefall > max_freefall)
+              new_max = 1;
+          }
+          else {
+            if (curr_freefall_len > max_freefall_len)
+              new_max = 1;
+          }
+        }
+
+        if (new_max) {
           max_freefall = curr_freefall;
           max_freefall_start_ix = curr_freefall_start_ix;
           max_freefall_end_ix = curr_freefall_end_ix;
+          max_freefall_len = curr_freefall_len;
         }
       }
 
@@ -128,8 +151,6 @@ int main(int argc,char **argv)
   fclose(fptr);
 
   if (max_freefall != -1) {
-    max_freefall_len = max_freefall_end_ix - max_freefall_start_ix;
-
     if (!bVerbose) {
       if (!bLenFirst)
         printf("%d %d\n",max_freefall,max_freefall_len);
