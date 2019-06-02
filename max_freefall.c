@@ -150,6 +150,33 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
+  if (curr_freefall != -1) {
+    curr_freefall_end_ix = line_no + 1;
+    curr_freefall_len = curr_freefall_end_ix - curr_freefall_start_ix;
+
+    new_max = 0;
+
+    if (max_freefall == -1)
+      new_max = 1;
+    else {
+      if (!bByLen) {
+        if (curr_freefall > max_freefall)
+          new_max = 1;
+      }
+      else {
+        if (curr_freefall_len > max_freefall_len)
+          new_max = 1;
+      }
+    }
+
+    if (new_max) {
+      max_freefall = curr_freefall;
+      max_freefall_start_ix = curr_freefall_start_ix;
+      max_freefall_end_ix = curr_freefall_end_ix;
+      max_freefall_len = curr_freefall_len;
+    }
+  }
+
   if (max_freefall != -1) {
     if (!bVerbose) {
       if (!bLenFirst)
