@@ -1,16 +1,27 @@
 #include <stdio.h>
+#include <string.h>
+#ifdef WIN32
+#include <direct.h>
+#else
+#define _MAX_PATH 4096
+#include <unistd.h>
+#endif
+
+static char save_dir[_MAX_PATH];
 
 #define MAX_LINE_LEN 1024
-char line[MAX_LINE_LEN];
+static char line[MAX_LINE_LEN];
 
-static char usage[] = "usage: last num_lines filename (filename ...)\n";
+static char usage[] =
+"usage: last (-verbose) num_lines filename (filename ...)\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
 int main(int argc,char **argv)
 {
-  int n;
+  int curr_arg;
+  bool bVerbose;
   int num_last_lines;
   FILE *fptr;
   int linelen;
@@ -23,18 +34,34 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  sscanf(argv[1],"%d",&num_last_lines);
+  bVerbose = false;
 
-  num_files = argc - 2;
+  for (curr_arg = 1; curr_arg < argc; curr_arg++) {
+    if (!strcmp(argv[curr_arg],"-verbose"))
+      bVerbose = true;
+    else
+      break;
+  }
 
-  for (n = 2; n < argc; n++) {
-    if ((fptr = fopen(argv[n],"r")) == NULL) {
-      printf(couldnt_open,argv[n]);
+  if (argc - curr_arg < 2) {
+    printf(usage);
+    return 1;
+  }
+
+  if (bVerbose)
+    getcwd(save_dir,_MAX_PATH);
+
+  sscanf(argv[curr_arg++],"%d",&num_last_lines);
+  num_files = argc - curr_arg;
+
+  for ( ; curr_arg < argc; curr_arg++) {
+    if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
+      printf(couldnt_open,argv[curr_arg]);
       continue;
     }
 
-    if (num_files > 1)
-      printf("%s\n",argv[n]);
+    if (!bVerbose && (num_files > 1))
+      printf("%s\n",argv[curr_arg]);
 
     line_no = 0;
 
@@ -61,8 +88,12 @@ int main(int argc,char **argv)
 
       line_no++;
 
-      if (line_no >= (num_lines - (num_last_lines - 1)))
-        printf("%s\n",line);
+      if (line_no >= (num_lines - (num_last_lines - 1))) {
+        if (!bVerbose)
+          printf("%s\n",line);
+        else
+          printf("%s %s\n",line,save_dir);
+      }
     }
 
     if (num_files > 1)
