@@ -7,7 +7,7 @@ static char line[MAX_LINE_LEN];
 #define TAB 0x9
 
 static char usage[] =
-"usage: llens (-verbose) (-skip_spaces) (-tabn) filename (filename ...)\n";
+"usage: llens (-verbose) (-skip_spaces) (-tabn) (-ge_lenlen) filename (filename ...)\n";
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
 int main(int argc,char **argv)
@@ -26,6 +26,7 @@ int main(int argc,char **argv)
   int len;
   int space_count;
   int tab_count;
+  int ge_len;
 
   if (argc < 2) {
     printf(usage);
@@ -35,6 +36,7 @@ int main(int argc,char **argv)
   bVerbose = false;
   bSkipSpaces = false;
   bTab = false;
+  ge_len = 0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
@@ -45,6 +47,8 @@ int main(int argc,char **argv)
       bTab = true;
       sscanf(&argv[curr_arg][4],"%d",&tab_len);
     }
+    else if (!strncmp(argv[curr_arg],"-ge_len",7))
+      sscanf(&argv[curr_arg][7],"%d",&ge_len);
     else
       break;
   }
@@ -106,10 +110,12 @@ int main(int argc,char **argv)
         linelen += tab_count * (tab_len - 1);
       }
 
-      if (!bVerbose)
-        printf("%d\n",linelen);
-      else
-        printf("%3d %s\n",linelen,line);
+      if (linelen >= ge_len) {
+        if (!bVerbose)
+          printf("%d\n",linelen);
+        else
+          printf("%3d %s\n",linelen,line);
+      }
     }
 
     fclose(fptr);
