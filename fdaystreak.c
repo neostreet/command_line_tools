@@ -8,7 +8,8 @@
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
-static char save_line[MAX_LINE_LEN];
+static char streak_start[MAX_LINE_LEN];
+static char streak_end[MAX_LINE_LEN];
 
 static int year_ix;
 static int month_ix;
@@ -127,7 +128,8 @@ int main(int argc,char **argv)
     if (line_no == 1) {
       date1 = date2;
       curr_streak = 1;
-      strcpy(save_line,line);
+      strcpy(streak_start,line);
+      strcpy(streak_end,line);
       continue;
     }
 
@@ -140,17 +142,20 @@ int main(int argc,char **argv)
     work = (int)dwork;
 
     if (work != 1) {
-      printf("%d %s\n",curr_streak,save_line);
+      printf("%d %s %s\n",curr_streak,streak_start,streak_end);
       curr_streak = 1;
-      strcpy(save_line,line);
+      strcpy(streak_start,line);
+      strcpy(streak_end,line);
     }
-    else
+    else {
       curr_streak++;
+      strcpy(streak_end,line);
+    }
 
     date1 = date2;
   }
 
-  printf("%d %s\n",curr_streak,save_line);
+  printf("%d %s %s\n",curr_streak,streak_start,streak_end);
 
   return 0;
 }
