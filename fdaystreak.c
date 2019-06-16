@@ -10,12 +10,12 @@
 static char line[MAX_LINE_LEN];
 static char save_line[MAX_LINE_LEN];
 
-#define YEAR_IX  0
-#define MONTH_IX 1
-#define DAY_IX   2
+static int year_ix;
+static int month_ix;
+static int day_ix;
 
 static char usage[] =
-"usage: fdaystreak (-debug) filename\n";
+"usage: fdaystreak (-debug) (-mdy) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char invalid_date[] = "invalid date on line %d\n";
 
@@ -39,11 +39,7 @@ struct digit_range {
   int upper;
 };
 
-static struct digit_range date_checks[3] = {
-  80, 2095,  /* year */
-  1, 12,     /* month */
-  1, 31      /* day */
-};
+static struct digit_range date_checks[3];
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 static time_t cvt_date(char *date_str);
@@ -53,6 +49,7 @@ int main(int argc,char **argv)
   int n;
   int curr_arg;
   bool bDebug;
+  bool bMdy;
   FILE *fptr;
   int line_len;
   int line_no;
@@ -65,16 +62,19 @@ int main(int argc,char **argv)
   char *cpt;
   int curr_streak;
 
-  if ((argc < 2) || (argc > 3)) {
+  if ((argc < 2) || (argc > 4)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
+  bMdy = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
+    else if (!strcmp(argv[curr_arg],"-mdy"))
+      bMdy = true;
     else
       break;
   }
@@ -88,6 +88,24 @@ int main(int argc,char **argv)
     printf(couldnt_open,argv[curr_arg]);
     return 4;
   }
+
+  if (!bMdy) {
+    year_ix = 0;
+    month_ix = 1;
+    day_ix = 2;
+  }
+  else {
+    month_ix = 0;
+    day_ix = 1;
+    year_ix = 2;
+  }
+
+  date_checks[year_ix].lower = 80;
+  date_checks[year_ix].upper = 2095;
+  date_checks[month_ix].lower = 1;
+  date_checks[month_ix].upper = 12;
+  date_checks[day_ix].lower = 1;
+  date_checks[day_ix].upper = 31;
 
   line_no = 0;
 
@@ -205,15 +223,15 @@ static time_t cvt_date(char *date_str)
       return -1L;
   }
 
-  if (digits[YEAR_IX] >= 100)
-    if (digits[YEAR_IX] < 1970)
+  if (digits[year_ix] >= 100)
+    if (digits[year_ix] < 1970)
       return -1L;
     else
-      digits[YEAR_IX] -= 1900;
+      digits[year_ix] -= 1900;
 
-  tim.tm_mon = digits[MONTH_IX] - 1;
-  tim.tm_mday = digits[DAY_IX];
-  tim.tm_year = digits[YEAR_IX];
+  tim.tm_mon = digits[month_ix] - 1;
+  tim.tm_mday = digits[day_ix];
+  tim.tm_year = digits[year_ix];
 
   tim.tm_hour = 0;
   tim.tm_min = 0;
