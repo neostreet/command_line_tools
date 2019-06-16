@@ -16,7 +16,7 @@ static int month_ix;
 static int day_ix;
 
 static char usage[] =
-"usage: fdaystreak (-debug) (-mdy) filename\n";
+"usage: fdaystreak (-debug) (-mdy) (-reverse) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char invalid_date[] = "invalid date on line %d\n";
 
@@ -51,6 +51,7 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bDebug;
   bool bMdy;
+  bool bReverse;
   FILE *fptr;
   int line_len;
   int line_no;
@@ -63,19 +64,22 @@ int main(int argc,char **argv)
   char *cpt;
   int curr_streak;
 
-  if ((argc < 2) || (argc > 4)) {
+  if ((argc < 2) || (argc > 5)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
   bMdy = false;
+  bReverse = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
     else if (!strcmp(argv[curr_arg],"-mdy"))
       bMdy = true;
+    else if (!strcmp(argv[curr_arg],"-reverse"))
+      bReverse = true;
     else
       break;
   }
@@ -127,9 +131,13 @@ int main(int argc,char **argv)
 
     if (line_no == 1) {
       date1 = date2;
-      curr_streak = 1;
-      strcpy(streak_start,line);
-      strcpy(streak_end,line);
+
+      if (!bReverse) {
+        curr_streak = 1;
+        strcpy(streak_start,line);
+        strcpy(streak_end,line);
+      }
+
       continue;
     }
 
@@ -142,20 +150,27 @@ int main(int argc,char **argv)
     work = (int)dwork;
 
     if (work != 1) {
-      printf("%d %s %s\n",curr_streak,streak_start,streak_end);
-      curr_streak = 1;
-      strcpy(streak_start,line);
-      strcpy(streak_end,line);
+      if (!bReverse) {
+        printf("%d %s %s\n",curr_streak,streak_start,streak_end);
+        curr_streak = 1;
+        strcpy(streak_start,line);
+        strcpy(streak_end,line);
+      }
+      else
+        printf("%d %s\n",work - 1,line);
     }
     else {
-      curr_streak++;
-      strcpy(streak_end,line);
+      if (!bReverse) {
+        curr_streak++;
+        strcpy(streak_end,line);
+      }
     }
 
     date1 = date2;
   }
 
-  printf("%d %s %s\n",curr_streak,streak_start,streak_end);
+  if (!bReverse)
+    printf("%d %s %s\n",curr_streak,streak_start,streak_end);
 
   return 0;
 }
