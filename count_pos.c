@@ -14,7 +14,7 @@ static char line[MAX_LINE_LEN];
 
 static char usage[] =
 "usage: count_pos (-verbose) (-exact_countcount) (-on_last) (-percent)\n"
-"  (-only_zero) (-sum_ixs) (-is_exact_countcount) filename\n";
+"  (-only_zero) (-sum_ixs) (-is_exact_countcount) (-le_countcount) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -29,6 +29,7 @@ int main(int argc,char **argv)
   bool bPercent;
   bool bOnlyZero;
   bool bSumIxs;
+  int le_count;
   bool bIsExactCount;
   FILE *fptr;
   int line_len;
@@ -37,7 +38,7 @@ int main(int argc,char **argv)
   int work;
   double dwork;
 
-  if ((argc < 2) || (argc > 9)) {
+  if ((argc < 2) || (argc > 10)) {
     printf(usage);
     return 1;
   }
@@ -49,6 +50,7 @@ int main(int argc,char **argv)
   bOnlyZero = false;
   bSumIxs = false;
   bIsExactCount = false;
+  le_count = -1;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
@@ -67,6 +69,8 @@ int main(int argc,char **argv)
       sscanf(&argv[curr_arg][15],"%d",&exact_count);
       bIsExactCount = true;
     }
+    else if (!strncmp(argv[curr_arg],"-le_count",9))
+      sscanf(&argv[curr_arg][9],"%d",&le_count);
     else
       break;
   }
@@ -76,9 +80,14 @@ int main(int argc,char **argv)
     return 2;
   }
 
+  if ((exact_count != -1) && (le_count != -1)) {
+    printf("can't specify both -exact_count and -le_count\n");
+    return 3;
+  }
+
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf(couldnt_open,argv[curr_arg]);
-    return 3;
+    return 4;
   }
 
   if (bVerbose)
@@ -124,7 +133,8 @@ int main(int argc,char **argv)
         printf("0 (%d) %s\n",line_no,save_dir);
     }
   }
-  else if ((exact_count == -1) || (count_pos == exact_count)) {
+  else if (((exact_count == -1) || (count_pos == exact_count)) &&
+           ((le_count == -1) || (count_pos <= le_count))) {
     if (!bOnLast || bPos) {
       if (!bOnlyZero || (count_pos == 0)) {
         if (!bVerbose)
