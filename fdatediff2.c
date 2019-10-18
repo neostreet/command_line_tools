@@ -17,7 +17,7 @@ enum enumUnit {
 };
 
 static char usage[] =
-"usage: fdatediff (-debug) (-year_first) [secs | days | weeks | years] filename\n";
+"usage: fdatediff2 (-debug) (-year_first) [secs | days | weeks | years] filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char invalid_date[] = "invalid date on line %d\n";
 
@@ -120,25 +120,19 @@ int main(int argc,char **argv)
         break;
     }
 
-    if (n == line_len) {
+    if (n < line_len)
+      line[n] = 0;
+
+    date2 = cvt_date(line,bYearFirst);
+
+    if (date2 == -1L) {
       printf(invalid_date,line_no);
       return 5;
     }
 
-    line[n] = 0;
-
-    date1 = cvt_date(line,bYearFirst);
-
-    if (date1 == -1L) {
-      printf(invalid_date,line_no);
-      return 6;
-    }
-
-    date2 = cvt_date(&line[n+1],bYearFirst);
-
-    if (date2 == -1L) {
-      printf(invalid_date,line_no);
-      return 7;
+    if (line_no == 1) {
+      date1 = date2;
+      continue;
     }
 
     if (date1 > date2)
@@ -163,6 +157,8 @@ int main(int argc,char **argv)
         printf("%lf years\n",dwork);
         break;
     }
+
+    date1 = date2;
   }
 
   return 0;
