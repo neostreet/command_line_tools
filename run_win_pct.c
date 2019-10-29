@@ -66,9 +66,9 @@ int main(int argc,char **argv)
     win_pct = (double)wins / (double)nobs;
 
     if (!bVerbose)
-      printf("%8.4lf\n",win_pct);
+      printf("%lf\n",win_pct);
     else
-      printf("%8.4lf (%d %d) %s\n",win_pct,wins,nobs,line);
+      printf("%lf (%d %d) %s\n",win_pct,wins,nobs,line);
   }
 
   fclose(fptr);
