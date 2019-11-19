@@ -7,21 +7,21 @@ char line[MAX_LINE_LEN];
 char line2[MAX_LINE_LEN];
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
-void zorch_line(char *inline,char *outline);
+void zorch_line(char *in_line,char *out_line);
 
-void main(int argc,char **argv)
+int main(int argc,char **argv)
 {
   FILE *fptr;
   int linel;
 
   if (argc != 2) {
     printf(usage);
-    return;
+    return 1;
   }
 
   if ((fptr = fopen(argv[1],"r")) == NULL) {
     printf("couldn't open %s\n",argv[1]);
-    return;
+    return 2;
   }
 
   for ( ; ; ) {
@@ -35,6 +35,8 @@ void main(int argc,char **argv)
   }
 
   fclose(fptr);
+
+  return 0;
 }
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
@@ -61,7 +63,7 @@ void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
   *line_len = local_line_len;
 }
 
-void zorch_line(char *inline,char *outline)
+void zorch_line(char *in_line,char *out_line)
 {
   int m;
   int n;
@@ -74,22 +76,22 @@ void zorch_line(char *inline,char *outline)
   bHaveNonSpace = 0;
   last_char = 0;
 
-  for ( ; (inline[m]); m++) {
-    if (inline[m] != ' ') {
+  for ( ; (in_line[m]); m++) {
+    if (in_line[m] != ' ') {
       if (!bHaveNonSpace) {
-        outline[n++] = inline[m];
+        out_line[n++] = in_line[m];
         bHaveNonSpace = 1;
       }
       else {
         if (last_char == ' ')
-          outline[n++] = ' ';
+          out_line[n++] = ' ';
 
-        outline[n++] = inline[m];
+        out_line[n++] = in_line[m];
       }
     }
 
-    last_char = inline[m];
+    last_char = in_line[m];
   }
 
-  outline[n] = 0;
+  out_line[n] = 0;
 }
