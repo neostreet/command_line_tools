@@ -8,7 +8,7 @@ static char line[MAXLLEN];
 
 void get_zorched_line(FILE *fptr,char *line,int maxllen,int *llenpt,int leading_only);
 
-void main(int argc,char **argv)
+int main(int argc,char **argv)
 {
   FILE *fptr;
   int linelen;
@@ -16,22 +16,22 @@ void main(int argc,char **argv)
 
   if (argc < 2) {
     printf(usage);
-    return;
+    return 1;
   }
 
-  if (!strcmpi(argv[1],"-leading_only"))
+  if (!strcmp(argv[1],"-leading_only"))
     leading_only = 1;
   else
     leading_only = 0;
 
   if (argc - leading_only != 2) {
     printf(usage);
-    return;
+    return 2;
   }
 
   if ((fptr = fopen(argv[argc - 1],"r")) == NULL) {
     printf("couldn't open %s\n",argv[argc - 1]);
-    return;
+    return 3;
   }
 
   for ( ; ; ) {
@@ -45,6 +45,8 @@ void main(int argc,char **argv)
   }
 
   fclose(fptr);
+
+  return 0;
 }
 
 void get_zorched_line(FILE *fptr,char *line,int maxllen,int *llenpt,int leading_only)
