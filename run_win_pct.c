@@ -2,7 +2,7 @@
 #include <string.h>
 
 static char usage[] =
-"usage: run_win_pct (-verbose) filename\n";
+"usage: run_win_pct (-verbose) (-ltpct) filename\n";
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
@@ -13,6 +13,7 @@ int main(int argc,char **argv)
 {
   int curr_arg;
   bool bVerbose;
+  double lt_pct;
   FILE *fptr;
   int line_len;
   int nobs;
@@ -20,16 +21,19 @@ int main(int argc,char **argv)
   int work;
   double win_pct;
 
-  if ((argc < 2) || (argc > 3)) {
+  if ((argc < 2) || (argc > 4)) {
     printf(usage);
     return 1;
   }
 
   bVerbose = false;
+  lt_pct = (double)0.0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
+    else if (!strncmp(argv[curr_arg],"-lt",3))
+      sscanf(&argv[curr_arg][3],"%lf",&lt_pct);
     else
       break;
   }
@@ -65,10 +69,12 @@ int main(int argc,char **argv)
 
     win_pct = (double)wins / (double)nobs;
 
-    if (!bVerbose)
-      printf("%lf\n",win_pct);
-    else
-      printf("%lf (%d %d) %s\n",win_pct,wins,nobs,line);
+    if (win_pct < lt_pct) {
+      if (!bVerbose)
+        printf("%lf\n",win_pct);
+      else
+        printf("%lf (%d %d) %s\n",win_pct,wins,nobs,line);
+    }
   }
 
   fclose(fptr);
