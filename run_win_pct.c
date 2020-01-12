@@ -69,7 +69,7 @@ int main(int argc,char **argv)
 
     win_pct = (double)wins / (double)nobs;
 
-    if (win_pct < lt_pct) {
+    if ((lt_pct == (double)0.0) || (win_pct < lt_pct)) {
       if (!bVerbose)
         printf("%lf\n",win_pct);
       else
