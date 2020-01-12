@@ -2,7 +2,7 @@
 #include <string.h>
 
 static char usage[] =
-"usage: run_win_pct (-verbose) (-ltpct) filename\n";
+"usage: run_win_pct (-verbose) (-ltpct) (-gtpct) filename\n";
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
@@ -14,6 +14,8 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bVerbose;
   double lt_pct;
+  double gt_pct;
+  bool bPrint;
   FILE *fptr;
   int line_len;
   int nobs;
@@ -21,19 +23,22 @@ int main(int argc,char **argv)
   int work;
   double win_pct;
 
-  if ((argc < 2) || (argc > 4)) {
+  if ((argc < 2) || (argc > 5)) {
     printf(usage);
     return 1;
   }
 
   bVerbose = false;
   lt_pct = (double)0.0;
+  gt_pct = (double)0.0;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
     else if (!strncmp(argv[curr_arg],"-lt",3))
       sscanf(&argv[curr_arg][3],"%lf",&lt_pct);
+    else if (!strncmp(argv[curr_arg],"-gt",3))
+      sscanf(&argv[curr_arg][3],"%lf",&gt_pct);
     else
       break;
   }
@@ -43,9 +48,14 @@ int main(int argc,char **argv)
     return 2;
   }
 
+  if ((lt_pct != (double)0.0) && (gt_pct != (double)0.0)) {
+    printf("can't specifiy both -ltpct and -gtpct\n");
+    return 3;
+  }
+
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf("couldn't open %s\n",argv[curr_arg]);
-    return 3;
+    return 4;
   }
 
   nobs = 0;
@@ -69,7 +79,14 @@ int main(int argc,char **argv)
 
     win_pct = (double)wins / (double)nobs;
 
-    if ((lt_pct == (double)0.0) || (win_pct < lt_pct)) {
+    bPrint = true;
+
+    if ((lt_pct != (double)0.0) && (win_pct >= lt_pct))
+      bPrint = false;
+    else if ((gt_pct != (double)0.0) && (win_pct <= gt_pct))
+      bPrint = false;
+
+    if (bPrint) {
       if (!bVerbose)
         printf("%lf\n",win_pct);
       else
