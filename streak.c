@@ -11,6 +11,7 @@ static char save_dir[_MAX_PATH];
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
+static char save_line0[MAX_LINE_LEN];
 static char save_line[MAX_LINE_LEN];
 
 #define MAX_STREAK 100
@@ -138,8 +139,10 @@ int main(int argc,char **argv)
       else
         plus_streak = 1;
 
-      if (bVerbose)
+      if (bVerbose) {
+        strcpy(save_line0,line);
         strcpy(save_line,line);
+      }
 
       continue;
     }
@@ -167,9 +170,9 @@ int main(int argc,char **argv)
           }
           else {
             if (!bOnlyWinning)
-              printf("+%d %s\n",plus_streak,save_line);
+              printf("+%d %s %s\n",plus_streak,save_line0,save_line);
             else
-              printf("%d %s\n",plus_streak,save_line);
+              printf("%d %s %s\n",plus_streak,save_line0,save_line);
           }
         }
 
@@ -203,9 +206,9 @@ int main(int argc,char **argv)
           }
           else {
             if (!bOnlyLosing)
-              printf("-%d %s\n",minus_streak,save_line);
+              printf("-%d %s %s\n",minus_streak,save_line0,save_line);
             else
-              printf("%d %s\n",minus_streak,save_line);
+              printf("%d %s %s\n",minus_streak,save_line0,save_line);
           }
         }
 
@@ -217,8 +220,12 @@ int main(int argc,char **argv)
       }
     }
 
-    if (bVerbose)
+    if (bVerbose) {
+      if (minus_streak + plus_streak == 1)
+        strcpy(save_line0,line);
+
       strcpy(save_line,line);
+    }
   }
 
   fclose(fptr);
@@ -239,9 +246,9 @@ int main(int argc,char **argv)
         }
         else {
           if (!bOnlyWinning)
-            printf("+%d %s\n",plus_streak,save_line);
+            printf("+%d %s %s\n",plus_streak,save_line0,save_line);
           else
-            printf("%d %s\n",plus_streak,save_line);
+            printf("%d %s %s\n",plus_streak,save_line0,save_line);
         }
       }
     }
@@ -255,9 +262,9 @@ int main(int argc,char **argv)
         }
         else {
           if (!bOnlyLosing)
-            printf("-%d %s\n",minus_streak,save_line);
+            printf("-%d %s %s\n",minus_streak,save_line0,save_line);
           else
-            printf("%d %s\n",minus_streak,save_line);
+            printf("%d %s %s\n",minus_streak,save_line0,save_line);
         }
       }
     }
