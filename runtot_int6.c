@@ -5,7 +5,7 @@
 
 static char usage[] =
 "runtot_int6 (-initial_balbal) (-verbose) (-terse) (-no_tabs) (-only_ending)\n"
-"  (-only_starting) (-balance_last) filename\n";
+"  (-only_starting) (-balance_last) (-only_blue) filename\n";
 
 int main(int argc,char **argv)
 {
@@ -16,12 +16,15 @@ int main(int argc,char **argv)
   bool bOnlyEnding;
   bool bOnlyStarting;
   bool bBalanceLast;
+  bool bOnlyBlue;
+  int max;
   FILE *fptr;
   int runtot;
   int work;
+  int work2;
   char str[MAX_STR_LEN];
 
-  if ((argc < 2) || (argc > 9)) {
+  if ((argc < 2) || (argc > 10)) {
     printf(usage);
     return 1;
   }
@@ -33,6 +36,7 @@ int main(int argc,char **argv)
   bOnlyEnding = false;
   bOnlyStarting = false;
   bBalanceLast = false;
+  bOnlyBlue = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strncmp(argv[curr_arg],"-initial_bal",12))
@@ -49,6 +53,8 @@ int main(int argc,char **argv)
       bOnlyStarting = true;
     else if (!strcmp(argv[curr_arg],"-balance_last"))
       bBalanceLast = true;
+    else if (!strcmp(argv[curr_arg],"-only_blue"))
+      bOnlyBlue = true;
     else
       break;
   }
@@ -73,11 +79,25 @@ int main(int argc,char **argv)
     return 5;
   }
 
+  if (bOnlyBlue)
+    max = runtot;
+
   for ( ; ; ) {
     fscanf(fptr,"%s\t%d",str,&work);
 
     if (feof(fptr))
       break;
+
+    if (bOnlyBlue) {
+      work2 = runtot + work;
+
+      if (work2 >= max)
+        max = work2;
+      else {
+        runtot += work;
+        continue;
+      }
+    }
 
     if (!bTerse && !bOnlyEnding) {
       if (bVerbose || !bNoTabs)
