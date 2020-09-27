@@ -19,7 +19,7 @@ static int streak_histogram[MAX_STREAK];
 
 static char usage[] =
 "usage: streak (-debug) (-verbose) (-only_winning) (-only_losing)\n"
-"  (-histogram) (-max_plus) (-max_minus) filename\n";
+"  (-histogram) (-max_plus) (-max_minus) (-gevalue) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -35,6 +35,7 @@ int main(int argc,char **argv)
   bool bHistogram;
   bool bMaxPlus;
   bool bMaxMinus;
+  int ge_value;
   FILE *fptr;
   int line_len;
   int line_no;
@@ -45,7 +46,7 @@ int main(int argc,char **argv)
   int work;
   int chara;
 
-  if ((argc < 2) || (argc > 9)) {
+  if ((argc < 2) || (argc > 10)) {
     printf(usage);
     return 1;
   }
@@ -57,6 +58,7 @@ int main(int argc,char **argv)
   bHistogram = false;
   bMaxPlus = false;
   bMaxMinus = false;
+  ge_value = -1;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
@@ -73,6 +75,8 @@ int main(int argc,char **argv)
       bMaxPlus = true;
     else if (!strcmp(argv[curr_arg],"-max_minus"))
       bMaxMinus = true;
+    else if (!strncmp(argv[curr_arg],"-ge",3))
+      sscanf(&argv[curr_arg][3],"%d",&ge_value);
     else
       break;
   }
@@ -163,16 +167,24 @@ int main(int argc,char **argv)
 
         if (!bOnlyLosing && !bMaxPlus && !bMaxMinus) {
           if (!bVerbose) {
-            if (!bOnlyWinning)
-              printf("+%d\n",plus_streak);
-            else
-              printf("%d\n",plus_streak);
+            if (!bOnlyWinning) {
+              if (plus_streak >= ge_value)
+                printf("+%d\n",plus_streak);
+            }
+            else {
+              if (plus_streak >= ge_value)
+                printf("%d\n",plus_streak);
+            }
           }
           else {
-            if (!bOnlyWinning)
-              printf("+%d %s %s\n",plus_streak,save_line0,save_line);
-            else
-              printf("%d %s %s\n",plus_streak,save_line0,save_line);
+            if (!bOnlyWinning) {
+              if (plus_streak >= ge_value)
+                printf("+%d %s %s\n",plus_streak,save_line0,save_line);
+            }
+            else {
+              if (plus_streak >= ge_value)
+                printf("%d %s %s\n",plus_streak,save_line0,save_line);
+            }
           }
         }
 
@@ -199,16 +211,24 @@ int main(int argc,char **argv)
 
         if (!bOnlyWinning && !bMaxPlus && !bMaxMinus) {
           if (!bVerbose) {
-            if (!bOnlyLosing)
-              printf("-%d\n",minus_streak);
-            else
-              printf("%d\n",minus_streak);
+            if (!bOnlyLosing) {
+              if (minus_streak >= ge_value)
+                printf("-%d\n",minus_streak);
+            }
+            else {
+              if (minus_streak >= ge_value)
+                printf("%d\n",minus_streak);
+            }
           }
           else {
-            if (!bOnlyLosing)
-              printf("-%d %s %s\n",minus_streak,save_line0,save_line);
-            else
-              printf("%d %s %s\n",minus_streak,save_line0,save_line);
+            if (!bOnlyLosing) {
+              if (minus_streak >= ge_value)
+                printf("-%d %s %s\n",minus_streak,save_line0,save_line);
+            }
+            else {
+              if (minus_streak >= ge_value)
+                printf("%d %s %s\n",minus_streak,save_line0,save_line);
+            }
           }
         }
 
