@@ -63,7 +63,7 @@ int main(int argc,char **argv)
     if (!bVerbose)
       printf("%lf\n",delta_pct);
     else
-      printf("%lf (%d) %s\n",delta_pct,balance,line);
+      printf("%lf %s (%d)\n",delta_pct,line,balance);
 
     balance += work;
   }
