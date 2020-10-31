@@ -2,7 +2,7 @@
 #include <string.h>
 
 static char usage[] =
-"usage: run_delta_pct (-verbose) start_bal filename\n";
+"usage: run_delta_pct (-verbose) (-skip_until_bal_ge_val) start_bal filename\n";
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
@@ -14,22 +14,26 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bVerbose;
   int start_bal;
+  int skip_until_bal_ge_val;
   FILE *fptr;
   int balance;
   int line_len;
   int work;
   double delta_pct;
 
-  if ((argc < 3) || (argc > 4)) {
+  if ((argc < 3) || (argc > 5)) {
     printf(usage);
     return 1;
   }
 
   bVerbose = false;
+  skip_until_bal_ge_val = -1;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
+    else if (!strncmp(argv[curr_arg],"-skip_until_bal_ge_",19))
+      sscanf(&argv[curr_arg][19],"%d",&skip_until_bal_ge_val);
     else
       break;
   }
@@ -57,6 +61,15 @@ int main(int argc,char **argv)
 
     if (feof(fptr))
       break;
+
+    if (skip_until_bal_ge_val != -1) {
+      if (balance < skip_until_bal_ge_val) {
+        balance += work;
+        continue;
+      }
+      else
+        skip_until_bal_ge_val = -1;
+    }
 
     delta_pct = (double)work / (double)balance;
 
