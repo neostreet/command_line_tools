@@ -41,7 +41,7 @@ int main(int argc,char **argv)
         work_elem->int1++;
     }
     else
-      add_info_list_elem(&unique_lines,line,1,0,true);
+      add_info_list_elem(&unique_lines,line,1,0,0,0,true);
   }
 
   fclose(fptr);
