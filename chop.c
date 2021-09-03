@@ -10,24 +10,26 @@ char *line;
 char *buf;
 
 static char usage[] =
-"usage: chop (-drop_delim) (-no_trim) delimiter filename\n";
+"usage: chop (-drop_delim) (-no_trim) (-cols) (-only_colcol) delimiter filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
 void trim_line(char *line,int *linelen,char delimiter);
-void chop(char *cpt,char delimiter,bool bDropDelim);
+void chop(char *cpt,char delimiter,bool bDropDelim, bool bCols, int only_col);
 
 int main(int argc,char **argv)
 {
   int curr_arg;
   bool bDropDelim;
   bool bNoTrim;
+  bool bCols;
+  int only_col;
   char delimiter;
   FILE *fptr;
   int linelen;
 
-  if ((argc < 3) || (argc > 5)) {
+  if ((argc < 3) || (argc > 7)) {
     printf(usage);
     return 1;
   }
@@ -45,12 +47,20 @@ int main(int argc,char **argv)
 
   bDropDelim = false;
   bNoTrim = false;
+  bCols = false;
+  only_col = -1;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-drop_delim"))
       bDropDelim = true;
     else if (!strcmp(argv[curr_arg],"-no_trim"))
       bNoTrim = true;
+    else if (!strcmp(argv[curr_arg],"-cols"))
+      bCols = true;
+    else if (!strncmp(argv[curr_arg],"-only_col",9)) {
+      sscanf(&argv[curr_arg][9],"%d",&only_col);
+      bCols = true;
+    }
     else
       break;
   }
@@ -85,7 +95,7 @@ int main(int argc,char **argv)
     if (bDropDelim && !bNoTrim)
       trim_line(line,&linelen,delimiter);
 
-    chop(line,delimiter,bDropDelim);
+    chop(line,delimiter,bDropDelim,bCols,only_col);
   }
 
   fclose(fptr);
@@ -96,12 +106,13 @@ int main(int argc,char **argv)
   return 0;
 }
 
-void chop(char *cpt,char delimiter,bool bDropDelim)
+void chop(char *cpt,char delimiter,bool bDropDelim, bool bCols, int only_col)
 {
   int m;
   int n;
   int p;
   int len;
+  int col;
 
   len = strlen(cpt);
 
@@ -111,6 +122,9 @@ void chop(char *cpt,char delimiter,bool bDropDelim)
   }
 
   n = 0;
+
+  if (bCols)
+    col = 0;
 
   for ( ; ; ) {
     m = n;
@@ -129,7 +143,17 @@ void chop(char *cpt,char delimiter,bool bDropDelim)
       buf[p] = cpt[m+p];
 
     buf[p] = 0;
-    printf("%s\n",buf);
+
+    if (!bCols)
+      printf("%s\n",buf);
+    else {
+      if (only_col == -1)
+        printf("%d %s\n",col,buf);
+      else if (col == only_col)
+        printf("%s\n",buf);
+
+      col++;
+    }
 
     if (n == len)
       break;
