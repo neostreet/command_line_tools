@@ -19,7 +19,7 @@ static int streak_histogram[MAX_STREAK];
 
 static char usage[] =
 "usage: streak (-debug) (-verbose) (-only_winning) (-only_losing)\n"
-"  (-histogram) (-max_plus) (-max_minus) (-gevalue) filename\n";
+"  (-histogram) (-max_plus) (-max_minus) (-gevalue) (-no_plus_sign) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -36,6 +36,7 @@ int main(int argc,char **argv)
   bool bMaxPlus;
   bool bMaxMinus;
   int ge_value;
+  bool bNoPlusSign;
   FILE *fptr;
   int line_len;
   int line_no;
@@ -46,7 +47,7 @@ int main(int argc,char **argv)
   int work;
   int chara;
 
-  if ((argc < 2) || (argc > 10)) {
+  if ((argc < 2) || (argc > 11)) {
     printf(usage);
     return 1;
   }
@@ -59,6 +60,7 @@ int main(int argc,char **argv)
   bMaxPlus = false;
   bMaxMinus = false;
   ge_value = -1;
+  bNoPlusSign = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
@@ -77,6 +79,8 @@ int main(int argc,char **argv)
       bMaxMinus = true;
     else if (!strncmp(argv[curr_arg],"-ge",3))
       sscanf(&argv[curr_arg][3],"%d",&ge_value);
+    else if (!strcmp(argv[curr_arg],"-no_plus_sign"))
+      bNoPlusSign = true;
     else
       break;
   }
@@ -169,7 +173,7 @@ int main(int argc,char **argv)
           if (!bVerbose) {
             if (!bOnlyWinning) {
               if (plus_streak >= ge_value)
-                printf("+%d\n",plus_streak);
+                printf("%s%d\n",(bNoPlusSign ? "" : "+"),plus_streak);
             }
             else {
               if (plus_streak >= ge_value)
@@ -179,7 +183,7 @@ int main(int argc,char **argv)
           else {
             if (!bOnlyWinning) {
               if (plus_streak >= ge_value)
-                printf("+%d %s %s\n",plus_streak,save_line0,save_line);
+                printf("%s%d %s %s\n",(bNoPlusSign ? "" : "+"),plus_streak,save_line0,save_line);
             }
             else {
               if (plus_streak >= ge_value)
@@ -260,13 +264,13 @@ int main(int argc,char **argv)
       if (!bOnlyLosing) {
         if (!bVerbose) {
           if (!bOnlyWinning)
-            printf("+%d\n",plus_streak);
+            printf("%s%d\n",(bNoPlusSign ? "" : "+"),plus_streak);
           else
             printf("%d\n",plus_streak);
         }
         else {
           if (!bOnlyWinning)
-            printf("+%d %s %s\n",plus_streak,save_line0,save_line);
+            printf("%d %s %s\n",(bNoPlusSign ? "" : "+"),plus_streak,save_line0,save_line);
           else
             printf("%d %s %s\n",plus_streak,save_line0,save_line);
         }
