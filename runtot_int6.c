@@ -5,7 +5,7 @@
 
 static char usage[] =
 "runtot_int6 (-initial_balbal) (-verbose) (-terse) (-no_tabs) (-only_ending)\n"
-"  (-only_starting) (-balance_last) (-only_blue) filename\n";
+"  (-only_starting) (-balance_last) (-only_blue) (-delta) (-from_first_geval) filename\n";
 
 int main(int argc,char **argv)
 {
@@ -17,6 +17,8 @@ int main(int argc,char **argv)
   bool bOnlyStarting;
   bool bBalanceLast;
   bool bOnlyBlue;
+  bool bDelta;
+  int from_first_geval;
   int max;
   FILE *fptr;
   int runtot;
@@ -24,7 +26,7 @@ int main(int argc,char **argv)
   int work2;
   char str[MAX_STR_LEN];
 
-  if ((argc < 2) || (argc > 10)) {
+  if ((argc < 2) || (argc > 12)) {
     printf(usage);
     return 1;
   }
@@ -37,6 +39,8 @@ int main(int argc,char **argv)
   bOnlyStarting = false;
   bBalanceLast = false;
   bOnlyBlue = false;
+  bDelta = false;
+  from_first_geval = -1;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strncmp(argv[curr_arg],"-initial_bal",12))
@@ -55,6 +59,10 @@ int main(int argc,char **argv)
       bBalanceLast = true;
     else if (!strcmp(argv[curr_arg],"-only_blue"))
       bOnlyBlue = true;
+    else if (!strcmp(argv[curr_arg],"-delta"))
+      bDelta = true;
+    else if (!strncmp(argv[curr_arg],"-from_first_ge",14))
+      sscanf(&argv[curr_arg][14],"%d",&from_first_geval);
     else
       break;
   }
@@ -99,39 +107,52 @@ int main(int argc,char **argv)
       }
     }
 
-    if (!bTerse && !bOnlyEnding) {
-      if (bVerbose || !bNoTabs)
-        printf("%s\t",str);
-      else
-        printf("%s ",str);
+    if (from_first_geval != -1) {
+      if (runtot >= from_first_geval)
+        from_first_geval = -1;
     }
 
-    if (!bOnlyEnding) {
-      if (!bVerbose) {
-        if (!bNoTabs)
-          printf("%d\t",runtot);
+    if (from_first_geval == -1) {
+      if (!bTerse && !bOnlyEnding) {
+        if (bVerbose || !bNoTabs)
+          printf("%s\t",str);
         else
-          printf("%10d ",runtot);
+          printf("%s ",str);
       }
-      else
-        printf("%d\t%d\t",work,runtot);
+
+      if (!bOnlyEnding) {
+        if (!bVerbose) {
+          if (!bNoTabs)
+            printf("%d\t",runtot);
+          else
+            printf("%10d ",runtot);
+        }
+        else
+          printf("%d\t%d\t",work,runtot);
+      }
     }
 
     runtot += work;
 
-    if (bOnlyStarting)
-      putchar(0x0a);
-    else if (bOnlyEnding) {
-      if (!bBalanceLast)
-        printf("%d %s\n",runtot,str);
-      else
-        printf("%s %d\n",str,runtot);
-    }
-    else {
-      if (bTerse || bVerbose || !bNoTabs)
-        printf("%d\n",runtot);
-      else
-        printf("%10d\n",runtot);
+    if (from_first_geval == -1) {
+      if (bOnlyStarting)
+        putchar(0x0a);
+      else if (bOnlyEnding) {
+        if (!bBalanceLast) {
+          if (!bTerse)
+            printf("%d %s\n",(bDelta ? work : runtot),str);
+          else
+            printf("%d\n",(bDelta ? work : runtot));
+        }
+        else
+          printf("%s %d\n",str,(bDelta ? work : runtot));
+      }
+      else {
+        if (bTerse || bVerbose || !bNoTabs)
+          printf("%d\n",(bDelta ? work : runtot));
+        else
+          printf("%10d\n",(bDelta ? work : runtot));
+      }
     }
   }
 
