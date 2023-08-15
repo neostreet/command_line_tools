@@ -7,7 +7,7 @@
 char line[MAX_LINE_LEN];
 
 static char usage[] =
-"usage: authors (-no_sort) (filename)\n";
+"usage: authors (-no_sort) (-url) (filename)\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static char author_str[] = "Author: ";
@@ -23,7 +23,7 @@ struct info_list_elem_contig {
 struct info_list_elem_contig *contig_elems;
 
 void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
-int get_author(char *line,int line_len,char **author);
+int get_author(char *line,int line_len,char **author,bool bUrl);
 int compare(const void *elem1,const void *elem2);
 
 int main(int argc,char **argv)
@@ -31,6 +31,7 @@ int main(int argc,char **argv)
   int n;
   int curr_arg;
   bool bNoSort;
+  bool bUrl;
   bool bStdin;
   FILE *fptr;
   int line_len;
@@ -41,17 +42,20 @@ int main(int argc,char **argv)
   int *ixs;
   int tot_commits;
 
-  if (argc > 3) {
+  if (argc > 4) {
     printf(usage);
     return 1;
   }
 
   bNoSort = false;
+  bUrl = false;
   bStdin = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-no_sort"))
       bNoSort = true;
+    else if (!strcmp(argv[curr_arg],"-url"))
+      bUrl = true;
     else
       break;
   }
@@ -74,7 +78,7 @@ int main(int argc,char **argv)
     if (feof(fptr))
       break;
 
-    if (get_author(line,line_len,&author)) {
+    if (get_author(line,line_len,&author,bUrl)) {
       if (member_of_info_list(&authors,author,&ix)) {
         if (get_info_list_elem(&authors,ix,&work_elem))
           work_elem->int1++;
@@ -158,9 +162,10 @@ void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
   *line_len = local_line_len;
 }
 
-int get_author(char *line,int line_len,char **author)
+int get_author(char *line,int line_len,char **author,bool bUrl)
 {
   int n;
+  int offset;
 
   if (line_len < AUTHOR_STR_LEN)
     return 0;
@@ -170,12 +175,27 @@ int get_author(char *line,int line_len,char **author)
 
   for (n = AUTHOR_STR_LEN; n < line_len; n++) {
     if (line[n] == '<') {
-      line[n - 1] = 0;
+      if (!bUrl) {
+        line[n - 1] = 0;
+        offset = AUTHOR_STR_LEN;
+      }
+      else {
+        n++;
+        offset = n;
+
+        for ( ; n < line_len; n++) {
+          if (line[n] == '>') {
+            line[n] = 0;
+            break;
+          }
+        }
+      }
+
       break;
     }
   }
 
-  *author = &line[AUTHOR_STR_LEN];
+  *author = &line[offset];
 
   return 1;
 }
