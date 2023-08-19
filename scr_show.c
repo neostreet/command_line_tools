@@ -16,7 +16,6 @@
 //    InitApplication() - Initializes window data nd registers window
 //    InitInstance() -saves instance handle and creates main window
 //    WindProc() Processes messages
-//    MyRegisterClass() - Registers the application's window class
 //
 // SPECIAL INSTRUCTIONS: N/A
 //
@@ -56,7 +55,6 @@ int background;
 
 // Foward declarations of functions included in this code module:
 
-ATOM MyRegisterClass(CONST WNDCLASS*);
 BOOL InitApplication(HINSTANCE);
 BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -83,7 +81,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
   int top;
   int num_cells;
   MSG msg;
-  HANDLE hAccelTable;
+  HACCEL hAccelTable;
   FILE *fptr;
   COLORREF color;
 
@@ -171,58 +169,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 }
 
 //
-//  FUNCTION: MyRegisterClass(CONST WNDCLASS*)
-//
-//  PURPOSE: Registers the window class.
-//
-//  COMMENTS:
-//
-//    This function and its usage is only necessary if you want this code
-//    to be compatible with Win32 systems prior to the 'RegisterClassEx'
-// function that was added to Windows 95. It is important to call this function
-//    so that the application will get 'well formed' small icons associated
-//    with it.
-//
-ATOM MyRegisterClass(CONST WNDCLASS *lpwc)
-{
-   HANDLE  hMod;
-   FARPROC proc;
-   WNDCLASSEX wcex;
-
-   hMod = GetModuleHandle ("USER32");
-   if (hMod != NULL) {
-
-#if defined (UNICODE)
-      proc = GetProcAddress (hMod, "RegisterClassExW");
-#else
-      proc = GetProcAddress (hMod, "RegisterClassExA");
-#endif
-
-      if (proc != NULL) {
-
-         wcex.style         = lpwc->style;
-         wcex.lpfnWndProc   = lpwc->lpfnWndProc;
-         wcex.cbClsExtra    = lpwc->cbClsExtra;
-         wcex.cbWndExtra    = lpwc->cbWndExtra;
-         wcex.hInstance     = lpwc->hInstance;
-         wcex.hIcon         = lpwc->hIcon;
-         wcex.hCursor       = lpwc->hCursor;
-         wcex.hbrBackground = lpwc->hbrBackground;
-                     wcex.lpszMenuName  = lpwc->lpszMenuName;
-         wcex.lpszClassName = lpwc->lpszClassName;
-
-         // Added elements for Windows 95:
-         wcex.cbSize = sizeof(WNDCLASSEX);
-         wcex.hIconSm = LoadIcon(wcex.hInstance, "SMALL");
-
-         return (*proc)(&wcex);//return RegisterClassEx(&wcex);
-      }
-   }
-   return (RegisterClass(lpwc));
-}
-
-
-//
 //  FUNCTION: InitApplication(HANDLE)
 //
 //  PURPOSE: Initializes window data and registers window class
@@ -258,10 +204,7 @@ BOOL InitApplication(HINSTANCE hInstance)
     wc.lpszClassName = szAppName;
 
     // Register the window class and return success/failure code.
-    if (IS_WIN95)
-        return MyRegisterClass(&wc);
-    else
-        return RegisterClass(&wc);
+    return RegisterClass(&wc);
 }
 
 //
