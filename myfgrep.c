@@ -19,7 +19,7 @@ static char exp_title[TITLELEN];
 static char line[MAX_LINE_LEN];
 
 static char usage[] = "\
-usage: fgrep (-c) (-nl) (-nt) (-nd) (-special_charhhc) (-file_maxn) (-anchor)\n"
+usage: fgrep (-c) (-nl) (-nt) (-nd) (-nss) (-special_charhhc) (-file_maxn) (-anchor)\n"
 "  string filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char couldnt_get_status[] = "couldn't get status of %s\n";
@@ -46,6 +46,7 @@ int main(int argc,char **argv)
   int line_numbers;
   bool bTitle;
   bool bDate;
+  bool bNoSearchString;
   bool bAnchor;
   int string_arg;
   int put_search_string;
@@ -65,6 +66,7 @@ int main(int argc,char **argv)
   line_numbers = 1;
   bTitle = true;
   bDate = true;
+  bNoSearchString = false;
   num_special_chars = 0;
   file_max = -1;
   bAnchor = false;
@@ -78,6 +80,8 @@ int main(int argc,char **argv)
       bTitle = false;
     else if (!strcmp(argv[curr_arg],"-nd"))
       bDate = false;
+    else if (!strcmp(argv[curr_arg],"-nss"))
+      bNoSearchString = true;
     else if (!strncmp(argv[curr_arg],"-special_char",13)) {
       if (num_special_chars == MAX_SPECIAL_CHARS) {
         printf("num_special_chars may not exceed %d\n",MAX_SPECIAL_CHARS);
@@ -130,7 +134,9 @@ int main(int argc,char **argv)
   }
 
   searchlen = strlen(argv[string_arg]);
-  put_search_string = 0;
+
+  if (!bNoSearchString)
+    put_search_string = 0;
 
   if (file_max != -1)
     file_count = 0;
@@ -220,7 +226,7 @@ int main(int argc,char **argv)
       }
 
       if (put_line) {
-        if (!put_search_string) {
+        if (!bNoSearchString && !put_search_string) {
           printf("search string: %s\n\n",argv[string_arg]);
           put_search_string = 1;
         }
