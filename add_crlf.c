@@ -4,13 +4,9 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef WIN32
-#include <io.h>
-#else
 #include <unistd.h>
 #ifndef CYGWIN
 #define O_BINARY 0
-#endif
 #endif
 
 static char usage[] = "usage: add_crlf infile\n";
