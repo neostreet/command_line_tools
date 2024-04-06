@@ -13,7 +13,7 @@ static char save_dir[_MAX_PATH];
 #define MAX_LINE_LEN 1024
 char line[MAX_LINE_LEN];
 
-static char usage[] = "usage: addf_int (-debug) (-verbose) (-offsetoffset)\n"
+static char usage[] = "usage: addf_int (-debug) (-terse) (-verbose) (-offsetoffset)\n"
 "  (-datedatestring) (-get_date_from_cwd) (-pos_neg) (-counts) (-abs)\n"
 "  (-neg_only) (-pos_only) (-last_is_lowest) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
@@ -25,6 +25,7 @@ int main(int argc,char **argv)
 {
   int curr_arg;
   bool bDebug;
+  bool bTerse;
   bool bVerbose;
   bool bHaveDateString;
   char *date_string;
@@ -49,12 +50,13 @@ int main(int argc,char **argv)
   int negative_total;
   int negative_count;
 
-  if ((argc < 2) || (argc > 13)) {
+  if ((argc < 2) || (argc > 14)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
+  bTerse = false;
   bVerbose = false;
   bHaveDateString = false;
   bGetDateFromCwd = false;
@@ -69,6 +71,8 @@ int main(int argc,char **argv)
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
+    else if (!strcmp(argv[curr_arg],"-terse"))
+      bTerse = true;
     else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
     else if (!strncmp(argv[curr_arg],"-offset",7))
@@ -110,6 +114,11 @@ int main(int argc,char **argv)
     return 4;
   }
 
+  if (bTerse && bVerbose) {
+    printf("can't specify both -terse and -verbose\n");
+    return 5;
+  }
+
   if (bDebug || bGetDateFromCwd)
     getcwd(save_dir,_MAX_PATH);
 
@@ -118,7 +127,7 @@ int main(int argc,char **argv)
 
     if (retval) {
       printf("get_date_from_cwd() failed: %d\n",retval);
-      return 5;
+      return 6;
     }
 
     bHaveDateString = true;
@@ -126,7 +135,7 @@ int main(int argc,char **argv)
 
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf(couldnt_open,argv[curr_arg]);
-    return 6;
+    return 7;
   }
 
   line_no = 0;
@@ -197,7 +206,13 @@ int main(int argc,char **argv)
       }
     }
 
-    if (bVerbose) {
+    if (bTerse) {
+      if (!bPosNeg)
+        printf("%d\n",total);
+      else
+        printf("%d %d %d\n",total,positive_total,negative_total);
+    }
+    else if (bVerbose) {
       if (!bPosNeg)
         printf("%d %s\n",total,line);
       else
@@ -207,7 +222,7 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
-  if (!bVerbose) {
+  if (!bTerse && !bVerbose) {
     if (!bPosNeg) {
       if (!bDebug) {
         if (!bHaveDateString) {
