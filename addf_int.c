@@ -13,7 +13,7 @@ static char save_dir[_MAX_PATH];
 #define MAX_LINE_LEN 1024
 char line[MAX_LINE_LEN];
 
-static char usage[] = "usage: addf_int (-debug) (-terse) (-verbose) (-offsetoffset)\n"
+static char usage[] = "usage: addf_int (-debug) (-terse) (-add_sentinel) (-verbose) (-offsetoffset)\n"
 "  (-datedatestring) (-get_date_from_cwd) (-pos_neg) (-counts) (-abs)\n"
 "  (-neg_only) (-pos_only) (-last_is_lowest) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
@@ -26,6 +26,7 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bDebug;
   bool bTerse;
+  bool bAddSentinel;
   bool bVerbose;
   bool bHaveDateString;
   char *date_string;
@@ -50,13 +51,14 @@ int main(int argc,char **argv)
   int negative_total;
   int negative_count;
 
-  if ((argc < 2) || (argc > 14)) {
+  if ((argc < 2) || (argc > 15)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
   bTerse = false;
+  bAddSentinel = false;
   bVerbose = false;
   bHaveDateString = false;
   bGetDateFromCwd = false;
@@ -73,6 +75,8 @@ int main(int argc,char **argv)
       bDebug = true;
     else if (!strcmp(argv[curr_arg],"-terse"))
       bTerse = true;
+    else if (!strcmp(argv[curr_arg],"-add_sentinel"))
+      bAddSentinel = true;
     else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
     else if (!strncmp(argv[curr_arg],"-offset",7))
@@ -227,8 +231,12 @@ int main(int argc,char **argv)
       if (!bDebug) {
         if (!bHaveDateString) {
           if (!bCounts) {
-            if (!bLastIsLowest || (total == min_total))
-              printf("%d\n",total);
+            if (!bLastIsLowest || (total == min_total)) {
+              if (!bAddSentinel)
+                printf("%d\n",total);
+              else
+                printf("%d sentinel\n",total);
+            }
           }
           else
             printf("%d (%d)\n",total,count);
