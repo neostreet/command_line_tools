@@ -8,7 +8,9 @@
 #include <io.h>
 #else
 #include <unistd.h>
+#ifndef CYGWIN
 #define O_BINARY 0
+#endif
 #endif
 
 #define MAX_LINE_LEN 1024
