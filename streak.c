@@ -19,7 +19,7 @@ static int streak_histogram[MAX_STREAK];
 
 static char usage[] =
 "usage: streak (-debug) (-verbose) (-only_winning) (-only_losing)\n"
-"  (-histogram) (-max_plus) (-max_minus) (-gevalue) (-no_plus_sign) filename\n";
+"  (-histogram) (-max_plus) (-max_minus) (-gevalue) (-no_plus_sign) (-stats) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -37,6 +37,7 @@ int main(int argc,char **argv)
   bool bMaxMinus;
   int ge_value;
   bool bNoPlusSign;
+  bool bStats;
   FILE *fptr;
   int line_len;
   int line_no;
@@ -47,7 +48,7 @@ int main(int argc,char **argv)
   int work;
   int chara;
 
-  if ((argc < 2) || (argc > 11)) {
+  if ((argc < 2) || (argc > 12)) {
     printf(usage);
     return 1;
   }
@@ -61,6 +62,7 @@ int main(int argc,char **argv)
   bMaxMinus = false;
   ge_value = -1;
   bNoPlusSign = false;
+  bStats = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
@@ -81,6 +83,8 @@ int main(int argc,char **argv)
       sscanf(&argv[curr_arg][3],"%d",&ge_value);
     else if (!strcmp(argv[curr_arg],"-no_plus_sign"))
       bNoPlusSign = true;
+    else if (!strcmp(argv[curr_arg],"-stats"))
+      bStats = true;
     else
       break;
   }
@@ -298,7 +302,7 @@ int main(int argc,char **argv)
     printf("%d %s\n",max_plus_streak,save_dir);
   else if (bMaxMinus)
     printf("%d %s\n",max_minus_streak,save_dir);
-  else if (bVerbose) {
+  else if (bStats) {
     putchar(0x0a);
     printf("nobs:             %6d\n",line_no);
     printf("max_plus_streak:  %6d\n",max_plus_streak);
