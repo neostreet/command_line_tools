@@ -71,7 +71,7 @@ int main(int argc,char **argv)
 
   printf("bfType = %c%c\n",buf[0],buf[1]);
   printf("bfSize = %ld %lx\n",bmfh_pt->bfSize,bmfh_pt->bfSize);
-  printf("bfOffBits = %ld %lx\n",bmfh_pt->bfOffBits,bmfh_pt->bfOffBits);
+  printf("bfOffBits = %ld %lx\n\n",bmfh_pt->bfOffBits,bmfh_pt->bfOffBits);
   printf("biSize = %ld %lx\n",bmih_pt->biSize,bmih_pt->biSize);
   printf("biWidth = %ld %lx\n",bmih_pt->biWidth,bmih_pt->biWidth);
   printf("biHeight = %ld %lx\n",bmih_pt->biHeight,bmih_pt->biHeight);
