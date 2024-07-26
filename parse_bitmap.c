@@ -66,12 +66,16 @@ int main(int argc,char **argv)
 
   printf("sizeof (BITMAPFILEHEADER) = %d %x\n",sizeof (BITMAPFILEHEADER),sizeof (BITMAPFILEHEADER));
   printf("sizeof (BITMAPINFOHEADER) = %d %x\n\n",sizeof (BITMAPINFOHEADER),sizeof (BITMAPINFOHEADER));
+
   printf("sizeof (WORD) = %d %x\n",sizeof (WORD),sizeof (WORD));
   printf("sizeof (DWORD) = %d %x\n\n",sizeof (DWORD),sizeof (DWORD));
+
+  printf("BI_RGB = %d %x\n\n",BI_RGB,BI_RGB);
 
   printf("bfType = %c%c\n",buf[0],buf[1]);
   printf("bfSize = %ld %lx\n",bmfh_pt->bfSize,bmfh_pt->bfSize);
   printf("bfOffBits = %ld %lx\n\n",bmfh_pt->bfOffBits,bmfh_pt->bfOffBits);
+
   printf("biSize = %ld %lx\n",bmih_pt->biSize,bmih_pt->biSize);
   printf("biWidth = %ld %lx\n",bmih_pt->biWidth,bmih_pt->biWidth);
   printf("biHeight = %ld %lx\n",bmih_pt->biHeight,bmih_pt->biHeight);
