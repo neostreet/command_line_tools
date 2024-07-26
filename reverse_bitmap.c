@@ -13,7 +13,7 @@
 #endif
 #endif
 
-static char usage[] = "usage: build_grab5 infile outfile\n";
+static char usage[] = "usage: reverse_bitmap infile outfile\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char couldnt_get_status[] = "couldn't get status of %s\n";
 
