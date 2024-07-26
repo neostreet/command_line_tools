@@ -64,6 +64,9 @@ int main(int argc,char **argv)
   bmfh_pt = (BITMAPFILEHEADER *)buf;
   bmih_pt = (BITMAPINFOHEADER *)&buf[sizeof (BITMAPFILEHEADER)];
 
+  printf("sizeof (BITMAPFILEHEADER) = %d %x\n",sizeof (BITMAPFILEHEADER),sizeof (BITMAPFILEHEADER));
+  printf("sizeof (BITMAPINFOHEADER) = %d %x\n\n",sizeof (BITMAPINFOHEADER),sizeof (BITMAPINFOHEADER));
+
   printf("bfType = %c%c\n",buf[0],buf[1]);
   printf("bfSize = %ld %lx\n",bmfh_pt->bfSize,bmfh_pt->bfSize);
   printf("bfOffBits = %ld %lx\n",bmfh_pt->bfOffBits,bmfh_pt->bfOffBits);
