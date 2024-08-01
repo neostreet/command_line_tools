@@ -13,7 +13,7 @@
 #endif
 
 static char usage[] =
-"usage: mycmp (-equal) (-verbose) (-quiet) file1 file2\n";
+"usage: mycmp (-equal) (-verbose) (-quiet) (-size_only) file1 file2\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char couldnt_get_status[] = "couldn't get status of %s\n";
 static char file_differs[] = "%s differs\n";
@@ -23,7 +23,7 @@ static char file_equal_verbose[] = "%s\\%s equal\n";
 
 static char save_dir[_MAX_PATH];
 
-static int comp_files(char *file1,char *file2,bool bQuiet);
+static int comp_files(char *file1,char *file2,bool bQuiet,bool bSizeOnly);
 
 int main(int argc,char **argv)
 {
@@ -31,9 +31,10 @@ int main(int argc,char **argv)
   bool bEqual;
   bool bVerbose;
   bool bQuiet;
+  bool bSizeOnly;
   int retval;
 
-  if ((argc < 3) || (argc > 6)) {
+  if ((argc < 3) || (argc > 7)) {
     printf(usage);
     return 1;
   }
@@ -41,6 +42,7 @@ int main(int argc,char **argv)
   bEqual = false;
   bVerbose = false;
   bQuiet = false;
+  bSizeOnly = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-equal"))
@@ -49,6 +51,8 @@ int main(int argc,char **argv)
       bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-quiet"))
       bQuiet = true;
+    else if (!strcmp(argv[curr_arg],"-size_only"))
+      bSizeOnly = true;
     else
       break;
   }
@@ -61,7 +65,7 @@ int main(int argc,char **argv)
   if (bVerbose)
     getcwd(save_dir,_MAX_PATH);
 
-  retval = comp_files(argv[curr_arg],argv[curr_arg+1],bQuiet);
+  retval = comp_files(argv[curr_arg],argv[curr_arg+1],bQuiet,bSizeOnly);
 
   if (!bEqual) {
     if ((retval == 3) || (retval == 7)) {
@@ -83,7 +87,7 @@ int main(int argc,char **argv)
   return 0;
 }
 
-static int comp_files(char *file1,char *file2,bool bQuiet)
+static int comp_files(char *file1,char *file2,bool bQuiet,bool bSizeOnly)
 {
   int m;
   int n;
@@ -113,6 +117,8 @@ static int comp_files(char *file1,char *file2,bool bQuiet)
 
   if (statbuf[0].st_size != statbuf[1].st_size)
     return 3;
+  else if (bSizeOnly)
+    return 0;
 
   bytes_to_read = statbuf[0].st_size;
 
