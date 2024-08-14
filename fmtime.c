@@ -5,7 +5,7 @@
 #include <time.h>
 
 static char usage[] =
-"usage: fmtime (-noctime) (-suppress_errors) filename\n";
+"usage: fmtime (-noctime) (-suppress_errors) (-size_only) filename\n";
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
@@ -17,25 +17,29 @@ int main(int argc,char **argv)
   int n;
   bool bNoCtime;
   bool bSuppressErrors;
+  bool bSizeOnly;
   FILE *fptr;
   int line_no;
   int linelen;
   struct stat stat_buf;
   char *cpt;
 
-  if ((argc < 2) || (argc > 4)) {
+  if ((argc < 2) || (argc > 5)) {
     printf(usage);
     return 1;
   }
 
   bNoCtime = false;
   bSuppressErrors = false;
+  bSizeOnly = false;
 
   for (n = 1; n < argc; n++) {
     if (!strcmp(argv[n],"-noctime"))
       bNoCtime = true;
     else if (!strcmp(argv[n],"-suppress_errors"))
       bSuppressErrors = true;
+    else if (!strcmp(argv[n],"-size_only"))
+      bSizeOnly = true;
     else
       break;
   }
@@ -61,7 +65,9 @@ int main(int argc,char **argv)
     line_no++;
 
     if (stat(line,&stat_buf) != -1) {
-      if (bNoCtime)
+      if (bSizeOnly)
+        printf("%10d %s\n",stat_buf.st_size,line);
+      else if (bNoCtime)
         printf("%10d %s\n",stat_buf.st_mtime,line);
       else {
         cpt = ctime(&stat_buf.st_mtime);
