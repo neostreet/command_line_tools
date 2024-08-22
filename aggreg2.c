@@ -122,13 +122,13 @@ int main(int argc,char **argv)
     tot_lines = 0;
 
   for (n = 0; n < num_elems; n++) {
-    printf("%10d %s\n",elems[sort_ixs[n]]->int1,elems[sort_ixs[n]]->str);
+    printf("%5d %s\n",elems[sort_ixs[n]]->int1,elems[sort_ixs[n]]->str);
     tot_lines += elems[sort_ixs[n]]->int1;
   }
 
   if (bTotal) {
-    printf("==========\n");
-    printf("%10d\n",tot_lines);
+    printf("=====\n");
+    printf("%5d\n",tot_lines);
   }
 
   free(elems);
