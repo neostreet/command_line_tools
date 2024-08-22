@@ -7,7 +7,7 @@
 #define FALSE 0
 #define TRUE  1
 
-static char usage[] = "usage: aggreg (-delim_charc) filename\n";
+static char usage[] = "usage: aggreg (-delim_charc) (-total) filename\n";
 
 static char sample_date_str[] = "Mon Dec 23 18:22:24 2002 ";
 #define DATE_STR_LEN (sizeof sample_date_str - 1)
@@ -35,6 +35,7 @@ int main(int argc,char **argv)
   int curr_arg;
   int bDelim;
   char delim_char;
+  bool bTotal;
   FILE *fptr;
   char *cpt;
   int line_no;
@@ -46,18 +47,21 @@ int main(int argc,char **argv)
   int *sort_ixs;
   int tot_lines;
 
-  if ((argc != 2) && (argc != 3)) {
+  if ((argc < 2) || (argc > 4)) {
     printf(usage);
     return 1;
   }
 
   bDelim = FALSE;
+  bTotal = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strncmp(argv[curr_arg],"-delim_char",11)) {
       bDelim = TRUE;
       sscanf(&argv[curr_arg][11],"%c",&delim_char);
     }
+    else if (!strcmp(argv[curr_arg],"-total"))
+      bTotal = true;
     else
       break;
   }
@@ -129,8 +133,10 @@ int main(int argc,char **argv)
     tot_lines += elems[sort_ixs[n]]->int1;
   }
 
-  printf("=====\n");
-  printf("%5d\n",tot_lines);
+  if (bTotal) {
+    printf("=====\n");
+    printf("%5d\n",tot_lines);
+  }
 
   free(elems);
   free(sort_ixs);
