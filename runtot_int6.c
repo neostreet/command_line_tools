@@ -5,7 +5,7 @@
 
 static char usage[] =
 "runtot_int6 (-initial_balbal) (-verbose) (-terse) (-no_tabs) (-only_ending)\n"
-"  (-only_starting) (-balance_last) (-only_blue) (-delta) (-from_first_geval) filename\n";
+"  (-only_starting) (-balance_last) (-only_blue) (-delta) (-from_first_geval) (-geval) filename\n";
 
 int main(int argc,char **argv)
 {
@@ -18,7 +18,9 @@ int main(int argc,char **argv)
   bool bBalanceLast;
   bool bOnlyBlue;
   bool bDelta;
+  bool bPrinting;
   int from_first_geval;
+  int geval;
   int max;
   FILE *fptr;
   int runtot;
@@ -26,7 +28,7 @@ int main(int argc,char **argv)
   int work2;
   char str[MAX_STR_LEN];
 
-  if ((argc < 2) || (argc > 12)) {
+  if ((argc < 2) || (argc > 13)) {
     printf(usage);
     return 1;
   }
@@ -41,6 +43,7 @@ int main(int argc,char **argv)
   bOnlyBlue = false;
   bDelta = false;
   from_first_geval = -1;
+  geval = -1;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strncmp(argv[curr_arg],"-initial_bal",12))
@@ -63,6 +66,8 @@ int main(int argc,char **argv)
       bDelta = true;
     else if (!strncmp(argv[curr_arg],"-from_first_ge",14))
       sscanf(&argv[curr_arg][14],"%d",&from_first_geval);
+    else if (!strncmp(argv[curr_arg],"-ge",3))
+      sscanf(&argv[curr_arg][3],"%d",&geval);
     else
       break;
   }
@@ -73,18 +78,23 @@ int main(int argc,char **argv)
   }
 
   if (bOnlyEnding && bOnlyStarting) {
-    printf("cant' specify both -only_ending and -only_starting\n");
+    printf("can't specify both -only_ending and -only_starting\n");
     return 3;
   }
 
   if (bVerbose && bTerse) {
-    printf("can specify at most one of -verbose and -terse\n");
+    printf("can't specify both -verbose and -terse\n");
     return 4;
+  }
+
+  if ((from_first_geval != -1) && (geval != -1)) {
+    printf("can't specify both -from_first_geval and -geval\n");
+    return 5;
   }
 
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf("couldn't open %s\n",argv[curr_arg]);
-    return 5;
+    return 6;
   }
 
   if (bOnlyBlue)
@@ -112,7 +122,11 @@ int main(int argc,char **argv)
         from_first_geval = -1;
     }
 
-    if (from_first_geval == -1) {
+    bPrinting = false;
+
+    if ((from_first_geval == -1) && ((geval == -1) || (runtot >= geval))) {
+      bPrinting = true;
+
       if (!bTerse && !bOnlyEnding) {
         if (bVerbose || !bNoTabs)
           printf("%s\t",str);
@@ -134,7 +148,7 @@ int main(int argc,char **argv)
 
     runtot += work;
 
-    if (from_first_geval == -1) {
+    if (bPrinting) {
       if (bOnlyStarting)
         putchar(0x0a);
       else if (bOnlyEnding) {
