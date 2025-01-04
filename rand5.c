@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   int unused_count;
  
   if (argc != 2) {
-    printf("usage: rand2 sample_size\n");
+    printf("usage: rand5 sample_size\n");
     return 1;
   }
 
