@@ -7,7 +7,7 @@
 #define FALSE 0
 #define TRUE  1
 
-static char usage[] = "usage: aggreg (-delim_charc) (-total) filename\n";
+static char usage[] = "usage: aggreg (-delim_charc) (-total) (-no_sort) filename\n";
 
 static char sample_date_str[] = "Mon Dec 23 18:22:24 2002 ";
 #define DATE_STR_LEN (sizeof sample_date_str - 1)
@@ -36,6 +36,7 @@ int main(int argc,char **argv)
   int bDelim;
   char delim_char;
   bool bTotal;
+  bool bNoSort;
   FILE *fptr;
   char *cpt;
   int line_no;
@@ -47,13 +48,14 @@ int main(int argc,char **argv)
   int *sort_ixs;
   int tot_lines;
 
-  if ((argc < 2) || (argc > 4)) {
+  if ((argc < 2) || (argc > 5)) {
     printf(usage);
     return 1;
   }
 
   bDelim = FALSE;
   bTotal = false;
+  bNoSort = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strncmp(argv[curr_arg],"-delim_char",11)) {
@@ -62,6 +64,8 @@ int main(int argc,char **argv)
     }
     else if (!strcmp(argv[curr_arg],"-total"))
       bTotal = true;
+    else if (!strcmp(argv[curr_arg],"-no_sort"))
+      bNoSort = true;
     else
       break;
   }
@@ -124,7 +128,8 @@ int main(int argc,char **argv)
       work_elem = work_elem->next_elem;
   }
 
-  qsort(sort_ixs,num_elems,sizeof (int),elem_compare);
+  if (!bNoSort)
+    qsort(sort_ixs,num_elems,sizeof (int),elem_compare);
 
   tot_lines = 0;
 
