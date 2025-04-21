@@ -5,7 +5,7 @@
 static char line[MAX_LINE_LEN];
 static char save_line[MAX_LINE_LEN];
 
-static char usage[] = "usage: gen_copy filename\n";
+static char usage[] = "usage: gen_copy infile outfile\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   int line_len;
   int line_no;
 
-  if (argc != 2) {
+  if (argc != 3) {
     printf(usage);
     return 1;
   }
@@ -47,6 +47,9 @@ int main(int argc,char **argv)
 
     strcpy(save_line,line);
   }
+
+  printf("ren gen_copy_temp%d %s\n",line_no-1,argv[2]);
+  printf("del gen_copy_temp*\n");
 
   fclose(fptr);
 
