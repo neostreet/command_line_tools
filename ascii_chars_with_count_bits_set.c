@@ -3,6 +3,8 @@
 
 static char usage[] = "usage: ascii_chars_with_count_bits_set count\n";
 
+static int ascii_flags[128];
+
 int main(int argc,char **argv)
 {
   int m;
@@ -32,6 +34,11 @@ int main(int argc,char **argv)
     }
 
     if (bits_set == count)
+      ascii_flags[n] = 1;
+  }
+
+  for (n = 32; n < 128; n++) {
+    if (ascii_flags[n])
       putchar(n);
   }
 
