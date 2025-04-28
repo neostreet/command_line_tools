@@ -20,7 +20,7 @@ int main(int argc,char **argv)
 {
   int m;
   int n;
-  int and_count;
+  int and_val;
   int bits_set;
   struct stat statbuf;
   int bytes_to_io;
@@ -48,11 +48,11 @@ int main(int argc,char **argv)
 
     for (m = 0; m < 8; m++) {
       if (!m)
-        and_count = 1;
+        and_val = 1;
       else
-        and_count <<= 1;
+        and_val <<= 1;
 
-      if (n & and_count)
+      if (n & and_val)
         bits_set++;
     }
 
