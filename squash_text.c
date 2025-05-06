@@ -24,8 +24,8 @@ int main(int argc,char **argv)
   unsigned char *buf[2];
   int fhndl[2];
   unsigned int seven_bits;
-  unsigned short num_bits[2];
-  unsigned int bit_offset[2];
+  unsigned short num_bits;
+  unsigned int bit_offset;
   unsigned short bits;
 
   if (argc != 3) {
@@ -89,16 +89,13 @@ int main(int argc,char **argv)
     return 7;
   }
 
-  num_bits[0] = 8;
-  num_bits[1] = 7;
-  bit_offset[0] = 0;
-  bit_offset[1] = 0;
+  num_bits = 7;
+  bit_offset = 0;
 
   for (n = 0; n < bytes_iod[0]; n++) {
-    bits = get_bits(num_bits[0],buf[0],bit_offset[0]);
-    set_bits(num_bits[1],buf[1],bit_offset[1],bits);
-    bit_offset[0] += num_bits[0];
-    bit_offset[1] += num_bits[1];
+    bits = buf[0][n];
+    set_bits(num_bits,buf[1],bit_offset,bits);
+    bit_offset += num_bits;
   }
 
   seven_bits = bytes_iod[0] * 7;
