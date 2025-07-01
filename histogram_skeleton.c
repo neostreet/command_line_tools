@@ -25,6 +25,7 @@ int main(int argc,char **argv)
   bool bVerbose;
   bool bSort;
   FILE *fptr;
+  int line_no;
   int line_len;
   int val;
   int ixs[MAX_RANGE];
@@ -65,16 +66,24 @@ int main(int argc,char **argv)
   if (bVerbose)
     total = 0;
 
+  line_no = 0;
+
   for ( ; ; ) {
     GetLine(fptr,line,&line_len,MAX_LINE_LEN);
 
     if (feof(fptr))
       break;
 
+    line_no++;
+
     sscanf(line,"%d",&val);
 
     if ((val >= 0) && (val < MAX_RANGE))
       counts[val]++;
+    else {
+      printf("value %d on line %d is out of range\n",val,line_no);
+      return 4;
+    }
 
     if (bVerbose)
       total++;
