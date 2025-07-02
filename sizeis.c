@@ -8,6 +8,7 @@ static char filename[MAX_FILENAME_LEN];
 int main(int argc,char **argv)
 {
   int n;
+  int size_int;
   off_t size;
   struct stat statbuf;
   bool bStdin;
@@ -18,7 +19,8 @@ int main(int argc,char **argv)
     return 1;
   }
 
-  sscanf(argv[1],"%d",&size);
+  sscanf(argv[1],"%d",&size_int);
+  size = size_int;
 
   if (argc == 2) {
     bStdin = true;
