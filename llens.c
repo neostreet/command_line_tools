@@ -7,7 +7,7 @@ static char line[MAX_LINE_LEN];
 #define TAB 0x9
 
 static char usage[] =
-"usage: llens (-verbose) (-skip_spaces) (-tabn) (-ge_lenlen) filename (filename ...)\n";
+"usage: llens (-verbose) (-skip_spaces) (-tabn) (-ge_lenlen) (-ne_lenlen) filename (filename ...)\n";
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
 int main(int argc,char **argv)
@@ -27,6 +27,8 @@ int main(int argc,char **argv)
   int space_count;
   int tab_count;
   int ge_len;
+  int ne_len;
+  bool bPrint;
 
   if (argc < 2) {
     printf(usage);
@@ -36,7 +38,8 @@ int main(int argc,char **argv)
   bVerbose = false;
   bSkipSpaces = false;
   bTab = false;
-  ge_len = 0;
+  ge_len = -1;
+  ne_len = -1;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
@@ -49,6 +52,8 @@ int main(int argc,char **argv)
     }
     else if (!strncmp(argv[curr_arg],"-ge_len",7))
       sscanf(&argv[curr_arg][7],"%d",&ge_len);
+    else if (!strncmp(argv[curr_arg],"-ne_len",7))
+      sscanf(&argv[curr_arg][7],"%d",&ne_len);
     else
       break;
   }
@@ -58,6 +63,11 @@ int main(int argc,char **argv)
   if (num_files < 1) {
     printf(usage);
     return 2;
+  }
+
+  if ((ge_len != -1) && (ne_len != -1)) {
+    printf("can't specify both -ge_len and -ne_len\n");
+    return 3;
   }
 
   first_file_ix = curr_arg;
@@ -79,6 +89,8 @@ int main(int argc,char **argv)
 
       putchar(0x0a);
     }
+
+    line_no = 0;
 
     for ( ; ; ) {
       GetLine(fptr,line,&linelen,MAX_LINE_LEN);
@@ -110,11 +122,24 @@ int main(int argc,char **argv)
         linelen += tab_count * (tab_len - 1);
       }
 
-      if (linelen >= ge_len) {
+      bPrint = false;
+
+      if (ge_len != -1) {
+        if (linelen >= ge_len)
+          bPrint = true;
+      }
+      else if (ne_len != -1) {
+        if (linelen != ne_len)
+          bPrint = true;
+      }
+      else
+        bPrint = true;
+
+      if (bPrint) {
         if (!bVerbose)
-          printf("%d\n",linelen);
+          printf("%d: %d\n",line_no,linelen);
         else
-          printf("%3d %s\n",linelen,line);
+          printf("%d %d %s\n",line_no,linelen,line);
       }
     }
 
