@@ -9,7 +9,7 @@ static char line[MAX_LINE_LEN];
 static int counts[MAX_RANGE];
 
 static char usage[] =
-"usage: histogram_skeleton (-verbose) (-sort) (-counts_first) filename\n";
+"usage: histogram_skeleton (-verbose) (-sort) (-counts_first) (-missing) filename\n";
 
 char couldnt_get_status[] = "couldn't get status of %s\n";
 char couldnt_open[] = "couldn't open %s\n";
@@ -25,6 +25,7 @@ int main(int argc,char **argv)
   bool bVerbose;
   bool bSort;
   bool bCountsFirst;
+  bool bMissing;
   FILE *fptr;
   int line_no;
   int line_len;
@@ -34,7 +35,7 @@ int main(int argc,char **argv)
   double dwork;
   int max_range;
 
-  if ((argc < 2) || (argc > 5)) {
+  if ((argc < 2) || (argc > 6)) {
     printf(usage);
     return 1;
   }
@@ -42,6 +43,7 @@ int main(int argc,char **argv)
   bVerbose = false;
   bSort = false;
   bCountsFirst = false;
+  bMissing = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
@@ -50,6 +52,8 @@ int main(int argc,char **argv)
       bSort = true;
     else if (!strcmp(argv[curr_arg],"-counts_first"))
       bCountsFirst = true;
+    else if (!strcmp(argv[curr_arg],"-missing"))
+      bMissing = true;
     else
       break;
   }
@@ -110,7 +114,7 @@ int main(int argc,char **argv)
     qsort(ixs,max_range,sizeof (int),elem_compare);
 
   for (n = 0; n < max_range; n++) {
-    if (counts[ixs[n]]) {
+    if ((!bMissing && (counts[ixs[n]])) || (bMissing && !(counts[ixs[n]]))) {
       if (!bVerbose) {
         if (!bCountsFirst)
           printf("%d %d\n",ixs[n],counts[ixs[n]]);
