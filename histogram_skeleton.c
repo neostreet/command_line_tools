@@ -9,7 +9,7 @@ static char line[MAX_LINE_LEN];
 static int counts[MAX_RANGE];
 
 static char usage[] =
-"usage: histogram_skeleton (-verbose) (-sort) filename\n";
+"usage: histogram_skeleton (-verbose) (-sort) (-counts_first) filename\n";
 
 char couldnt_get_status[] = "couldn't get status of %s\n";
 char couldnt_open[] = "couldn't open %s\n";
@@ -24,6 +24,7 @@ int main(int argc,char **argv)
   int curr_arg;
   bool bVerbose;
   bool bSort;
+  bool bCountsFirst;
   FILE *fptr;
   int line_no;
   int line_len;
@@ -32,19 +33,22 @@ int main(int argc,char **argv)
   int total;
   double dwork;
 
-  if ((argc < 2) || (argc > 4)) {
+  if ((argc < 2) || (argc > 5)) {
     printf(usage);
     return 1;
   }
 
   bVerbose = false;
   bSort = false;
+  bCountsFirst = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-sort"))
       bSort = true;
+    else if (!strcmp(argv[curr_arg],"-counts_first"))
+      bCountsFirst = true;
     else
       break;
   }
@@ -99,11 +103,19 @@ int main(int argc,char **argv)
 
   for (n = 0; n < MAX_RANGE; n++) {
     if (counts[ixs[n]]) {
-      if (!bVerbose)
-        printf("%d %d\n",ixs[n],counts[ixs[n]]);
+      if (!bVerbose) {
+        if (!bCountsFirst)
+          printf("%d %d\n",ixs[n],counts[ixs[n]]);
+        else
+          printf("%d %d\n",counts[ixs[n]],ixs[n]);
+      }
       else {
         dwork = (double)counts[ixs[n]] / (double)total;
-        printf("%d %d (%6.2lf)\n",ixs[n],counts[ixs[n]],dwork);
+
+        if (!bCountsFirst)
+          printf("%d %d (%6.2lf)\n",ixs[n],counts[ixs[n]],dwork);
+        else
+          printf("%d %d (%6.2lf)\n",counts[ixs[n]],ixs[n],dwork);
       }
     }
   }
