@@ -32,6 +32,7 @@ int main(int argc,char **argv)
   int ixs[MAX_RANGE];
   int total;
   double dwork;
+  int max_range;
 
   if ((argc < 2) || (argc > 5)) {
     printf(usage);
@@ -95,13 +96,20 @@ int main(int argc,char **argv)
 
   fclose(fptr);
 
-  for (n = 0; n < MAX_RANGE; n++)
+  for (n = MAX_RANGE - 1; n >= 0; n--) {
+    if (counts[n])
+      break;
+  }
+
+  max_range = n + 1;
+
+  for (n = 0; n < max_range; n++)
     ixs[n] = n;
 
   if (bSort)
-    qsort(ixs,MAX_RANGE,sizeof (int),elem_compare);
+    qsort(ixs,max_range,sizeof (int),elem_compare);
 
-  for (n = 0; n < MAX_RANGE; n++) {
+  for (n = 0; n < max_range; n++) {
     if (counts[ixs[n]]) {
       if (!bVerbose) {
         if (!bCountsFirst)
