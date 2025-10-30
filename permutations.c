@@ -4,7 +4,7 @@
 static char usage[] =
 "usage: permutations (-debug) (-verbose) (-optimize) set_size subset_size\n";
 
-#define MAX_SET_SIZE 500
+#define MAX_SET_SIZE 10000
 static int numerators[MAX_SET_SIZE];
 static int denominators[MAX_SET_SIZE];
 
