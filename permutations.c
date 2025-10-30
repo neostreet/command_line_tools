@@ -2,7 +2,7 @@
 #include <string.h>
 
 static char usage[] =
-"usage: permutations (-debug) (-optimize) set_size subset_size\n";
+"usage: permutations (-debug) (-verbose) (-optimize) set_size subset_size\n";
 
 #define MAX_SET_SIZE 500
 static int numerators[MAX_SET_SIZE];
@@ -14,6 +14,7 @@ int main(int argc,char **argv)
   int n;
   int curr_arg;
   bool bDebug;
+  bool bVerbose;
   bool bOptimize;
   int num_optimize_divides;
   int set_size;
@@ -22,17 +23,20 @@ int main(int argc,char **argv)
   int numerator;
   int denominator;
 
-  if ((argc < 3) || (argc > 5)) {
+  if ((argc < 3) || (argc > 6)) {
     printf(usage);
     return 1;
   }
 
   bDebug = false;
+  bVerbose = false;
   bOptimize = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-debug"))
       bDebug = true;
+    else if (!strcmp(argv[curr_arg],"-verbose"))
+      bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-optimize"))
       bOptimize = true;
     else
@@ -106,7 +110,10 @@ int main(int argc,char **argv)
     }
   }
 
-  printf("%d\n",numerator / denominator);
+  if (!bVerbose)
+    printf("%d\n",numerator / denominator);
+  else
+    printf("%d %d %d\n",set_size,subset_size,numerator / denominator);
 
   return 0;
 }
