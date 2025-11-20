@@ -167,7 +167,10 @@ int main(int argc,char **argv)
 
     line_no++;
 
-    sscanf(&line[offset],"%d",&work);
+    retval = sscanf(&line[offset],"%d",&work);
+
+    if (!retval)
+      continue;
 
     if (!bAbs) {
       if (bNegOnly) {
