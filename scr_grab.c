@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #define LEFT      0
 #define TOP       1
@@ -23,6 +24,8 @@ int main(int argc,char **argv)
   HDC hDC;
   COLORREF color;
   FILE *fptr;
+  time_t start_time;
+  time_t end_time;
 
   if ((argc < 6) || (argc > 7)) {
     printf(usage);
@@ -65,6 +68,8 @@ int main(int argc,char **argv)
     printf("parms[HEIGHT] = %d\n",parms[HEIGHT]);
   }
 
+  time(&start_time);
+
   for (m = 0; m < NUM_PARMS; m++)
     fprintf(fptr,"%d\n",parms[m]);
 
@@ -80,6 +85,10 @@ int main(int argc,char **argv)
   }
 
   fclose(fptr);
+
+  time(&end_time);
+
+  printf("\nelapsed time: %d seconds\n",end_time - start_time);
 
   return 0;
 }
