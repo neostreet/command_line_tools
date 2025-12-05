@@ -261,8 +261,12 @@ void do_scr_show(HWND hWnd)
         for (x_off = 0; x_off < image_width; x_off++) {
           color = image[y_off * image_width + x_off];
 
-          for (n = 0; n < scaling_factor; n++)
-            SetPixel(hdc,X++,Y,color);
+          for (n = 0; n < scaling_factor; n++) {
+            if (color != 0x00ffffff)
+              SetPixel(hdc,X++,Y,color);
+            else
+              X++;
+          }
         }
       }
     }
