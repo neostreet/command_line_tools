@@ -9,7 +9,7 @@
 static char usage[] = "usage: build_grid left top width height color\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
-static char white[] = "0x00ffffff";
+static char white[] = "00ffffff";
 
 int main(int argc,char **argv)
 {
