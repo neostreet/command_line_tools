@@ -9,7 +9,7 @@ static char usage[] =
 "usage: runtot_int (-initial_balbal) (-verbose) (-start_bal) (-start_and_end)\n"
 "  (-offsetoffset) (-gain_loss) (-gain_only) (-loss_only) (-abs_value)\n"
 "  (-line_numbers) (-tot_at_end) (-final_negative)\n"
-"  (-only_blue) (-underwater_only) (-coalesce) (-debug) filename\n";
+"  (-only_blue) (-underwater_only) (-abovewater_only) (-coalesce) (-debug) filename\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
@@ -28,6 +28,7 @@ int main(int argc,char **argv)
   bool bFinalNegative;
   bool bOnlyBlue;
   bool bUnderwaterOnly;
+  bool bAbovewaterOnly;
   bool bCoalesce;
   bool bDebug;
   bool bHaveBlue;
@@ -48,7 +49,7 @@ int main(int argc,char **argv)
   int final_negative;
   int blue_val;
 
-  if ((argc < 2) || (argc > 18)) {
+  if ((argc < 2) || (argc > 19)) {
     printf(usage);
     return 1;
   }
@@ -66,6 +67,7 @@ int main(int argc,char **argv)
   bFinalNegative = false;
   bOnlyBlue = false;
   bUnderwaterOnly = false;
+  bAbovewaterOnly = false;
   bCoalesce = false;
   bDebug = false;
   offset = 0;
@@ -101,6 +103,8 @@ int main(int argc,char **argv)
       bOnlyBlue = true;
     else if (!strcmp(argv[curr_arg],"-underwater_only"))
       bUnderwaterOnly = true;
+    else if (!strcmp(argv[curr_arg],"-abovewater_only"))
+      bAbovewaterOnly = true;
     else if (!strcmp(argv[curr_arg],"-coalesce"))
       bCoalesce = true;
     else if (!strcmp(argv[curr_arg],"-debug"))
@@ -134,9 +138,14 @@ int main(int argc,char **argv)
     return 6;
   }
 
+  if (bUnderwaterOnly && bAbovewaterOnly) {
+    printf("can't specify both -underwater_only and -abovewater_only\n");
+    return 7;
+  }
+
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf("couldn't open %s\n",argv[curr_arg]);
-    return 7;
+    return 8;
   }
 
   if (bGainLoss) {
@@ -254,7 +263,7 @@ int main(int argc,char **argv)
       continue;
     }
     else if (!bVerbose) {
-      if (!bGainLoss && !bGainOnly && !bLossOnly && !bUnderwaterOnly) {
+      if (!bGainLoss && !bGainOnly && !bLossOnly && !bUnderwaterOnly && !bAbovewaterOnly) {
         if (!bOnlyBlue || bHaveBlue) {
           printf("%d",runtot);
           bPrinted = true;
@@ -278,8 +287,16 @@ int main(int argc,char **argv)
           runtot_loss,num_losses);
           bPrinted = true;
       }
-      else {
+      else if (bUnderwaterOnly) {
         if (runtot < 0) {
+          if (!bOnlyBlue || bHaveBlue) {
+            printf("%d",runtot);
+            bPrinted = true;
+          }
+        }
+      }
+      else if (bAbovewaterOnly) {
+        if (runtot > 0) {
           if (!bOnlyBlue || bHaveBlue) {
             printf("%d",runtot);
             bPrinted = true;
@@ -288,7 +305,7 @@ int main(int argc,char **argv)
       }
     }
     else {
-      if (!bGainLoss && !bGainOnly && !bLossOnly && !bUnderwaterOnly) {
+      if (!bGainLoss && !bGainOnly && !bLossOnly && !bUnderwaterOnly && !bAbovewaterOnly) {
         if (!bOnlyBlue || bHaveBlue) {
           if (!bTotAtEnd)
             printf("%d %s",runtot,line);
@@ -314,8 +331,16 @@ int main(int argc,char **argv)
           line);
         bPrinted = true;
       }
-      else {
+      else if (bUnderwaterOnly) {
         if (runtot < 0) {
+          if (!bOnlyBlue || bHaveBlue) {
+            printf("%d %s",runtot,line);
+            bPrinted = true;
+          }
+        }
+      }
+      else if (bAbovewaterOnly) {
+        if (runtot > 0) {
           if (!bOnlyBlue || bHaveBlue) {
             printf("%d %s",runtot,line);
             bPrinted = true;
