@@ -20,7 +20,7 @@ static char line[MAX_LINE_LEN];
 
 static char usage[] = "\
 usage: fgrep (-c) (-nl) (-nt) (-nd) (-nss) (-special_charhhc) (-file_maxn) (-anchor)\n"
-"  string filename\n";
+"  (-contains) string filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 static char couldnt_get_status[] = "couldn't get status of %s\n";
 
@@ -48,6 +48,7 @@ int main(int argc,char **argv)
   bool bDate;
   bool bNoSearchString;
   bool bAnchor;
+  bool bContains;
   int string_arg;
   int put_search_string;
   int put_line;
@@ -70,6 +71,7 @@ int main(int argc,char **argv)
   num_special_chars = 0;
   file_max = -1;
   bAnchor = false;
+  bContains = false;
 
   for (curr_arg = 1; ; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-c"))
@@ -99,6 +101,12 @@ int main(int argc,char **argv)
       sscanf(&argv[curr_arg][9],"%d",&file_max);
     else if (!strcmp(argv[curr_arg],"-anchor"))
       bAnchor = true;
+    else if (!strcmp(argv[curr_arg],"-contains")) {
+      bContains = true;
+      bTitle = false;
+      bDate = false;
+      bNoSearchString = true;
+    }
     else
       break;
   }
@@ -242,10 +250,16 @@ int main(int argc,char **argv)
           put_title = 1;
         }
 
-        if (line_numbers)
-          printf("%03d:%s\n",line_no,line);
-        else
-          printf("%s\n",line);
+        if (!bContains) {
+          if (line_numbers)
+            printf("%03d:%s\n",line_no,line);
+          else
+            printf("%s\n",line);
+        }
+        else {
+          printf("%s\n",exp_title);
+          break;
+        }
       }
     }
   }
