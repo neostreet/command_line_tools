@@ -12,7 +12,7 @@ static char line[MAX_LINE_LEN];
 #define MAX_COL_LEN 4096
 static char column[MAX_COL_LEN];
 
-static char usage[] = "usage: grabcol delim col infile outfile\n";
+static char usage[] = "usage: grabcol (-verbose) delim col infile outfile\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -21,6 +21,8 @@ int grab_col(char *line,int line_len,int line_no,int delim,int col,
 
 int main(int argc,char **argv)
 {
+  int curr_arg;
+  bool bVerbose;
   int delim;
   int col;
   FILE *fptr;
@@ -29,36 +31,50 @@ int main(int argc,char **argv)
   int line_no;
   int retval;
 
-  if (argc != 5) {
+  if ((argc < 5) || (argc > 6)) {
     printf(usage);
     return 1;
   }
 
-  if (!strcmp(argv[3],argv[4])) {
-    printf("infile must differ from outfile\n");
+  bVerbose = false;
+
+  for (curr_arg = 1; curr_arg < argc; curr_arg++) {
+    if (!strcmp(argv[curr_arg],"-verbose"))
+      bVerbose = true;
+    else
+      break;
+  }
+
+  if (argc - curr_arg != 4) {
+    printf(usage);
     return 2;
   }
 
-  if (!strcmp(argv[1],"tab"))
-    delim = TAB;
-  else
-    delim = argv[1][0];
-
-  sscanf(argv[2],"%d",&col);
-
-  if (col < 1) {
-    printf("col must be >= 1\n");
+  if (!strcmp(argv[curr_arg+2],argv[curr_arg+3])) {
+    printf("infile must differ from outfile\n");
     return 3;
   }
 
-  if ((fptr = fopen(argv[3],"r")) == NULL) {
-    printf(couldnt_open,argv[3]);
+  if (!strcmp(argv[curr_arg],"tab"))
+    delim = TAB;
+  else
+    delim = argv[curr_arg][0];
+
+  sscanf(argv[curr_arg+1],"%d",&col);
+
+  if (col < 1) {
+    printf("col must be >= 1\n");
     return 4;
   }
 
-  if ((ofptr = fopen(argv[4],"w")) == NULL) {
-    printf(couldnt_open,argv[4]);
+  if ((fptr = fopen(argv[curr_arg+2],"r")) == NULL) {
+    printf(couldnt_open,argv[curr_arg+2]);
     return 5;
+  }
+
+  if ((ofptr = fopen(argv[curr_arg+3],"w")) == NULL) {
+    printf(couldnt_open,argv[curr_arg+3]);
+    return 6;
   }
 
   line_no = 0;
@@ -75,8 +91,12 @@ int main(int argc,char **argv)
 
     if (retval)
       printf("grab_col() failed on line %d: %d\n",line_no,retval);
-    else
-      fprintf(ofptr,"%s\r\n",column);
+    else {
+      if (!bVerbose)
+        fprintf(ofptr,"%s\n",column);
+      else
+        fprintf(ofptr,"%s %d\n",column,line_no);
+    }
   }
 
   fclose(fptr);
