@@ -12,7 +12,7 @@ static char line[MAX_LINE_LEN];
 #define MAX_COL_LEN 4096
 static char column[MAX_COL_LEN];
 
-static char usage[] = "usage: grabcol0 (-verbose) delim col infile\n";
+static char usage[] = "usage: grabcol0 (-verbose) (-skip_heading) delim col infile\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -23,6 +23,7 @@ int main(int argc,char **argv)
 {
   int curr_arg;
   bool bVerbose;
+  bool bSkipHeading;
   int delim;
   int col;
   FILE *fptr;
@@ -30,16 +31,19 @@ int main(int argc,char **argv)
   int line_no;
   int retval;
 
-  if ((argc < 4) || (argc > 5)) {
+  if ((argc < 4) || (argc > 6)) {
     printf(usage);
     return 1;
   }
 
   bVerbose = false;
+  bSkipHeading = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
+    else if (!strcmp(argv[curr_arg],"-skip_heading"))
+      bSkipHeading = true;
     else
       break;
   }
@@ -75,6 +79,9 @@ int main(int argc,char **argv)
       break;
 
     line_no++;
+
+    if (bSkipHeading && (line_no == 1))
+      continue;
 
     retval = grab_col(line,linelen,line_no,delim,col,column,MAX_COL_LEN);
 
