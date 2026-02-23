@@ -16,6 +16,10 @@
 #define TYPE_COL              2
 #define DESCRIPTION_COL       3
 #define AMOUNT_COL            4
+#define ACCOUNT_COL           5
+#define NOTES_COL             6
+#define BALANCE_COL           7
+#define RAW_DESCRIPTION_COL   8
 
 static int bDebug;
 
@@ -25,7 +29,7 @@ static char line[MAX_LINE_LEN];
 #define MAX_TRANS_DATE_LEN 25
 static char trans_date[MAX_TRANS_DATE_LEN+1];
 
-#define MAX_DESCRIPTION_LEN 100
+#define MAX_DESCRIPTION_LEN 160
 static char description[MAX_DESCRIPTION_LEN+1];
 
 #define MAX_AMOUNT_LEN 20
@@ -42,6 +46,9 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 int grab_col(char *line,int *line_len_pt,int line_no,int delim,int col,
   char *column,int max_col_len);
 
+static int dbg_line_no;
+static int dbg_col;
+
 int main(int argc,char **argv)
 {
   int n;
@@ -51,6 +58,7 @@ int main(int argc,char **argv)
   int linelen;
   int line_no;
   int retval;
+  int dbg;
 
   if ((argc < NUM_ARGS + 1) || (argc > NUM_ARGS + 2)) {
     printf(usage);
@@ -93,6 +101,9 @@ int main(int argc,char **argv)
 
     line_no++;
 
+    if (line_no == dbg_line_no)
+      dbg = 1;
+
     if (!strncmp(&line[1],"Posted Date",11))
       continue;
 
@@ -107,7 +118,7 @@ int main(int argc,char **argv)
     trans_date[10] = 0;
 
     retval = grab_col(line,&linelen,line_no,delim,
-      DESCRIPTION_COL,description,MAX_DESCRIPTION_LEN);
+      RAW_DESCRIPTION_COL,description,MAX_DESCRIPTION_LEN);
 
     if (retval) {
       printf(grab_col_failure,DESCRIPTION_COL,line_no,retval);
@@ -166,12 +177,13 @@ int grab_col(char *line,int *line_len_pt,int line_no,int delim,int col,
   int n;
   int line_len;
   int bInDoubleQuotes;
-  static int dbg_line_no;
-  static int dbg_col;
   int dbg;
 
-  if ((line_no == dbg_line_no) && (col == dbg_col))
+  if (line_no == dbg_line_no)
     dbg = 1;
+
+  if ((line_no == dbg_line_no) && (col == dbg_col))
+    dbg = 2;
 
   line_len = *line_len_pt;
 
