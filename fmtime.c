@@ -5,7 +5,7 @@
 #include <time.h>
 
 static char usage[] =
-"usage: fmtime (-noctime) (-suppress_errors) (-size_only) (-terse) filename\n";
+"usage: fmtime (-noctime) (-suppress_errors) (-size_only) (-terse) (-size_first) filename\n";
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
@@ -19,13 +19,14 @@ int main(int argc,char **argv)
   bool bSuppressErrors;
   bool bSizeOnly;
   bool bTerse;
+  bool bSizeFirst;
   FILE *fptr;
   int line_no;
   int linelen;
   struct stat stat_buf;
   char *cpt;
 
-  if ((argc < 2) || (argc > 6)) {
+  if ((argc < 2) || (argc > 7)) {
     printf(usage);
     return 1;
   }
@@ -33,7 +34,8 @@ int main(int argc,char **argv)
   bNoCtime = false;
   bSuppressErrors = false;
   bSizeOnly = false;
-  bTerse =  false;
+  bTerse = false;
+  bSizeFirst = false;
 
   for (n = 1; n < argc; n++) {
     if (!strcmp(argv[n],"-noctime"))
@@ -44,6 +46,8 @@ int main(int argc,char **argv)
       bSizeOnly = true;
     else if (!strcmp(argv[n],"-terse"))
       bTerse = true;
+    else if (!strcmp(argv[n],"-size_first"))
+      bSizeFirst = true;
     else
       break;
   }
@@ -80,7 +84,12 @@ int main(int argc,char **argv)
       else {
         cpt = ctime(&stat_buf.st_mtime);
         cpt[strlen(cpt) - 1] = 0;
-        printf("%s %10d ",cpt,stat_buf.st_size);
+
+        if (!bSizeFirst)
+          printf("%s %10d ",cpt,stat_buf.st_size);
+        else
+          printf("%10d %s ",stat_buf.st_size,cpt);
+
         printf("%s\n",line);
       }
     }
