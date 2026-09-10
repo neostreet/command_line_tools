@@ -5,12 +5,20 @@
 #include <time.h>
 
 static char usage[] =
-"usage: fmtime (-noctime) (-suppress_errors) (-size_only) (-terse) (-size_first) filename\n";
+"usage: fmtime (-noctime) (-suppress_errors) (-size_only) (-terse) (-size_first) (-db_date) filename\n";
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
+
+void get_year_month_day(time_t *timtpt,int *yearpt,int *monthpt,int *daypt);
+
+static char *months[] = {
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};
+#define NUM_MONTHS (sizeof months / sizeof (char *))
 
 int main(int argc,char **argv)
 {
@@ -20,13 +28,17 @@ int main(int argc,char **argv)
   bool bSizeOnly;
   bool bTerse;
   bool bSizeFirst;
+  bool bDbDate;
   FILE *fptr;
   int line_no;
   int linelen;
   struct stat stat_buf;
   char *cpt;
+  int year;
+  int month;
+  int day;
 
-  if ((argc < 2) || (argc > 7)) {
+  if ((argc < 2) || (argc > 8)) {
     printf(usage);
     return 1;
   }
@@ -36,6 +48,7 @@ int main(int argc,char **argv)
   bSizeOnly = false;
   bTerse = false;
   bSizeFirst = false;
+  bDbDate = false;
 
   for (n = 1; n < argc; n++) {
     if (!strcmp(argv[n],"-noctime"))
@@ -48,6 +61,8 @@ int main(int argc,char **argv)
       bTerse = true;
     else if (!strcmp(argv[n],"-size_first"))
       bSizeFirst = true;
+    else if (!strcmp(argv[n],"-db_date"))
+      bDbDate = true;
     else
       break;
   }
@@ -81,6 +96,10 @@ int main(int argc,char **argv)
       }
       else if (bNoCtime)
         printf("%10d %s\n",stat_buf.st_mtime,line);
+      else if (bDbDate) {
+        get_year_month_day(&stat_buf.st_mtime,&year,&month,&day);
+        printf("%d-%02d-%02d %s\n",year,month,day,line);
+      }
       else {
         cpt = ctime(&stat_buf.st_mtime);
         cpt[strlen(cpt) - 1] = 0;
@@ -126,4 +145,34 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
 
   line[local_line_len] = 0;
   *line_len = local_line_len;
+}
+
+void get_year_month_day(time_t *timtpt,int *yearpt,int *monthpt,int *daypt)
+{
+  int m;
+  char *cpt;
+  int month;
+
+  cpt = ctime(timtpt);
+
+  sscanf(&cpt[20],"%d",yearpt);
+
+  for (month = 0; month < NUM_MONTHS; month++) {
+    for (m = 0; m < 3; m++) {
+      if (months[month][m] != cpt[4+m])
+        break;
+    }
+
+    if (m == 3)
+      break;
+  }
+
+  if (month == NUM_MONTHS)
+    month = 1;
+  else
+    month++;
+
+  *monthpt = month;
+
+  sscanf(&cpt[8],"%d",daypt);
 }
