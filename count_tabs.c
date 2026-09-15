@@ -1,11 +1,12 @@
 #include <stdio.h>
+#include <string.h>
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
 
 #define TAB 0x09
 
-static char usage[] = "usage: count_tabs filename\n";
+static char usage[] = "usage: count_tabs (-terse) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
@@ -13,18 +14,33 @@ static int count_tabs(char *line,int line_len);
 
 int main(int argc,char **argv)
 {
+  int curr_arg;
+  bool bTerse;
   FILE *fptr;
   int line_len;
   int line_no;
   int count;
+  int total_count;
 
-  if (argc != 2) {
+  if ((argc < 2) || (argc > 3)) {
     printf(usage);
     return 1;
   }
 
-  if ((fptr = fopen(argv[1],"r")) == NULL) {
-    printf(couldnt_open,argv[1]);
+  bTerse = false;
+
+  for (curr_arg = 1; curr_arg < argc; curr_arg++) {
+    if (!strcmp(argv[curr_arg],"-terse"))
+      bTerse = true;
+    else
+       break;
+  }
+
+  if (bTerse)
+    total_count = 0;
+
+  if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
+    printf(couldnt_open,argv[curr_arg]);
     return 2;
   }
 
@@ -40,10 +56,16 @@ int main(int argc,char **argv)
 
     count = count_tabs(line,line_len);
 
-    printf("%d\n",count);
+    if (!bTerse)
+      printf("%d\n",count);
+    else
+      total_count += count;
   }
 
   fclose(fptr);
+
+  if (bTerse)
+    printf("%d\n",total_count);
 
   return 0;
 }
