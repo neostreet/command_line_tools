@@ -36,13 +36,18 @@ int main(int argc,char **argv)
        break;
   }
 
-  if (bTerse)
-    total_count = 0;
+  if (argc - curr_arg != 1) {
+    printf(usage);
+    return 2;
+  }
 
   if ((fptr = fopen(argv[curr_arg],"r")) == NULL) {
     printf(couldnt_open,argv[curr_arg]);
     return 2;
   }
+
+  if (bTerse)
+    total_count = 0;
 
   line_no = 0;
 
