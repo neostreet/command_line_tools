@@ -6,32 +6,36 @@ static char line[MAX_LINE_LEN];
 
 #define TAB 0x09
 
-static char usage[] = "usage: count_tabs (-terse) filename\n";
+static char usage[] = "usage: count_tabs (-terse) (-not) filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
 
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
-static int count_tabs(char *line,int line_len);
+static int count_tabs(char *line,int line_len,bool bNot);
 
 int main(int argc,char **argv)
 {
   int curr_arg;
   bool bTerse;
+  bool bNot;
   FILE *fptr;
   int line_len;
   int line_no;
   int count;
   int total_count;
 
-  if ((argc < 2) || (argc > 3)) {
+  if ((argc < 2) || (argc > 4)) {
     printf(usage);
     return 1;
   }
 
   bTerse = false;
+  bNot = false;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
     if (!strcmp(argv[curr_arg],"-terse"))
       bTerse = true;
+    else if (!strcmp(argv[curr_arg],"-not"))
+      bNot = true;
     else
        break;
   }
@@ -59,7 +63,7 @@ int main(int argc,char **argv)
 
     line_no++;
 
-    count = count_tabs(line,line_len);
+    count = count_tabs(line,line_len,bNot);
 
     if (!bTerse)
       printf("%d\n",count);
@@ -99,7 +103,7 @@ static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
   *line_len = local_line_len;
 }
 
-static int count_tabs(char *line,int line_len)
+static int count_tabs(char *line,int line_len,bool bNot)
 {
   int n;
   int count;
@@ -107,8 +111,14 @@ static int count_tabs(char *line,int line_len)
   count = 0;
 
   for (n = 0; n < line_len; n++) {
-    if (line[n] == TAB)
-      count++;
+    if (!bNot) {
+      if (line[n] == TAB)
+        count++;
+    }
+    else {
+      if (line[n] != TAB)
+        count++;
+    }
   }
 
   return count;
