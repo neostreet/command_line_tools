@@ -7,13 +7,14 @@ static char line[MAX_LINE_LEN];
 #define TAB 0x9
 
 static char usage[] =
-"usage: llens (-verbose) (-skip_spaces) (-tabn) (-ge_lenlen) (-ne_lenlen) filename (filename ...)\n";
+"usage: llens (-terse) (-verbose) (-skip_spaces) (-tabn) (-ge_lenlen) (-ne_lenlen) filename (filename ...)\n";
 static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
 
 int main(int argc,char **argv)
 {
   int n;
   int curr_arg;
+  bool bTerse;
   bool bVerbose;
   bool bSkipSpaces;
   bool bTab;
@@ -35,6 +36,7 @@ int main(int argc,char **argv)
     return 1;
   }
 
+  bTerse = false;
   bVerbose = false;
   bSkipSpaces = false;
   bTab = false;
@@ -42,7 +44,9 @@ int main(int argc,char **argv)
   ne_len = -1;
 
   for (curr_arg = 1; curr_arg < argc; curr_arg++) {
-    if (!strcmp(argv[curr_arg],"-verbose"))
+    if (!strcmp(argv[curr_arg],"-terse"))
+      bTerse = true;
+    else if (!strcmp(argv[curr_arg],"-verbose"))
       bVerbose = true;
     else if (!strcmp(argv[curr_arg],"-skip_spaces"))
       bSkipSpaces = true;
@@ -65,9 +69,14 @@ int main(int argc,char **argv)
     return 2;
   }
 
+  if (bTerse && bVerbose) {
+    printf("can't specify both -terse and -verbose\n");
+    return 3;
+  }
+
   if ((ge_len != -1) && (ne_len != -1)) {
     printf("can't specify both -ge_len and -ne_len\n");
-    return 3;
+    return 4;
   }
 
   first_file_ix = curr_arg;
@@ -136,7 +145,9 @@ int main(int argc,char **argv)
         bPrint = true;
 
       if (bPrint) {
-        if (!bVerbose)
+        if (bTerse)
+          printf("%d\n",linelen);
+        else if (!bVerbose)
           printf("%d: %d\n",line_no,linelen);
         else
           printf("%d %d %s\n",line_no,linelen,line);
