@@ -14,6 +14,9 @@ int main(int argc,char **argv)
   FILE *fptr;
   int line_len;
   int line_no;
+  int total_picks;
+  int correct_picks;
+  double percentage;
 
   if (argc != 3) {
     printf(usage);
@@ -27,6 +30,8 @@ int main(int argc,char **argv)
     return 2;
   }
 
+  total_picks = 0;
+  correct_picks = 0;
   line_no = 0;
 
   for ( ; ; ) {
@@ -42,10 +47,17 @@ int main(int argc,char **argv)
       return 3;
     }
 
+    if (!(line_no % 2))
+      total_picks++;
+
+    if (line[col] == '1')
+      correct_picks++;
+
     putchar(line[col]);
   }
 
-  putchar(0x0a);
+  percentage = (double)correct_picks / (double)total_picks * (double)100;
+  printf(" (%d of %d, %6.2lf%%\n",correct_picks,total_picks,percentage);
 
   fclose(fptr);
 
