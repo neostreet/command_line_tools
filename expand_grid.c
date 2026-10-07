@@ -1,138 +1,120 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#ifdef WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#ifndef CYGWIN
+#define O_BINARY 0
+#endif
+#endif
 
 #define MAX_LINE_LEN 1024
 static char line[MAX_LINE_LEN];
 
-#define TAB 0x09
+#define MAX_FILENAME_LEN 128
+static char output_filename[MAX_FILENAME_LEN+1];
 
-static char usage[] = "usage: expand_grid num_rows num_cols filename\n";
+static char usage[] = "usage: grab_picks num_rows num_cols col filename\n";
 static char couldnt_open[] = "couldn't open %s\n";
+static char couldnt_get_status[] = "couldn't get status of %s\n";
 
-static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen);
-static int expand_line(char *line,int line_len,int line_no,int num_rows,int num_cols,char *grid);
+static void build_output_filename(char *file,int col,char *output_filename);
 
 int main(int argc,char **argv)
 {
-  int m;
   int n;
-  int p;
   int num_rows;
   int num_cols;
-  int malloc_size;
-  char *grid;
-  FILE *fptr;
+  int col;
+  struct stat statbuf;
+  int fhndl;
+  int bytes_to_io;
+  char *buf;
+  int bytes_read;
   int line_len;
-  int line_no;
-  int retval;
+  FILE *out_fptr;
+  int total_picks;
+  int correct_picks;
+  double percentage;
 
-  if (argc != 4) {
+  if (argc != 5) {
     printf(usage);
     return 1;
   }
 
   sscanf(argv[1],"%d",&num_rows);
   sscanf(argv[2],"%d",&num_cols);
+  sscanf(argv[3],"%d",&col);
 
-  malloc_size = num_rows * num_cols;
-
-  if ((grid = (char *)malloc(malloc_size)) == NULL) {
-    printf("malloc of %d bytes failed\n",malloc_size);
+  if (col >= num_cols) {
+    printf("invalid column\n");
     return 2;
   }
 
-  if ((fptr = fopen(argv[3],"r")) == NULL) {
-    printf(couldnt_open,argv[3]);
+  if (stat(argv[4],&statbuf) == -1) {
+    printf(couldnt_get_status,argv[4]);
     return 3;
   }
 
-  line_no = 0;
+  bytes_to_io = (int)statbuf.st_size;
 
-  for ( ; ; ) {
-    GetLine(fptr,line,&line_len,MAX_LINE_LEN);
-
-    if (feof(fptr))
-      break;
-
-    retval = expand_line(line,line_len,line_no,num_rows,num_cols,grid);
-
-    line_no++;
-
-    if (retval) {
-      printf("expand_line() failed on line %d: %d\n",line_no,retval);
-      return 4;
-    }
+  if (bytes_to_io != num_rows * num_cols) {
+    printf("%s is the wrong size\n",argv[4]);
+    return 4;
   }
 
-  fclose(fptr);
-
-  p = 0;
-
-  for (m = 0; m < num_rows; m++) {
-    for (n = 0; n < num_cols; n++)
-      putchar(grid[p++]);
-
-     putchar(0x0a);
+  if ((buf = (char *)malloc(bytes_to_io)) == NULL) {
+    printf("malloc of %d bytes failed\n",bytes_to_io);
+    return 5;
   }
 
-  free(grid);
+  if ((fhndl = open(argv[4],O_BINARY | O_RDONLY,0)) == -1) {
+    printf(couldnt_open,argv[4]);
+    free(buf);
+    return 6;
+  }
+
+  bytes_read = read(fhndl,buf,bytes_to_io);
+
+  if (bytes_read != bytes_to_io) {
+    printf("read of %d bytes failed\n",bytes_to_io);
+    free(buf);
+    close(fhndl);
+    return 7;
+  }
+
+  build_output_filename(argv[4],col,output_filename);
+
+  if ((out_fptr = fopen(output_filename,"w")) == NULL) {
+    printf(couldnt_open,output_filename);
+    return 8;
+  }
+
+  total_picks = num_rows / 2;
+  correct_picks = 0;
+
+  for (n = 0; n < num_rows; n++) {
+    if (buf[(n * num_cols) + col])
+      correct_picks++;
+  }
+
+  percentage = (double)correct_picks / (double)total_picks * (double)100;
+  fprintf(out_fptr,"%d of %d, %6.2lf%%\n",correct_picks,total_picks,percentage);
+
+  free(buf);
+  close(fhndl);
+
+  fclose(out_fptr);
 
   return 0;
 }
 
-static void GetLine(FILE *fptr,char *line,int *line_len,int maxllen)
+static void build_output_filename(char *file,int col,char *output_filename)
 {
-  int chara;
-  int local_line_len;
-
-  local_line_len = 0;
-
-  for ( ; ; ) {
-    chara = fgetc(fptr);
-
-    if (feof(fptr))
-      break;
-
-    if (chara == '\n')
-      break;
-
-    if (local_line_len < maxllen - 1)
-      line[local_line_len++] = (char)chara;
-  }
-
-  line[local_line_len] = 0;
-  *line_len = local_line_len;
-}
-
-static int expand_line(char *line,int line_len,int line_no,int num_rows,int num_cols,char *grid)
-{
-  int m;
-  int n;
-  int offset;
-
-  if (line_no == num_rows)
-    return 1;
-
-  offset = line_no * num_cols;
-  m = 0;
-
-  for (n = 0; n < line_len; n++) {
-    if (m == num_cols)
-      return 2;
-
-    if (line[n] == TAB) {
-      grid[offset + m] = ' ';
-      m++;
-    }
-    else {
-      grid[offset + m] = line[n];
-      m++;
-      n++;
-    }
-  }
-
-  if (m < num_cols)
-    grid[offset + m] = ' ';
-
-  return 0;
+  sprintf(output_filename,"%s.%d.grab_picks",file,col);
 }
