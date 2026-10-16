@@ -13,13 +13,13 @@
 #define NUM_ARGS      4
 
 #define TRANS_DATE_COL        1
-#define TYPE_COL              2
-#define DESCRIPTION_COL       3
-#define AMOUNT_COL            4
-#define ACCOUNT_COL           5
-#define NOTES_COL             6
-#define BALANCE_COL           7
-#define RAW_DESCRIPTION_COL   8
+#define DESCRIPTION_COL       2
+#define AMOUNT_COL            3
+#define ACCOUNT_COL           4
+#define BALANCE_COL           5
+#define RAW_DESCRIPTION_COL   6
+#define TYPE_COL              7
+#define NOTES_COL             8
 
 static int bDebug;
 
