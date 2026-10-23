@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   int linelen;
 
   if (argc != 2) {
-    printf("usage: difflast filename\n");
+    printf("usage: kdifflast filename\n");
     return 1;
   }
 
